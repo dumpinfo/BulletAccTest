@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - LinearMath/btConvexHullComputer.h</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">LinearMath</a> - btConvexHullComputer.h<span style="font-size: 80%;"> (source / <a href="btConvexHullComputer.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Copyright (c) 2011 Ole Kniemeyer, MAXON, www.maxon.net
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       5 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       6 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       7 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       8 </span>            : subject to the following restrictions:
+<span class="lineNum">       9 </span>            : 
+<span class="lineNum">      10 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      11 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      12 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      13 </span>            : */
+<span class="lineNum">      14 </span>            : 
+<span class="lineNum">      15 </span>            : #ifndef BT_CONVEX_HULL_COMPUTER_H
+<span class="lineNum">      16 </span>            : #define BT_CONVEX_HULL_COMPUTER_H
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span>            : #include &quot;btVector3.h&quot;
+<span class="lineNum">      19 </span>            : #include &quot;btAlignedObjectArray.h&quot;
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span>            : /// Convex hull implementation based on Preparata and Hong
+<span class="lineNum">      22 </span>            : /// See http://code.google.com/p/bullet/issues/detail?id=275
+<span class="lineNum">      23 </span>            : /// Ole Kniemeyer, MAXON Computer GmbH
+<span class="lineNum">      24 </span><span class="lineNoCov">          0 : class btConvexHullComputer</span>
+<span class="lineNum">      25 </span>            : {
+<span class="lineNum">      26 </span>            :         private:
+<span class="lineNum">      27 </span>            :                 btScalar compute(const void* coords, bool doubleCoords, int stride, int count, btScalar shrink, btScalar shrinkClamp);
+<span class="lineNum">      28 </span>            : 
+<span class="lineNum">      29 </span>            :         public:
+<span class="lineNum">      30 </span>            : 
+<span class="lineNum">      31 </span>            :                 class Edge
+<span class="lineNum">      32 </span>            :                 {
+<span class="lineNum">      33 </span>            :                         private:
+<span class="lineNum">      34 </span>            :                                 int next;
+<span class="lineNum">      35 </span>            :                                 int reverse;
+<span class="lineNum">      36 </span>            :                                 int targetVertex;
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            :                                 friend class btConvexHullComputer;
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            :                         public:
+<span class="lineNum">      41 </span>            :                                 int getSourceVertex() const
+<span class="lineNum">      42 </span>            :                                 {
+<span class="lineNum">      43 </span><span class="lineNoCov">          0 :                                         return (this + reverse)-&gt;targetVertex;</span>
+<span class="lineNum">      44 </span>            :                                 }
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            :                                 int getTargetVertex() const
+<span class="lineNum">      47 </span>            :                                 {
+<span class="lineNum">      48 </span>            :                                         return targetVertex;
+<span class="lineNum">      49 </span>            :                                 }
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span>            :                                 const Edge* getNextEdgeOfVertex() const // clockwise list of all edges of a vertex
+<span class="lineNum">      52 </span>            :                                 {
+<span class="lineNum">      53 </span><span class="lineNoCov">          0 :                                         return this + next;</span>
+<span class="lineNum">      54 </span>            :                                 }
+<span class="lineNum">      55 </span>            : 
+<span class="lineNum">      56 </span>            :                                 const Edge* getNextEdgeOfFace() const // counter-clockwise list of all edges of a face
+<span class="lineNum">      57 </span>            :                                 {
+<span class="lineNum">      58 </span><span class="lineNoCov">          0 :                                         return (this + reverse)-&gt;getNextEdgeOfVertex();</span>
+<span class="lineNum">      59 </span>            :                                 }
+<span class="lineNum">      60 </span>            : 
+<span class="lineNum">      61 </span>            :                                 const Edge* getReverseEdge() const
+<span class="lineNum">      62 </span>            :                                 {
+<span class="lineNum">      63 </span>            :                                         return this + reverse;
+<span class="lineNum">      64 </span>            :                                 }
+<span class="lineNum">      65 </span>            :                 };
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span>            : 
+<span class="lineNum">      68 </span>            :                 // Vertices of the output hull
+<span class="lineNum">      69 </span>            :                 btAlignedObjectArray&lt;btVector3&gt; vertices;
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span>            :                 // Edges of the output hull
+<span class="lineNum">      72 </span>            :                 btAlignedObjectArray&lt;Edge&gt; edges;
+<span class="lineNum">      73 </span>            : 
+<span class="lineNum">      74 </span>            :                 // Faces of the convex hull. Each entry is an index into the &quot;edges&quot; array pointing to an edge of the face. Faces are planar n-gons
+<span class="lineNum">      75 </span>            :                 btAlignedObjectArray&lt;int&gt; faces;
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            :                 /*
+<span class="lineNum">      78 </span>            :                 Compute convex hull of &quot;count&quot; vertices stored in &quot;coords&quot;. &quot;stride&quot; is the difference in bytes
+<span class="lineNum">      79 </span>            :                 between the addresses of consecutive vertices. If &quot;shrink&quot; is positive, the convex hull is shrunken
+<span class="lineNum">      80 </span>            :                 by that amount (each face is moved by &quot;shrink&quot; length units towards the center along its normal).
+<span class="lineNum">      81 </span>            :                 If &quot;shrinkClamp&quot; is positive, &quot;shrink&quot; is clamped to not exceed &quot;shrinkClamp * innerRadius&quot;, where &quot;innerRadius&quot;
+<span class="lineNum">      82 </span>            :                 is the minimum distance of a face to the center of the convex hull.
+<span class="lineNum">      83 </span>            : 
+<span class="lineNum">      84 </span>            :                 The returned value is the amount by which the hull has been shrunken. If it is negative, the amount was so large
+<span class="lineNum">      85 </span>            :                 that the resulting convex hull is empty.
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span>            :                 The output convex hull can be found in the member variables &quot;vertices&quot;, &quot;edges&quot;, &quot;faces&quot;.
+<span class="lineNum">      88 </span>            :                 */
+<span class="lineNum">      89 </span>            :                 btScalar compute(const float* coords, int stride, int count, btScalar shrink, btScalar shrinkClamp)
+<span class="lineNum">      90 </span>            :                 {
+<span class="lineNum">      91 </span><span class="lineNoCov">          0 :                         return compute(coords, false, stride, count, shrink, shrinkClamp);</span>
+<span class="lineNum">      92 </span>            :                 }
+<span class="lineNum">      93 </span>            : 
+<span class="lineNum">      94 </span>            :                 // same as above, but double precision
+<span class="lineNum">      95 </span>            :                 btScalar compute(const double* coords, int stride, int count, btScalar shrink, btScalar shrinkClamp)
+<span class="lineNum">      96 </span>            :                 {
+<span class="lineNum">      97 </span>            :                         return compute(coords, true, stride, count, shrink, shrinkClamp);
+<span class="lineNum">      98 </span>            :                 }
+<span class="lineNum">      99 </span>            : };
+<span class="lineNum">     100 </span>            : 
+<span class="lineNum">     101 </span>            : 
+<span class="lineNum">     102 </span>            : #endif //BT_CONVEX_HULL_COMPUTER_H
+<span class="lineNum">     103 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

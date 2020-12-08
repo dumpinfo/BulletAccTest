@@ -1,0 +1,529 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/CollisionShapes/btConvexShape.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/CollisionShapes</a> - btConvexShape.cpp<span style="font-size: 80%;"> (source / <a href="btConvexShape.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">14</td>
+            <td class="headerCovTableEntry">189</td>
+            <td class="headerCovTableEntryLo">7.4 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">9</td>
+            <td class="headerCovTableEntryLo">33.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : #include &quot;btConvexShape.h&quot;
+<span class="lineNum">      17 </span>            : #include &quot;btTriangleShape.h&quot;
+<span class="lineNum">      18 </span>            : #include &quot;btSphereShape.h&quot;
+<span class="lineNum">      19 </span>            : #include &quot;btCylinderShape.h&quot;
+<span class="lineNum">      20 </span>            : #include &quot;btCapsuleShape.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;btConvexHullShape.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;btConvexPointCloudShape.h&quot;
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : ///not supported on IBM SDK, until we fix the alignment of btVector3
+<span class="lineNum">      25 </span>            : #if defined (__CELLOS_LV2__) &amp;&amp; defined (__SPU__)
+<span class="lineNum">      26 </span>            : #include &lt;spu_intrinsics.h&gt;
+<span class="lineNum">      27 </span>            : static inline vec_float4 vec_dot3( vec_float4 vec0, vec_float4 vec1 )
+<span class="lineNum">      28 </span>            : {
+<span class="lineNum">      29 </span>            :     vec_float4 result;
+<span class="lineNum">      30 </span>            :     result = spu_mul( vec0, vec1 );
+<span class="lineNum">      31 </span>            :     result = spu_madd( spu_rlqwbyte( vec0, 4 ), spu_rlqwbyte( vec1, 4 ), result );
+<span class="lineNum">      32 </span>            :     return spu_madd( spu_rlqwbyte( vec0, 8 ), spu_rlqwbyte( vec1, 8 ), result );
+<span class="lineNum">      33 </span>            : }
+<a name="34"><span class="lineNum">      34 </span>            : #endif //__SPU__</a>
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span><span class="lineCov">        208 : btConvexShape::btConvexShape ()</span>
+<span class="lineNum">      37 </span>            : {
+<a name="38"><span class="lineNum">      38 </span><span class="lineCov">        104 : }</span></a>
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span><span class="lineCov">          3 : btConvexShape::~btConvexShape()</span>
+<span class="lineNum">      41 </span>            : {
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span><span class="lineCov">          3 : }</span>
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span><span class="lineNoCov">          0 : void btConvexShape::project(const btTransform&amp; trans, const btVector3&amp; dir, btScalar&amp; min, btScalar&amp; max) const</span>
+<span class="lineNum">      47 </span>            : {
+<span class="lineNum">      48 </span><span class="lineNoCov">          0 :         btVector3 localAxis = dir*trans.getBasis();</span>
+<span class="lineNum">      49 </span><span class="lineNoCov">          0 :         btVector3 vtx1 = trans(localGetSupportingVertex(localAxis));</span>
+<span class="lineNum">      50 </span><span class="lineNoCov">          0 :         btVector3 vtx2 = trans(localGetSupportingVertex(-localAxis));</span>
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span><span class="lineNoCov">          0 :         min = vtx1.dot(dir);</span>
+<span class="lineNum">      53 </span><span class="lineNoCov">          0 :         max = vtx2.dot(dir);</span>
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span><span class="lineNoCov">          0 :         if(min&gt;max)</span>
+<span class="lineNum">      56 </span>            :         {
+<span class="lineNum">      57 </span><span class="lineNoCov">          0 :                 btScalar tmp = min;</span>
+<span class="lineNum">      58 </span><span class="lineNoCov">          0 :                 min = max;</span>
+<span class="lineNum">      59 </span><span class="lineNoCov">          0 :                 max = tmp;</span>
+<span class="lineNum">      60 </span>            :         }
+<span class="lineNum">      61 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span><span class="lineNoCov">          0 : static btVector3 convexHullSupport (const btVector3&amp; localDirOrg, const btVector3* points, int numPoints, const btVector3&amp; localScaling)</span>
+<span class="lineNum">      65 </span>            : {       
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span><span class="lineNoCov">          0 :         btVector3 vec = localDirOrg * localScaling;</span>
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span>            : #if defined (__CELLOS_LV2__) &amp;&amp; defined (__SPU__)
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span>            :         btVector3 localDir = vec;
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span>            :         vec_float4 v_distMax = {-FLT_MAX,0,0,0};
+<span class="lineNum">      74 </span>            :         vec_int4 v_idxMax = {-999,0,0,0};
+<span class="lineNum">      75 </span>            :         int v=0;
+<span class="lineNum">      76 </span>            :         int numverts = numPoints;
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            :         for(;v&lt;(int)numverts-4;v+=4) {
+<span class="lineNum">      79 </span>            :                 vec_float4 p0 = vec_dot3(points[v  ].get128(),localDir.get128());
+<span class="lineNum">      80 </span>            :                 vec_float4 p1 = vec_dot3(points[v+1].get128(),localDir.get128());
+<span class="lineNum">      81 </span>            :                 vec_float4 p2 = vec_dot3(points[v+2].get128(),localDir.get128());
+<span class="lineNum">      82 </span>            :                 vec_float4 p3 = vec_dot3(points[v+3].get128(),localDir.get128());
+<span class="lineNum">      83 </span>            :                 const vec_int4 i0 = {v  ,0,0,0};
+<span class="lineNum">      84 </span>            :                 const vec_int4 i1 = {v+1,0,0,0};
+<span class="lineNum">      85 </span>            :                 const vec_int4 i2 = {v+2,0,0,0};
+<span class="lineNum">      86 </span>            :                 const vec_int4 i3 = {v+3,0,0,0};
+<span class="lineNum">      87 </span>            :                 vec_uint4  retGt01 = spu_cmpgt(p0,p1);
+<span class="lineNum">      88 </span>            :                 vec_float4 pmax01 = spu_sel(p1,p0,retGt01);
+<span class="lineNum">      89 </span>            :                 vec_int4   imax01 = spu_sel(i1,i0,retGt01);
+<span class="lineNum">      90 </span>            :                 vec_uint4  retGt23 = spu_cmpgt(p2,p3);
+<span class="lineNum">      91 </span>            :                 vec_float4 pmax23 = spu_sel(p3,p2,retGt23);
+<span class="lineNum">      92 </span>            :                 vec_int4   imax23 = spu_sel(i3,i2,retGt23);
+<span class="lineNum">      93 </span>            :                 vec_uint4  retGt0123 = spu_cmpgt(pmax01,pmax23);
+<span class="lineNum">      94 </span>            :                 vec_float4 pmax0123 = spu_sel(pmax23,pmax01,retGt0123);
+<span class="lineNum">      95 </span>            :                 vec_int4   imax0123 = spu_sel(imax23,imax01,retGt0123);
+<span class="lineNum">      96 </span>            :                 vec_uint4  retGtMax = spu_cmpgt(v_distMax,pmax0123);
+<span class="lineNum">      97 </span>            :                 v_distMax = spu_sel(pmax0123,v_distMax,retGtMax);
+<span class="lineNum">      98 </span>            :                 v_idxMax = spu_sel(imax0123,v_idxMax,retGtMax);
+<span class="lineNum">      99 </span>            :         }
+<span class="lineNum">     100 </span>            :         for(;v&lt;(int)numverts;v++) {
+<span class="lineNum">     101 </span>            :                 vec_float4 p = vec_dot3(points[v].get128(),localDir.get128());
+<span class="lineNum">     102 </span>            :                 const vec_int4 i = {v,0,0,0};
+<span class="lineNum">     103 </span>            :                 vec_uint4  retGtMax = spu_cmpgt(v_distMax,p);
+<span class="lineNum">     104 </span>            :                 v_distMax = spu_sel(p,v_distMax,retGtMax);
+<span class="lineNum">     105 </span>            :                 v_idxMax = spu_sel(i,v_idxMax,retGtMax);
+<span class="lineNum">     106 </span>            :         }
+<span class="lineNum">     107 </span>            :         int ptIndex = spu_extract(v_idxMax,0);
+<span class="lineNum">     108 </span>            :         const btVector3&amp; supVec= points[ptIndex] * localScaling;
+<span class="lineNum">     109 </span>            :         return supVec;
+<span class="lineNum">     110 </span>            : #else
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span>            :     btScalar maxDot;
+<span class="lineNum">     113 </span><span class="lineNoCov">          0 :     long ptIndex = vec.maxDot( points, numPoints, maxDot);</span>
+<span class="lineNum">     114 </span>            :         btAssert(ptIndex &gt;= 0);
+<span class="lineNum">     115 </span><span class="lineNoCov">          0 :         btVector3 supVec = points[ptIndex] * localScaling;</span>
+<span class="lineNum">     116 </span><span class="lineNoCov">          0 :         return supVec;</span>
+<span class="lineNum">     117 </span>            : #endif //__SPU__
+<span class="lineNum">     118 </span>            : }
+<span class="lineNum">     119 </span>            : 
+<span class="lineNum">     120 </span><span class="lineCov">     324226 : btVector3 btConvexShape::localGetSupportVertexWithoutMarginNonVirtual (const btVector3&amp; localDir) const</span>
+<span class="lineNum">     121 </span>            : {
+<span class="lineNum">     122 </span><span class="lineCov">     324226 :         switch (m_shapeType)</span>
+<span class="lineNum">     123 </span>            :         {
+<span class="lineNum">     124 </span><span class="lineCov">     162113 :     case SPHERE_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     125 </span>            :         {
+<span class="lineNum">     126 </span><span class="lineCov">     162113 :                 return btVector3(0,0,0);</span>
+<span class="lineNum">     127 </span>            :     }
+<span class="lineNum">     128 </span><span class="lineCov">     162113 :         case BOX_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     129 </span>            :         {
+<span class="lineNum">     130 </span><span class="lineCov">     162113 :                 btBoxShape* convexShape = (btBoxShape*)this;</span>
+<span class="lineNum">     131 </span><span class="lineCov">     162113 :                 const btVector3&amp; halfExtents = convexShape-&gt;getImplicitShapeDimensions();</span>
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span>            : #if defined( __APPLE__ ) &amp;&amp; (defined( BT_USE_SSE )||defined( BT_USE_NEON ))
+<span class="lineNum">     134 </span>            :     #if defined( BT_USE_SSE )
+<span class="lineNum">     135 </span>            :             return btVector3( _mm_xor_ps( _mm_and_ps( localDir.mVec128, (__m128){-0.0f, -0.0f, -0.0f, -0.0f }), halfExtents.mVec128 ));
+<span class="lineNum">     136 </span>            :     #elif defined( BT_USE_NEON )
+<span class="lineNum">     137 </span>            :             return btVector3( (float32x4_t) (((uint32x4_t) localDir.mVec128 &amp; (uint32x4_t){ 0x80000000, 0x80000000, 0x80000000, 0x80000000}) ^ (uint32x4_t) halfExtents.mVec128 ));
+<span class="lineNum">     138 </span>            :     #else
+<span class="lineNum">     139 </span>            :         #error unknown vector arch
+<span class="lineNum">     140 </span>            :     #endif
+<span class="lineNum">     141 </span>            : #else
+<span class="lineNum">     142 </span><span class="lineCov">     324226 :                 return btVector3(btFsels(localDir.x(), halfExtents.x(), -halfExtents.x()),</span>
+<span class="lineNum">     143 </span><span class="lineCov">     324226 :                         btFsels(localDir.y(), halfExtents.y(), -halfExtents.y()),</span>
+<span class="lineNum">     144 </span><span class="lineCov">     486339 :                         btFsels(localDir.z(), halfExtents.z(), -halfExtents.z()));</span>
+<span class="lineNum">     145 </span>            : #endif
+<span class="lineNum">     146 </span>            :         }
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :         case TRIANGLE_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     148 </span>            :         {
+<span class="lineNum">     149 </span><span class="lineNoCov">          0 :                 btTriangleShape* triangleShape = (btTriangleShape*)this;</span>
+<span class="lineNum">     150 </span><span class="lineNoCov">          0 :                 btVector3 dir(localDir.getX(),localDir.getY(),localDir.getZ());</span>
+<span class="lineNum">     151 </span><span class="lineNoCov">          0 :                 btVector3* vertices = &amp;triangleShape-&gt;m_vertices1[0];</span>
+<span class="lineNum">     152 </span><span class="lineNoCov">          0 :         btVector3 dots = dir.dot3(vertices[0], vertices[1], vertices[2]);</span>
+<span class="lineNum">     153 </span><span class="lineNoCov">          0 :                 btVector3 sup = vertices[dots.maxAxis()];</span>
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :                 return btVector3(sup.getX(),sup.getY(),sup.getZ());</span>
+<span class="lineNum">     155 </span>            :         }
+<span class="lineNum">     156 </span><span class="lineNoCov">          0 :         case CYLINDER_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     157 </span>            :         {
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 :                 btCylinderShape* cylShape = (btCylinderShape*)this;</span>
+<span class="lineNum">     159 </span>            :                 //mapping of halfextents/dimension onto radius/height depends on how cylinder local orientation is (upAxis)
+<span class="lineNum">     160 </span>            : 
+<span class="lineNum">     161 </span><span class="lineNoCov">          0 :                 btVector3 halfExtents = cylShape-&gt;getImplicitShapeDimensions();</span>
+<span class="lineNum">     162 </span><span class="lineNoCov">          0 :                 btVector3 v(localDir.getX(),localDir.getY(),localDir.getZ());</span>
+<span class="lineNum">     163 </span><span class="lineNoCov">          0 :                 int cylinderUpAxis = cylShape-&gt;getUpAxis();</span>
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :                 int XX(1),YY(0),ZZ(2);</span>
+<span class="lineNum">     165 </span>            : 
+<span class="lineNum">     166 </span><span class="lineNoCov">          0 :                 switch (cylinderUpAxis)</span>
+<span class="lineNum">     167 </span>            :                 {
+<span class="lineNum">     168 </span>            :                 case 0:
+<span class="lineNum">     169 </span>            :                 {
+<span class="lineNum">     170 </span>            :                         XX = 1;
+<span class="lineNum">     171 </span>            :                         YY = 0;
+<span class="lineNum">     172 </span>            :                         ZZ = 2;
+<span class="lineNum">     173 </span>            :                 }
+<span class="lineNum">     174 </span>            :                 break;
+<span class="lineNum">     175 </span><span class="lineNoCov">          0 :                 case 1:</span>
+<span class="lineNum">     176 </span>            :                 {
+<span class="lineNum">     177 </span><span class="lineNoCov">          0 :                         XX = 0;</span>
+<span class="lineNum">     178 </span><span class="lineNoCov">          0 :                         YY = 1;</span>
+<span class="lineNum">     179 </span><span class="lineNoCov">          0 :                         ZZ = 2; </span>
+<span class="lineNum">     180 </span>            :                 }
+<span class="lineNum">     181 </span><span class="lineNoCov">          0 :                 break;</span>
+<span class="lineNum">     182 </span><span class="lineNoCov">          0 :                 case 2:</span>
+<span class="lineNum">     183 </span>            :                 {
+<span class="lineNum">     184 </span><span class="lineNoCov">          0 :                         XX = 0;</span>
+<span class="lineNum">     185 </span><span class="lineNoCov">          0 :                         YY = 2;</span>
+<span class="lineNum">     186 </span><span class="lineNoCov">          0 :                         ZZ = 1;</span>
+<span class="lineNum">     187 </span>            :                         
+<span class="lineNum">     188 </span>            :                 }
+<span class="lineNum">     189 </span><span class="lineNoCov">          0 :                 break;</span>
+<span class="lineNum">     190 </span>            :                 default:
+<span class="lineNum">     191 </span>            :                         btAssert(0);
+<span class="lineNum">     192 </span>            :                 break;
+<span class="lineNum">     193 </span>            :                 };
+<span class="lineNum">     194 </span>            : 
+<span class="lineNum">     195 </span><span class="lineNoCov">          0 :                 btScalar radius = halfExtents[XX];</span>
+<span class="lineNum">     196 </span><span class="lineNoCov">          0 :                 btScalar halfHeight = halfExtents[cylinderUpAxis];</span>
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :                 btVector3 tmp;</span>
+<span class="lineNum">     199 </span>            :                 btScalar d ;
+<span class="lineNum">     200 </span>            : 
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 :                 btScalar s = btSqrt(v[XX] * v[XX] + v[ZZ] * v[ZZ]);</span>
+<span class="lineNum">     202 </span><span class="lineNoCov">          0 :                 if (s != btScalar(0.0))</span>
+<span class="lineNum">     203 </span>            :                 {
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :                         d = radius / s;  </span>
+<span class="lineNum">     205 </span><span class="lineNoCov">          0 :                         tmp[XX] = v[XX] * d;</span>
+<span class="lineNum">     206 </span><span class="lineNoCov">          0 :                         tmp[YY] = v[YY] &lt; 0.0 ? -halfHeight : halfHeight;</span>
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 :                         tmp[ZZ] = v[ZZ] * d;</span>
+<span class="lineNum">     208 </span><span class="lineNoCov">          0 :                         return btVector3(tmp.getX(),tmp.getY(),tmp.getZ());</span>
+<span class="lineNum">     209 </span>            :                 } else {
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 :                         tmp[XX] = radius;</span>
+<span class="lineNum">     211 </span><span class="lineNoCov">          0 :                         tmp[YY] = v[YY] &lt; 0.0 ? -halfHeight : halfHeight;</span>
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :                         tmp[ZZ] = btScalar(0.0);</span>
+<span class="lineNum">     213 </span><span class="lineNoCov">          0 :                         return btVector3(tmp.getX(),tmp.getY(),tmp.getZ());</span>
+<span class="lineNum">     214 </span>            :                 }
+<span class="lineNum">     215 </span>            :         }
+<span class="lineNum">     216 </span><span class="lineNoCov">          0 :         case CAPSULE_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     217 </span>            :         {
+<span class="lineNum">     218 </span><span class="lineNoCov">          0 :                 btVector3 vec0(localDir.getX(),localDir.getY(),localDir.getZ());</span>
+<span class="lineNum">     219 </span>            : 
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :                 btCapsuleShape* capsuleShape = (btCapsuleShape*)this;</span>
+<span class="lineNum">     221 </span><span class="lineNoCov">          0 :                 btScalar halfHeight = capsuleShape-&gt;getHalfHeight();</span>
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :                 int capsuleUpAxis = capsuleShape-&gt;getUpAxis();</span>
+<span class="lineNum">     223 </span>            : 
+<span class="lineNum">     224 </span><span class="lineNoCov">          0 :                 btScalar radius = capsuleShape-&gt;getRadius();</span>
+<span class="lineNum">     225 </span><span class="lineNoCov">          0 :                 btVector3 supVec(0,0,0);</span>
+<span class="lineNum">     226 </span>            : 
+<span class="lineNum">     227 </span><span class="lineNoCov">          0 :                 btScalar maxDot(btScalar(-BT_LARGE_FLOAT));</span>
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span><span class="lineNoCov">          0 :                 btVector3 vec = vec0;</span>
+<span class="lineNum">     230 </span><span class="lineNoCov">          0 :                 btScalar lenSqr = vec.length2();</span>
+<span class="lineNum">     231 </span><span class="lineNoCov">          0 :                 if (lenSqr &lt; btScalar(0.0001))</span>
+<span class="lineNum">     232 </span>            :                 {
+<span class="lineNum">     233 </span>            :                         vec.setValue(1,0,0);
+<span class="lineNum">     234 </span>            :                 } else
+<span class="lineNum">     235 </span>            :                 {
+<span class="lineNum">     236 </span><span class="lineNoCov">          0 :                         btScalar rlen = btScalar(1.) / btSqrt(lenSqr );</span>
+<span class="lineNum">     237 </span><span class="lineNoCov">          0 :                         vec *= rlen;</span>
+<span class="lineNum">     238 </span>            :                 }
+<span class="lineNum">     239 </span><span class="lineNoCov">          0 :                 btVector3 vtx;</span>
+<span class="lineNum">     240 </span>            :                 btScalar newDot;
+<span class="lineNum">     241 </span>            :                 {
+<span class="lineNum">     242 </span><span class="lineNoCov">          0 :                         btVector3 pos(0,0,0);</span>
+<span class="lineNum">     243 </span><span class="lineNoCov">          0 :                         pos[capsuleUpAxis] = halfHeight;</span>
+<span class="lineNum">     244 </span>            : 
+<span class="lineNum">     245 </span>            :                         //vtx = pos +vec*(radius);
+<span class="lineNum">     246 </span><span class="lineNoCov">          0 :                         vtx = pos +vec*(radius) - vec * capsuleShape-&gt;getMarginNV();</span>
+<span class="lineNum">     247 </span><span class="lineNoCov">          0 :                         newDot = vec.dot(vtx);</span>
+<span class="lineNum">     248 </span>            :                         
+<span class="lineNum">     249 </span>            : 
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :                         if (newDot &gt; maxDot)</span>
+<span class="lineNum">     251 </span>            :                         {
+<span class="lineNum">     252 </span><span class="lineNoCov">          0 :                                 maxDot = newDot;</span>
+<span class="lineNum">     253 </span><span class="lineNoCov">          0 :                                 supVec = vtx;</span>
+<span class="lineNum">     254 </span>            :                         }
+<span class="lineNum">     255 </span>            :                 }
+<span class="lineNum">     256 </span>            :                 {
+<span class="lineNum">     257 </span><span class="lineNoCov">          0 :                         btVector3 pos(0,0,0);</span>
+<span class="lineNum">     258 </span><span class="lineNoCov">          0 :                         pos[capsuleUpAxis] = -halfHeight;</span>
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span>            :                         //vtx = pos +vec*(radius);
+<span class="lineNum">     261 </span><span class="lineNoCov">          0 :                         vtx = pos +vec*(radius) - vec * capsuleShape-&gt;getMarginNV();</span>
+<span class="lineNum">     262 </span><span class="lineNoCov">          0 :                         newDot = vec.dot(vtx);</span>
+<span class="lineNum">     263 </span><span class="lineNoCov">          0 :                         if (newDot &gt; maxDot)</span>
+<span class="lineNum">     264 </span>            :                         {
+<span class="lineNum">     265 </span><span class="lineNoCov">          0 :                                 maxDot = newDot;</span>
+<span class="lineNum">     266 </span><span class="lineNoCov">          0 :                                 supVec = vtx;</span>
+<span class="lineNum">     267 </span>            :                         }
+<span class="lineNum">     268 </span>            :                 }
+<span class="lineNum">     269 </span><span class="lineNoCov">          0 :                 return btVector3(supVec.getX(),supVec.getY(),supVec.getZ());    </span>
+<span class="lineNum">     270 </span>            :         }
+<span class="lineNum">     271 </span><span class="lineNoCov">          0 :         case CONVEX_POINT_CLOUD_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     272 </span>            :         {
+<span class="lineNum">     273 </span><span class="lineNoCov">          0 :                 btConvexPointCloudShape* convexPointCloudShape = (btConvexPointCloudShape*)this;</span>
+<span class="lineNum">     274 </span><span class="lineNoCov">          0 :                 btVector3* points = convexPointCloudShape-&gt;getUnscaledPoints ();</span>
+<span class="lineNum">     275 </span><span class="lineNoCov">          0 :                 int numPoints = convexPointCloudShape-&gt;getNumPoints ();</span>
+<span class="lineNum">     276 </span><span class="lineNoCov">          0 :                 return convexHullSupport (localDir, points, numPoints,convexPointCloudShape-&gt;getLocalScalingNV());</span>
+<span class="lineNum">     277 </span>            :         }
+<span class="lineNum">     278 </span><span class="lineNoCov">          0 :         case CONVEX_HULL_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     279 </span>            :         {
+<span class="lineNum">     280 </span><span class="lineNoCov">          0 :                 btConvexHullShape* convexHullShape = (btConvexHullShape*)this;</span>
+<span class="lineNum">     281 </span><span class="lineNoCov">          0 :                 btVector3* points = convexHullShape-&gt;getUnscaledPoints();</span>
+<span class="lineNum">     282 </span><span class="lineNoCov">          0 :                 int numPoints = convexHullShape-&gt;getNumPoints ();</span>
+<span class="lineNum">     283 </span><span class="lineNoCov">          0 :                 return convexHullSupport (localDir, points, numPoints,convexHullShape-&gt;getLocalScalingNV());</span>
+<span class="lineNum">     284 </span>            :         }
+<span class="lineNum">     285 </span><span class="lineNoCov">          0 :     default:</span>
+<span class="lineNum">     286 </span>            : #ifndef __SPU__
+<span class="lineNum">     287 </span><span class="lineNoCov">          0 :                 return this-&gt;localGetSupportingVertexWithoutMargin (localDir);</span>
+<span class="lineNum">     288 </span>            : #else
+<span class="lineNum">     289 </span>            :                 btAssert (0);
+<span class="lineNum">     290 </span>            : #endif
+<span class="lineNum">     291 </span>            :         }
+<span class="lineNum">     292 </span>            : 
+<span class="lineNum">     293 </span>            :         // should never reach here
+<span class="lineNum">     294 </span>            :         btAssert (0);
+<span class="lineNum">     295 </span>            :         return btVector3 (btScalar(0.0f), btScalar(0.0f), btScalar(0.0f));
+<span class="lineNum">     296 </span>            : }
+<span class="lineNum">     297 </span>            : 
+<span class="lineNum">     298 </span><span class="lineNoCov">          0 : btVector3 btConvexShape::localGetSupportVertexNonVirtual (const btVector3&amp; localDir) const</span>
+<span class="lineNum">     299 </span>            : {
+<span class="lineNum">     300 </span><span class="lineNoCov">          0 :         btVector3 localDirNorm = localDir;</span>
+<span class="lineNum">     301 </span><span class="lineNoCov">          0 :         if (localDirNorm .length2() &lt; (SIMD_EPSILON*SIMD_EPSILON))</span>
+<span class="lineNum">     302 </span>            :         {
+<span class="lineNum">     303 </span><span class="lineNoCov">          0 :                 localDirNorm.setValue(btScalar(-1.),btScalar(-1.),btScalar(-1.));</span>
+<span class="lineNum">     304 </span>            :         }
+<span class="lineNum">     305 </span><span class="lineNoCov">          0 :         localDirNorm.normalize ();</span>
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span><span class="lineNoCov">          0 :         return localGetSupportVertexWithoutMarginNonVirtual(localDirNorm)+ getMarginNonVirtual() * localDirNorm;</span>
+<span class="lineNum">     308 </span>            : }
+<a name="309"><span class="lineNum">     309 </span>            : </a>
+<span class="lineNum">     310 </span>            : /* TODO: This should be bumped up to btCollisionShape () */
+<span class="lineNum">     311 </span><span class="lineNoCov">          0 : btScalar btConvexShape::getMarginNonVirtual () const</span>
+<span class="lineNum">     312 </span>            : {
+<span class="lineNum">     313 </span><span class="lineNoCov">          0 :         switch (m_shapeType)</span>
+<span class="lineNum">     314 </span>            :         {
+<span class="lineNum">     315 </span><span class="lineNoCov">          0 :     case SPHERE_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     316 </span>            :         {
+<span class="lineNum">     317 </span><span class="lineNoCov">          0 :                 btSphereShape* sphereShape = (btSphereShape*)this;</span>
+<span class="lineNum">     318 </span><span class="lineNoCov">          0 :                 return sphereShape-&gt;getRadius ();</span>
+<span class="lineNum">     319 </span>            :         }
+<span class="lineNum">     320 </span><span class="lineNoCov">          0 :         case BOX_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     321 </span>            :         {
+<span class="lineNum">     322 </span><span class="lineNoCov">          0 :                 btBoxShape* convexShape = (btBoxShape*)this;</span>
+<span class="lineNum">     323 </span><span class="lineNoCov">          0 :                 return convexShape-&gt;getMarginNV ();</span>
+<span class="lineNum">     324 </span>            :         }
+<span class="lineNum">     325 </span><span class="lineNoCov">          0 :         case TRIANGLE_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     326 </span>            :         {
+<span class="lineNum">     327 </span><span class="lineNoCov">          0 :                 btTriangleShape* triangleShape = (btTriangleShape*)this;</span>
+<span class="lineNum">     328 </span><span class="lineNoCov">          0 :                 return triangleShape-&gt;getMarginNV ();</span>
+<span class="lineNum">     329 </span>            :         }
+<span class="lineNum">     330 </span><span class="lineNoCov">          0 :         case CYLINDER_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     331 </span>            :         {
+<span class="lineNum">     332 </span><span class="lineNoCov">          0 :                 btCylinderShape* cylShape = (btCylinderShape*)this;</span>
+<span class="lineNum">     333 </span><span class="lineNoCov">          0 :                 return cylShape-&gt;getMarginNV();</span>
+<span class="lineNum">     334 </span>            :         }
+<span class="lineNum">     335 </span><span class="lineNoCov">          0 :         case CAPSULE_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     336 </span>            :         {
+<span class="lineNum">     337 </span><span class="lineNoCov">          0 :                 btCapsuleShape* capsuleShape = (btCapsuleShape*)this;</span>
+<span class="lineNum">     338 </span><span class="lineNoCov">          0 :                 return capsuleShape-&gt;getMarginNV();</span>
+<span class="lineNum">     339 </span>            :         }
+<span class="lineNum">     340 </span><span class="lineNoCov">          0 :         case CONVEX_POINT_CLOUD_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     341 </span>            :         /* fall through */
+<span class="lineNum">     342 </span>            :         case CONVEX_HULL_SHAPE_PROXYTYPE:
+<span class="lineNum">     343 </span>            :         {
+<span class="lineNum">     344 </span><span class="lineNoCov">          0 :                 btPolyhedralConvexShape* convexHullShape = (btPolyhedralConvexShape*)this;</span>
+<span class="lineNum">     345 </span><span class="lineNoCov">          0 :                 return convexHullShape-&gt;getMarginNV();</span>
+<span class="lineNum">     346 </span>            :         }
+<span class="lineNum">     347 </span><span class="lineNoCov">          0 :     default:</span>
+<span class="lineNum">     348 </span>            : #ifndef __SPU__
+<span class="lineNum">     349 </span><span class="lineNoCov">          0 :                 return this-&gt;getMargin ();</span>
+<span class="lineNum">     350 </span>            : #else
+<span class="lineNum">     351 </span>            :                 btAssert (0);
+<span class="lineNum">     352 </span>            : #endif
+<span class="lineNum">     353 </span>            :         }
+<span class="lineNum">     354 </span>            : 
+<span class="lineNum">     355 </span>            :         // should never reach here
+<span class="lineNum">     356 </span>            :         btAssert (0);
+<span class="lineNum">     357 </span>            :         return btScalar(0.0f);
+<span class="lineNum">     358 </span>            : }
+<span class="lineNum">     359 </span>            : #ifndef __SPU__
+<span class="lineNum">     360 </span><span class="lineNoCov">          0 : void btConvexShape::getAabbNonVirtual (const btTransform&amp; t, btVector3&amp; aabbMin, btVector3&amp; aabbMax) const</span>
+<span class="lineNum">     361 </span>            : {
+<span class="lineNum">     362 </span><span class="lineNoCov">          0 :         switch (m_shapeType)</span>
+<span class="lineNum">     363 </span>            :         {
+<span class="lineNum">     364 </span><span class="lineNoCov">          0 :     case SPHERE_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     365 </span>            :         {
+<span class="lineNum">     366 </span><span class="lineNoCov">          0 :                 btSphereShape* sphereShape = (btSphereShape*)this;</span>
+<span class="lineNum">     367 </span><span class="lineNoCov">          0 :                 btScalar radius = sphereShape-&gt;getImplicitShapeDimensions().getX();// * convexShape-&gt;getLocalScaling().getX();</span>
+<span class="lineNum">     368 </span><span class="lineNoCov">          0 :                 btScalar margin = radius + sphereShape-&gt;getMarginNonVirtual();</span>
+<span class="lineNum">     369 </span><span class="lineNoCov">          0 :                 const btVector3&amp; center = t.getOrigin();</span>
+<span class="lineNum">     370 </span><span class="lineNoCov">          0 :                 btVector3 extent(margin,margin,margin);</span>
+<span class="lineNum">     371 </span><span class="lineNoCov">          0 :                 aabbMin = center - extent;</span>
+<span class="lineNum">     372 </span><span class="lineNoCov">          0 :                 aabbMax = center + extent;</span>
+<span class="lineNum">     373 </span>            :     }
+<span class="lineNum">     374 </span><span class="lineNoCov">          0 :         break;</span>
+<span class="lineNum">     375 </span><span class="lineNoCov">          0 :         case CYLINDER_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     376 </span>            :         /* fall through */
+<span class="lineNum">     377 </span>            :         case BOX_SHAPE_PROXYTYPE:
+<span class="lineNum">     378 </span>            :         {
+<span class="lineNum">     379 </span><span class="lineNoCov">          0 :                 btBoxShape* convexShape = (btBoxShape*)this;</span>
+<span class="lineNum">     380 </span><span class="lineNoCov">          0 :                 btScalar margin=convexShape-&gt;getMarginNonVirtual();</span>
+<span class="lineNum">     381 </span><span class="lineNoCov">          0 :                 btVector3 halfExtents = convexShape-&gt;getImplicitShapeDimensions();</span>
+<span class="lineNum">     382 </span><span class="lineNoCov">          0 :                 halfExtents += btVector3(margin,margin,margin);</span>
+<span class="lineNum">     383 </span><span class="lineNoCov">          0 :                 btMatrix3x3 abs_b = t.getBasis().absolute();  </span>
+<span class="lineNum">     384 </span><span class="lineNoCov">          0 :                 btVector3 center = t.getOrigin();</span>
+<span class="lineNum">     385 </span><span class="lineNoCov">          0 :         btVector3 extent = halfExtents.dot3(abs_b[0], abs_b[1], abs_b[2]);    </span>
+<span class="lineNum">     386 </span>            :         
+<span class="lineNum">     387 </span><span class="lineNoCov">          0 :                 aabbMin = center - extent;</span>
+<span class="lineNum">     388 </span><span class="lineNoCov">          0 :                 aabbMax = center + extent;</span>
+<span class="lineNum">     389 </span>            :                 break;
+<span class="lineNum">     390 </span>            :         }
+<span class="lineNum">     391 </span><span class="lineNoCov">          0 :         case TRIANGLE_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     392 </span>            :         {
+<span class="lineNum">     393 </span><span class="lineNoCov">          0 :                 btTriangleShape* triangleShape = (btTriangleShape*)this;</span>
+<span class="lineNum">     394 </span><span class="lineNoCov">          0 :                 btScalar margin = triangleShape-&gt;getMarginNonVirtual();</span>
+<span class="lineNum">     395 </span><span class="lineNoCov">          0 :                 for (int i=0;i&lt;3;i++)</span>
+<span class="lineNum">     396 </span>            :                 {
+<span class="lineNum">     397 </span><span class="lineNoCov">          0 :                         btVector3 vec(btScalar(0.),btScalar(0.),btScalar(0.));</span>
+<span class="lineNum">     398 </span><span class="lineNoCov">          0 :                         vec[i] = btScalar(1.);</span>
+<span class="lineNum">     399 </span>            : 
+<span class="lineNum">     400 </span><span class="lineNoCov">          0 :                         btVector3 sv = localGetSupportVertexWithoutMarginNonVirtual(vec*t.getBasis());</span>
+<span class="lineNum">     401 </span>            : 
+<span class="lineNum">     402 </span><span class="lineNoCov">          0 :                         btVector3 tmp = t(sv);</span>
+<span class="lineNum">     403 </span><span class="lineNoCov">          0 :                         aabbMax[i] = tmp[i]+margin;</span>
+<span class="lineNum">     404 </span><span class="lineNoCov">          0 :                         vec[i] = btScalar(-1.);</span>
+<span class="lineNum">     405 </span><span class="lineNoCov">          0 :                         tmp = t(localGetSupportVertexWithoutMarginNonVirtual(vec*t.getBasis()));</span>
+<span class="lineNum">     406 </span><span class="lineNoCov">          0 :                         aabbMin[i] = tmp[i]-margin;</span>
+<span class="lineNum">     407 </span>            :                 }       
+<span class="lineNum">     408 </span>            :         }
+<span class="lineNum">     409 </span>            :         break;
+<span class="lineNum">     410 </span><span class="lineNoCov">          0 :         case CAPSULE_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     411 </span>            :         {
+<span class="lineNum">     412 </span><span class="lineNoCov">          0 :                 btCapsuleShape* capsuleShape = (btCapsuleShape*)this;</span>
+<span class="lineNum">     413 </span><span class="lineNoCov">          0 :                 btVector3 halfExtents(capsuleShape-&gt;getRadius(),capsuleShape-&gt;getRadius(),capsuleShape-&gt;getRadius());</span>
+<span class="lineNum">     414 </span><span class="lineNoCov">          0 :                 int m_upAxis = capsuleShape-&gt;getUpAxis();</span>
+<span class="lineNum">     415 </span><span class="lineNoCov">          0 :                 halfExtents[m_upAxis] = capsuleShape-&gt;getRadius() + capsuleShape-&gt;getHalfHeight();</span>
+<span class="lineNum">     416 </span><span class="lineNoCov">          0 :                 halfExtents += btVector3(capsuleShape-&gt;getMarginNonVirtual(),capsuleShape-&gt;getMarginNonVirtual(),capsuleShape-&gt;getMarginNonVirtual());</span>
+<span class="lineNum">     417 </span><span class="lineNoCov">          0 :                 btMatrix3x3 abs_b = t.getBasis().absolute();  </span>
+<span class="lineNum">     418 </span><span class="lineNoCov">          0 :                 btVector3 center = t.getOrigin();</span>
+<span class="lineNum">     419 </span><span class="lineNoCov">          0 :         btVector3 extent = halfExtents.dot3(abs_b[0], abs_b[1], abs_b[2]);    </span>
+<span class="lineNum">     420 </span><span class="lineNoCov">          0 :                 aabbMin = center - extent;</span>
+<span class="lineNum">     421 </span><span class="lineNoCov">          0 :                 aabbMax = center + extent;</span>
+<span class="lineNum">     422 </span>            :         }
+<span class="lineNum">     423 </span><span class="lineNoCov">          0 :         break;</span>
+<span class="lineNum">     424 </span><span class="lineNoCov">          0 :         case CONVEX_POINT_CLOUD_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     425 </span>            :         case CONVEX_HULL_SHAPE_PROXYTYPE:
+<span class="lineNum">     426 </span>            :         {
+<span class="lineNum">     427 </span><span class="lineNoCov">          0 :                 btPolyhedralConvexAabbCachingShape* convexHullShape = (btPolyhedralConvexAabbCachingShape*)this;</span>
+<span class="lineNum">     428 </span><span class="lineNoCov">          0 :                 btScalar margin = convexHullShape-&gt;getMarginNonVirtual();</span>
+<span class="lineNum">     429 </span>            :                 convexHullShape-&gt;getNonvirtualAabb (t, aabbMin, aabbMax, margin);
+<span class="lineNum">     430 </span>            :         }
+<span class="lineNum">     431 </span>            :         break;
+<span class="lineNum">     432 </span><span class="lineNoCov">          0 :     default:</span>
+<span class="lineNum">     433 </span>            : #ifndef __SPU__
+<span class="lineNum">     434 </span><span class="lineNoCov">          0 :                 this-&gt;getAabb (t, aabbMin, aabbMax);</span>
+<span class="lineNum">     435 </span>            : #else
+<span class="lineNum">     436 </span>            :                 btAssert (0);
+<span class="lineNum">     437 </span>            : #endif
+<span class="lineNum">     438 </span><span class="lineNoCov">          0 :         break;</span>
+<span class="lineNum">     439 </span>            :         }
+<span class="lineNum">     440 </span>            : 
+<span class="lineNum">     441 </span>            :         // should never reach here
+<span class="lineNum">     442 </span>            :         btAssert (0);
+<span class="lineNum">     443 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     444 </span>            : 
+<span class="lineNum">     445 </span>            : #endif //__SPU__
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

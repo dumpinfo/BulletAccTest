@@ -1,0 +1,802 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/CollisionDispatch/btBoxBoxDetector.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/CollisionDispatch</a> - btBoxBoxDetector.cpp<span style="font-size: 80%;"> (source / <a href="btBoxBoxDetector.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">290</td>
+            <td class="headerCovTableEntry">296</td>
+            <td class="headerCovTableEntryHi">98.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            :  * Box-Box collision detection re-distributed under the ZLib license with permission from Russell L. Smith
+<span class="lineNum">       3 </span>            :  * Original version is from Open Dynamics Engine, Copyright (C) 2001,2002 Russell L. Smith.
+<span class="lineNum">       4 </span>            :  * All rights reserved.  Email: russ@q12.org   Web: www.q12.org
+<span class="lineNum">       5 </span>            :  Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       6 </span>            :  Bullet is Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       7 </span>            : 
+<span class="lineNum">       8 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       9 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">      10 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">      11 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">      12 </span>            : subject to the following restrictions:
+<span class="lineNum">      13 </span>            : 
+<span class="lineNum">      14 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      15 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      16 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      17 </span>            : */
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : ///ODE box-box collision detection is adapted to work with Bullet
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span>            : #include &quot;btBoxBoxDetector.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;BulletCollision/CollisionShapes/btBoxShape.h&quot;
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : #include &lt;float.h&gt;
+<a name="25"><span class="lineNum">      25 </span>            : #include &lt;string.h&gt;</a>
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span><span class="lineCov">     150550 : btBoxBoxDetector::btBoxBoxDetector(const btBoxShape* box1,const btBoxShape* box2)</span>
+<span class="lineNum">      28 </span>            : : m_box1(box1),
+<span class="lineNum">      29 </span><span class="lineCov">     150550 : m_box2(box2)</span>
+<span class="lineNum">      30 </span>            : {
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span><span class="lineCov">     150550 : }</span>
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : // given two boxes (p1,R1,side1) and (p2,R2,side2), collide them together and
+<span class="lineNum">      36 </span>            : // generate contact points. this returns 0 if there is no contact otherwise
+<span class="lineNum">      37 </span>            : // it returns the number of contacts generated.
+<span class="lineNum">      38 </span>            : // `normal' returns the contact normal.
+<span class="lineNum">      39 </span>            : // `depth' returns the maximum penetration depth along that normal.
+<span class="lineNum">      40 </span>            : // `return_code' returns a number indicating the type of contact that was
+<span class="lineNum">      41 </span>            : // detected:
+<span class="lineNum">      42 </span>            : //        1,2,3 = box 2 intersects with a face of box 1
+<span class="lineNum">      43 </span>            : //        4,5,6 = box 1 intersects with a face of box 2
+<span class="lineNum">      44 </span>            : //        7..15 = edge-edge contact
+<span class="lineNum">      45 </span>            : // `maxc' is the maximum number of contacts allowed to be generated, i.e.
+<span class="lineNum">      46 </span>            : // the size of the `contact' array.
+<span class="lineNum">      47 </span>            : // `contact' and `skip' are the contact array information provided to the
+<span class="lineNum">      48 </span>            : // collision functions. this function only fills in the position and depth
+<span class="lineNum">      49 </span>            : // fields.
+<span class="lineNum">      50 </span>            : struct dContactGeom;
+<span class="lineNum">      51 </span>            : #define dDOTpq(a,b,p,q) ((a)[0]*(b)[0] + (a)[p]*(b)[q] + (a)[2*(p)]*(b)[2*(q)])
+<span class="lineNum">      52 </span>            : #define dInfinity FLT_MAX
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            : /*PURE_INLINE btScalar dDOT   (const btScalar *a, const btScalar *b) { return dDOTpq(a,b,1,1); }
+<span class="lineNum">      56 </span>            : PURE_INLINE btScalar dDOT13 (const btScalar *a, const btScalar *b) { return dDOTpq(a,b,1,3); }
+<span class="lineNum">      57 </span>            : PURE_INLINE btScalar dDOT31 (const btScalar *a, const btScalar *b) { return dDOTpq(a,b,3,1); }
+<span class="lineNum">      58 </span>            : PURE_INLINE btScalar dDOT33 (const btScalar *a, const btScalar *b) { return dDOTpq(a,b,3,3); }
+<span class="lineNum">      59 </span>            : */
+<span class="lineNum">      60 </span><span class="lineCov">     320730 : static btScalar dDOT   (const btScalar *a, const btScalar *b) { return dDOTpq(a,b,1,1); }</span>
+<span class="lineNum">      61 </span><span class="lineCov">    1643206 : static btScalar dDOT44 (const btScalar *a, const btScalar *b) { return dDOTpq(a,b,4,4); }</span>
+<span class="lineNum">      62 </span><span class="lineCov">     927911 : static btScalar dDOT41 (const btScalar *a, const btScalar *b) { return dDOTpq(a,b,4,1); }</span>
+<span class="lineNum">      63 </span><span class="lineCov">     160706 : static btScalar dDOT14 (const btScalar *a, const btScalar *b) { return dDOTpq(a,b,1,4); }</span>
+<span class="lineNum">      64 </span>            : #define dMULTIPLYOP1_331(A,op,B,C) \
+<span class="lineNum">      65 </span>            : {\
+<span class="lineNum">      66 </span>            :   (A)[0] op dDOT41((B),(C)); \
+<span class="lineNum">      67 </span>            :   (A)[1] op dDOT41((B+1),(C)); \
+<span class="lineNum">      68 </span>            :   (A)[2] op dDOT41((B+2),(C)); \
+<span class="lineNum">      69 </span>            : }
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span>            : #define dMULTIPLYOP0_331(A,op,B,C) \
+<span class="lineNum">      72 </span>            : { \
+<span class="lineNum">      73 </span>            :   (A)[0] op dDOT((B),(C)); \
+<span class="lineNum">      74 </span>            :   (A)[1] op dDOT((B+4),(C)); \
+<span class="lineNum">      75 </span>            :   (A)[2] op dDOT((B+8),(C)); \
+<span class="lineNum">      76 </span>            : } 
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            : #define dMULTIPLY1_331(A,B,C) dMULTIPLYOP1_331(A,=,B,C)
+<span class="lineNum">      79 </span>            : #define dMULTIPLY0_331(A,B,C) dMULTIPLYOP0_331(A,=,B,C)
+<span class="lineNum">      80 </span>            : 
+<span class="lineNum">      81 </span>            : typedef btScalar dMatrix3[4*3];
+<span class="lineNum">      82 </span>            : 
+<span class="lineNum">      83 </span>            : void dLineClosestApproach (const btVector3&amp; pa, const btVector3&amp; ua,
+<a name="84"><span class="lineNum">      84 </span>            :                            const btVector3&amp; pb, const btVector3&amp; ub,</a>
+<span class="lineNum">      85 </span>            :                            btScalar *alpha, btScalar *beta);
+<span class="lineNum">      86 </span><span class="lineCov">       2763 : void dLineClosestApproach (const btVector3&amp; pa, const btVector3&amp; ua,</span>
+<span class="lineNum">      87 </span>            :                            const btVector3&amp; pb, const btVector3&amp; ub,
+<span class="lineNum">      88 </span>            :                            btScalar *alpha, btScalar *beta)
+<span class="lineNum">      89 </span>            : {
+<span class="lineNum">      90 </span><span class="lineCov">       2763 :   btVector3 p;</span>
+<span class="lineNum">      91 </span><span class="lineCov">       2763 :   p[0] = pb[0] - pa[0];</span>
+<span class="lineNum">      92 </span><span class="lineCov">       2763 :   p[1] = pb[1] - pa[1];</span>
+<span class="lineNum">      93 </span><span class="lineCov">       2763 :   p[2] = pb[2] - pa[2];</span>
+<span class="lineNum">      94 </span><span class="lineCov">       5526 :   btScalar uaub = dDOT(ua,ub);</span>
+<span class="lineNum">      95 </span><span class="lineCov">       5526 :   btScalar q1 =  dDOT(ua,p);</span>
+<span class="lineNum">      96 </span><span class="lineCov">       5526 :   btScalar q2 = -dDOT(ub,p);</span>
+<span class="lineNum">      97 </span><span class="lineCov">       2763 :   btScalar d = 1-uaub*uaub;</span>
+<span class="lineNum">      98 </span><span class="lineCov">       2763 :   if (d &lt;= btScalar(0.0001f)) {</span>
+<span class="lineNum">      99 </span>            :     // @@@ this needs to be made more robust
+<span class="lineNum">     100 </span><span class="lineNoCov">          0 :     *alpha = 0;</span>
+<span class="lineNum">     101 </span><span class="lineNoCov">          0 :     *beta  = 0;</span>
+<span class="lineNum">     102 </span>            :   }
+<span class="lineNum">     103 </span>            :   else {
+<span class="lineNum">     104 </span><span class="lineCov">       2763 :     d = 1.f/d;</span>
+<span class="lineNum">     105 </span><span class="lineCov">       2763 :     *alpha = (q1 + uaub*q2)*d;</span>
+<span class="lineNum">     106 </span><span class="lineCov">       2763 :     *beta  = (uaub*q1 + q2)*d;</span>
+<span class="lineNum">     107 </span>            :   }
+<span class="lineNum">     108 </span><span class="lineCov">       2763 : }</span>
+<span class="lineNum">     109 </span>            : 
+<span class="lineNum">     110 </span>            : 
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span>            : // find all the intersection points between the 2D rectangle with vertices
+<span class="lineNum">     113 </span>            : // at (+/-h[0],+/-h[1]) and the 2D quadrilateral with vertices (p[0],p[1]),
+<span class="lineNum">     114 </span>            : // (p[2],p[3]),(p[4],p[5]),(p[6],p[7]).
+<span class="lineNum">     115 </span>            : //
+<span class="lineNum">     116 </span>            : // the intersection points are returned as x,y pairs in the 'ret' array.
+<span class="lineNum">     117 </span>            : // the number of intersection points is returned by the function (this will
+<a name="118"><span class="lineNum">     118 </span>            : // be in the range 0 to 8).</a>
+<span class="lineNum">     119 </span>            : 
+<span class="lineNum">     120 </span><span class="lineCov">      72064 : static int intersectRectQuad2 (btScalar h[2], btScalar p[8], btScalar ret[16])</span>
+<span class="lineNum">     121 </span>            : {
+<span class="lineNum">     122 </span>            :   // q (and r) contain nq (and nr) coordinate points for the current (and
+<span class="lineNum">     123 </span>            :   // chopped) polygons
+<span class="lineNum">     124 </span><span class="lineCov">      72064 :   int nq=4,nr=0;</span>
+<span class="lineNum">     125 </span>            :   btScalar buffer[16];
+<span class="lineNum">     126 </span><span class="lineCov">      72064 :   btScalar *q = p;</span>
+<span class="lineNum">     127 </span><span class="lineCov">      72064 :   btScalar *r = ret;</span>
+<span class="lineNum">     128 </span><span class="lineCov">     214796 :   for (int dir=0; dir &lt;= 1; dir++) {</span>
+<span class="lineNum">     129 </span>            :     // direction notation: xy[0] = x axis, xy[1] = y axis
+<span class="lineNum">     130 </span><span class="lineCov">     717848 :     for (int sign=-1; sign &lt;= 1; sign += 2) {</span>
+<span class="lineNum">     131 </span>            :       // chop q along the line xy[dir] = sign*h[dir]
+<span class="lineNum">     132 </span>            :       btScalar *pq = q;
+<span class="lineNum">     133 </span>            :       btScalar *pr = r;
+<span class="lineNum">     134 </span>            :       nr = 0;
+<span class="lineNum">     135 </span><span class="lineCov">    2650450 :       for (int i=nq; i &gt; 0; i--) {</span>
+<span class="lineNum">     136 </span>            :         // go through all points in q and all lines between adjacent points
+<span class="lineNum">     137 </span><span class="lineCov">    1182493 :         if (sign*pq[dir] &lt; h[dir]) {</span>
+<span class="lineNum">     138 </span>            :           // this point is inside the chopping line
+<span class="lineNum">     139 </span><span class="lineCov">    1079575 :           pr[0] = pq[0];</span>
+<span class="lineNum">     140 </span><span class="lineCov">    1079575 :           pr[1] = pq[1];</span>
+<span class="lineNum">     141 </span><span class="lineCov">    1079575 :           pr += 2;</span>
+<span class="lineNum">     142 </span><span class="lineCov">    1079575 :           nr++;</span>
+<span class="lineNum">     143 </span><span class="lineCov">    1079575 :           if (nr &amp; 8) {</span>
+<span class="lineNum">     144 </span>            :             q = r;
+<span class="lineNum">     145 </span>            :             goto done;
+<span class="lineNum">     146 </span>            :           }
+<span class="lineNum">     147 </span>            :         }
+<span class="lineNum">     148 </span><span class="lineCov">    1181108 :         btScalar *nextq = (i &gt; 1) ? pq+2 : q;</span>
+<span class="lineNum">     149 </span><span class="lineCov">    1181108 :         if ((sign*pq[dir] &lt; h[dir]) ^ (sign*nextq[dir] &lt; h[dir])) {</span>
+<span class="lineNum">     150 </span>            :           // this line crosses the chopping line
+<span class="lineNum">     151 </span><span class="lineCov">     356442 :           pr[1-dir] = pq[1-dir] + (nextq[1-dir]-pq[1-dir]) /</span>
+<span class="lineNum">     152 </span><span class="lineCov">     237628 :             (nextq[dir]-pq[dir]) * (sign*h[dir]-pq[dir]);</span>
+<span class="lineNum">     153 </span><span class="lineCov">     118814 :           pr[dir] = sign*h[dir];</span>
+<span class="lineNum">     154 </span><span class="lineCov">     118814 :           pr += 2;</span>
+<span class="lineNum">     155 </span><span class="lineCov">     118814 :           nr++;</span>
+<span class="lineNum">     156 </span><span class="lineCov">     118814 :           if (nr &amp; 8) {</span>
+<span class="lineNum">     157 </span>            :             q = r;
+<span class="lineNum">     158 </span>            :             goto done;
+<span class="lineNum">     159 </span>            :           }
+<span class="lineNum">     160 </span>            :         }
+<span class="lineNum">     161 </span><span class="lineCov">    1181097 :         pq += 2;</span>
+<span class="lineNum">     162 </span>            :       }
+<span class="lineNum">     163 </span><span class="lineCov">     286860 :       q = r;</span>
+<span class="lineNum">     164 </span><span class="lineCov">     286860 :       r = (q==ret) ? buffer : ret;</span>
+<span class="lineNum">     165 </span><span class="lineCov">     286860 :       nq = nr;</span>
+<span class="lineNum">     166 </span>            :     }
+<span class="lineNum">     167 </span>            :   }
+<span class="lineNum">     168 </span><span class="lineCov">      70668 :  done:</span>
+<span class="lineNum">     169 </span><span class="lineCov">      72064 :   if (q != ret) memcpy (ret,q,nr*2*sizeof(btScalar));</span>
+<span class="lineNum">     170 </span><span class="lineCov">      72064 :   return nr;</span>
+<span class="lineNum">     171 </span>            : }
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span>            : 
+<span class="lineNum">     174 </span>            : #define M__PI 3.14159265f
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span>            : // given n points in the plane (array p, of size 2*n), generate m points that
+<span class="lineNum">     177 </span>            : // best represent the whole set. the definition of 'best' here is not
+<span class="lineNum">     178 </span>            : // predetermined - the idea is to select points that give good box-box
+<span class="lineNum">     179 </span>            : // collision detection behavior. the chosen point indexes are returned in the
+<span class="lineNum">     180 </span>            : // array iret (of size m). 'i0' is always the first entry in the array.
+<span class="lineNum">     181 </span>            : // n must be in the range [1..8]. m must be in the range [1..n]. i0 must be
+<span class="lineNum">     182 </span>            : // in the range [0..n-1].
+<a name="183"><span class="lineNum">     183 </span>            : </a>
+<span class="lineNum">     184 </span>            : void cullPoints2 (int n, btScalar p[], int m, int i0, int iret[]);
+<span class="lineNum">     185 </span><span class="lineCov">       4083 : void cullPoints2 (int n, btScalar p[], int m, int i0, int iret[])</span>
+<span class="lineNum">     186 </span>            : {
+<span class="lineNum">     187 </span>            :   // compute the centroid of the polygon in cx,cy
+<span class="lineNum">     188 </span>            :   int i,j;
+<span class="lineNum">     189 </span>            :   btScalar a,cx,cy,q;
+<span class="lineNum">     190 </span><span class="lineCov">       4083 :   if (n==1) {</span>
+<span class="lineNum">     191 </span><span class="lineNoCov">          0 :     cx = p[0];</span>
+<span class="lineNum">     192 </span><span class="lineNoCov">          0 :     cy = p[1];</span>
+<span class="lineNum">     193 </span>            :   }
+<span class="lineNum">     194 </span><span class="lineCov">       4083 :   else if (n==2) {</span>
+<span class="lineNum">     195 </span><span class="lineNoCov">          0 :     cx = btScalar(0.5)*(p[0] + p[2]);</span>
+<span class="lineNum">     196 </span><span class="lineNoCov">          0 :     cy = btScalar(0.5)*(p[1] + p[3]);</span>
+<span class="lineNum">     197 </span>            :   }
+<span class="lineNum">     198 </span>            :   else {
+<span class="lineNum">     199 </span>            :     a = 0;
+<span class="lineNum">     200 </span>            :     cx = 0;
+<span class="lineNum">     201 </span>            :     cy = 0;
+<span class="lineNum">     202 </span><span class="lineCov">      45971 :     for (i=0; i&lt;(n-1); i++) {</span>
+<span class="lineNum">     203 </span><span class="lineCov">      20944 :       q = p[i*2]*p[i*2+3] - p[i*2+2]*p[i*2+1];</span>
+<span class="lineNum">     204 </span><span class="lineCov">      20944 :       a += q;</span>
+<span class="lineNum">     205 </span><span class="lineCov">      20944 :       cx += q*(p[i*2]+p[i*2+2]);</span>
+<span class="lineNum">     206 </span><span class="lineCov">      20944 :       cy += q*(p[i*2+1]+p[i*2+3]);</span>
+<span class="lineNum">     207 </span>            :     }
+<span class="lineNum">     208 </span><span class="lineCov">       4083 :     q = p[n*2-2]*p[1] - p[0]*p[n*2-1];</span>
+<span class="lineNum">     209 </span><span class="lineCov">       8166 :         if (btFabs(a+q) &gt; SIMD_EPSILON)</span>
+<span class="lineNum">     210 </span>            :         {
+<span class="lineNum">     211 </span><span class="lineCov">       4083 :                 a = 1.f/(btScalar(3.0)*(a+q));</span>
+<span class="lineNum">     212 </span>            :         } else
+<span class="lineNum">     213 </span>            :         {
+<span class="lineNum">     214 </span>            :                 a=BT_LARGE_FLOAT;
+<span class="lineNum">     215 </span>            :         }
+<span class="lineNum">     216 </span><span class="lineCov">       4083 :     cx = a*(cx + q*(p[n*2-2]+p[0]));</span>
+<span class="lineNum">     217 </span><span class="lineCov">       4083 :     cy = a*(cy + q*(p[n*2-1]+p[1]));</span>
+<span class="lineNum">     218 </span>            :   }
+<span class="lineNum">     219 </span>            : 
+<span class="lineNum">     220 </span>            :   // compute the angle of each point w.r.t. the centroid
+<span class="lineNum">     221 </span>            :   btScalar A[8];
+<span class="lineNum">     222 </span><span class="lineCov">      29110 :   for (i=0; i&lt;n; i++) A[i] = btAtan2(p[i*2+1]-cy,p[i*2]-cx);</span>
+<span class="lineNum">     223 </span>            : 
+<span class="lineNum">     224 </span>            :   // search for points that have angles closest to A[i0] + i*(2*pi/m).
+<span class="lineNum">     225 </span>            :   int avail[8];
+<span class="lineNum">     226 </span><span class="lineCov">      29110 :   for (i=0; i&lt;n; i++) avail[i] = 1;</span>
+<span class="lineNum">     227 </span><span class="lineCov">       4083 :   avail[i0] = 0;</span>
+<span class="lineNum">     228 </span><span class="lineCov">       4083 :   iret[0] = i0;</span>
+<span class="lineNum">     229 </span><span class="lineCov">       4083 :   iret++;</span>
+<span class="lineNum">     230 </span><span class="lineCov">      16332 :   for (j=1; j&lt;m; j++) {</span>
+<span class="lineNum">     231 </span><span class="lineCov">      12249 :     a = btScalar(j)*(2*M__PI/m) + A[i0];</span>
+<span class="lineNum">     232 </span><span class="lineCov">      12249 :     if (a &gt; M__PI) a -= 2*M__PI;</span>
+<span class="lineNum">     233 </span><span class="lineCov">      12249 :     btScalar maxdiff=1e9,diff;</span>
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span><span class="lineCov">      12249 :     *iret = i0;                 // iret is not allowed to keep this value, but it sometimes does, when diff=#QNAN0</span>
+<span class="lineNum">     236 </span>            : 
+<span class="lineNum">     237 </span><span class="lineCov">      87330 :     for (i=0; i&lt;n; i++) {</span>
+<span class="lineNum">     238 </span><span class="lineCov">      75081 :       if (avail[i]) {</span>
+<span class="lineNum">     239 </span><span class="lineCov">     101166 :         diff = btFabs (A[i]-a);</span>
+<span class="lineNum">     240 </span><span class="lineCov">      50583 :         if (diff &gt; M__PI) diff = 2*M__PI - diff;</span>
+<span class="lineNum">     241 </span><span class="lineCov">      50583 :         if (diff &lt; maxdiff) {</span>
+<span class="lineNum">     242 </span><span class="lineCov">      29178 :           maxdiff = diff;</span>
+<span class="lineNum">     243 </span><span class="lineCov">      29178 :           *iret = i;</span>
+<span class="lineNum">     244 </span>            :         }
+<span class="lineNum">     245 </span>            :       }
+<span class="lineNum">     246 </span>            :     }
+<span class="lineNum">     247 </span>            : #if defined(DEBUG) || defined (_DEBUG)
+<span class="lineNum">     248 </span>            :     btAssert (*iret != i0);     // ensure iret got set
+<span class="lineNum">     249 </span>            : #endif
+<span class="lineNum">     250 </span><span class="lineCov">      12249 :     avail[*iret] = 0;</span>
+<span class="lineNum">     251 </span><span class="lineCov">      12249 :     iret++;</span>
+<span class="lineNum">     252 </span>            :   }
+<span class="lineNum">     253 </span><span class="lineCov">       4083 : }</span>
+<span class="lineNum">     254 </span>            : 
+<span class="lineNum">     255 </span>            : 
+<span class="lineNum">     256 </span>            : 
+<span class="lineNum">     257 </span>            : int dBoxBox2 (const btVector3&amp; p1, const dMatrix3 R1,
+<span class="lineNum">     258 </span>            :              const btVector3&amp; side1, const btVector3&amp; p2,
+<span class="lineNum">     259 </span>            :              const dMatrix3 R2, const btVector3&amp; side2,
+<a name="260"><span class="lineNum">     260 </span>            :              btVector3&amp; normal, btScalar *depth, int *return_code,</a>
+<span class="lineNum">     261 </span>            :                  int maxc, dContactGeom * /*contact*/, int /*skip*/,btDiscreteCollisionDetectorInterface::Result&amp; output);
+<span class="lineNum">     262 </span><span class="lineCov">     150550 : int dBoxBox2 (const btVector3&amp; p1, const dMatrix3 R1,</span>
+<span class="lineNum">     263 </span>            :              const btVector3&amp; side1, const btVector3&amp; p2,
+<span class="lineNum">     264 </span>            :              const dMatrix3 R2, const btVector3&amp; side2,
+<span class="lineNum">     265 </span>            :              btVector3&amp; normal, btScalar *depth, int *return_code,
+<span class="lineNum">     266 </span>            :                  int maxc, dContactGeom * /*contact*/, int /*skip*/,btDiscreteCollisionDetectorInterface::Result&amp; output)
+<span class="lineNum">     267 </span>            : {
+<span class="lineNum">     268 </span><span class="lineCov">     150550 :   const btScalar fudge_factor = btScalar(1.05);</span>
+<span class="lineNum">     269 </span><span class="lineCov">     301100 :   btVector3 p,pp,normalC(0.f,0.f,0.f);</span>
+<span class="lineNum">     270 </span><span class="lineCov">     150550 :   const btScalar *normalR = 0;</span>
+<span class="lineNum">     271 </span>            :   btScalar A[3],B[3],R11,R12,R13,R21,R22,R23,R31,R32,R33,
+<span class="lineNum">     272 </span>            :     Q11,Q12,Q13,Q21,Q22,Q23,Q31,Q32,Q33,s,s2,l;
+<span class="lineNum">     273 </span>            :   int i,j,invert_normal,code;
+<span class="lineNum">     274 </span>            : 
+<span class="lineNum">     275 </span>            :   // get vector from centers of box 1 to box 2, relative to box 1
+<span class="lineNum">     276 </span><span class="lineCov">     301100 :   p = p2 - p1;</span>
+<span class="lineNum">     277 </span><span class="lineCov">     602200 :   dMULTIPLY1_331 (pp,R1,p);             // get pp = p relative to body 1</span>
+<span class="lineNum">     278 </span>            : 
+<span class="lineNum">     279 </span>            :   // get side lengths / 2
+<span class="lineNum">     280 </span><span class="lineCov">     150550 :   A[0] = side1[0]*btScalar(0.5);</span>
+<span class="lineNum">     281 </span><span class="lineCov">     150550 :   A[1] = side1[1]*btScalar(0.5);</span>
+<span class="lineNum">     282 </span><span class="lineCov">     150550 :   A[2] = side1[2]*btScalar(0.5);</span>
+<span class="lineNum">     283 </span><span class="lineCov">     150550 :   B[0] = side2[0]*btScalar(0.5);</span>
+<span class="lineNum">     284 </span><span class="lineCov">     150550 :   B[1] = side2[1]*btScalar(0.5);</span>
+<span class="lineNum">     285 </span><span class="lineCov">     150550 :   B[2] = side2[2]*btScalar(0.5);</span>
+<span class="lineNum">     286 </span>            : 
+<span class="lineNum">     287 </span>            :   // Rij is R1'*R2, i.e. the relative rotation between R1 and R2
+<span class="lineNum">     288 </span><span class="lineCov">     602200 :   R11 = dDOT44(R1+0,R2+0); R12 = dDOT44(R1+0,R2+1); R13 = dDOT44(R1+0,R2+2);</span>
+<span class="lineNum">     289 </span><span class="lineCov">     602200 :   R21 = dDOT44(R1+1,R2+0); R22 = dDOT44(R1+1,R2+1); R23 = dDOT44(R1+1,R2+2);</span>
+<span class="lineNum">     290 </span><span class="lineCov">     602200 :   R31 = dDOT44(R1+2,R2+0); R32 = dDOT44(R1+2,R2+1); R33 = dDOT44(R1+2,R2+2);</span>
+<span class="lineNum">     291 </span>            : 
+<span class="lineNum">     292 </span><span class="lineCov">     602200 :   Q11 = btFabs(R11); Q12 = btFabs(R12); Q13 = btFabs(R13);</span>
+<span class="lineNum">     293 </span><span class="lineCov">     602200 :   Q21 = btFabs(R21); Q22 = btFabs(R22); Q23 = btFabs(R23);</span>
+<span class="lineNum">     294 </span><span class="lineCov">     602200 :   Q31 = btFabs(R31); Q32 = btFabs(R32); Q33 = btFabs(R33);</span>
+<span class="lineNum">     295 </span>            : 
+<span class="lineNum">     296 </span>            :   // for all 15 possible separating axes:
+<span class="lineNum">     297 </span>            :   //   * see if the axis separates the boxes. if so, return 0.
+<span class="lineNum">     298 </span>            :   //   * find the depth of the penetration along the separating axis (s2)
+<span class="lineNum">     299 </span>            :   //   * if this is the largest depth so far, record it.
+<span class="lineNum">     300 </span>            :   // the normal vector will be set to the separating axis with the smallest
+<span class="lineNum">     301 </span>            :   // depth. note: normalR is set to point to a column of R1 or R2 if that is
+<span class="lineNum">     302 </span>            :   // the smallest depth normal so far. otherwise normalR is 0 and normalC is
+<span class="lineNum">     303 </span>            :   // set to a vector relative to body 1. invert_normal is 1 if the sign of
+<span class="lineNum">     304 </span>            :   // the normal should be flipped.
+<span class="lineNum">     305 </span>            : 
+<span class="lineNum">     306 </span>            : #define TST(expr1,expr2,norm,cc) \
+<span class="lineNum">     307 </span>            :   s2 = btFabs(expr1) - (expr2); \
+<span class="lineNum">     308 </span>            :   if (s2 &gt; 0) return 0; \
+<span class="lineNum">     309 </span>            :   if (s2 &gt; s) { \
+<span class="lineNum">     310 </span>            :     s = s2; \
+<span class="lineNum">     311 </span>            :     normalR = norm; \
+<span class="lineNum">     312 </span>            :     invert_normal = ((expr1) &lt; 0); \
+<span class="lineNum">     313 </span>            :     code = (cc); \
+<span class="lineNum">     314 </span>            :   }
+<span class="lineNum">     315 </span>            : 
+<span class="lineNum">     316 </span><span class="lineCov">     150550 :   s = -dInfinity;</span>
+<span class="lineNum">     317 </span><span class="lineCov">     150550 :   invert_normal = 0;</span>
+<span class="lineNum">     318 </span><span class="lineCov">     150550 :   code = 0;</span>
+<span class="lineNum">     319 </span>            : 
+<span class="lineNum">     320 </span>            :   // separating axis = u1,u2,u3
+<span class="lineNum">     321 </span><span class="lineCov">     301100 :   TST (pp[0],(A[0] + B[0]*Q11 + B[1]*Q12 + B[2]*Q13),R1+0,1);</span>
+<span class="lineNum">     322 </span><span class="lineCov">     281168 :   TST (pp[1],(A[1] + B[0]*Q21 + B[1]*Q22 + B[2]*Q23),R1+1,2);</span>
+<span class="lineNum">     323 </span><span class="lineCov">     207488 :   TST (pp[2],(A[2] + B[0]*Q31 + B[1]*Q32 + B[2]*Q33),R1+2,3);</span>
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span>            :   // separating axis = v1,v2,v3
+<span class="lineNum">     326 </span><span class="lineCov">     276528 :   TST (dDOT41(R2+0,p),(A[0]*Q11 + A[1]*Q21 + A[2]*Q31 + B[0]),R2+0,4);</span>
+<span class="lineNum">     327 </span><span class="lineCov">     263310 :   TST (dDOT41(R2+1,p),(A[0]*Q12 + A[1]*Q22 + A[2]*Q32 + B[1]),R2+1,5);</span>
+<span class="lineNum">     328 </span><span class="lineCov">     240369 :   TST (dDOT41(R2+2,p),(A[0]*Q13 + A[1]*Q23 + A[2]*Q33 + B[2]),R2+2,6);</span>
+<span class="lineNum">     329 </span>            : 
+<span class="lineNum">     330 </span>            :   // note: cross product axes need to be scaled when s is computed.
+<span class="lineNum">     331 </span>            :   // normal (n1,n2,n3) is relative to box 1.
+<span class="lineNum">     332 </span>            : #undef TST
+<span class="lineNum">     333 </span>            : #define TST(expr1,expr2,n1,n2,n3,cc) \
+<span class="lineNum">     334 </span>            :   s2 = btFabs(expr1) - (expr2); \
+<span class="lineNum">     335 </span>            :   if (s2 &gt; SIMD_EPSILON) return 0; \
+<span class="lineNum">     336 </span>            :   l = btSqrt((n1)*(n1) + (n2)*(n2) + (n3)*(n3)); \
+<span class="lineNum">     337 </span>            :   if (l &gt; SIMD_EPSILON) { \
+<span class="lineNum">     338 </span>            :     s2 /= l; \
+<span class="lineNum">     339 </span>            :     if (s2*fudge_factor &gt; s) { \
+<span class="lineNum">     340 </span>            :       s = s2; \
+<span class="lineNum">     341 </span>            :       normalR = 0; \
+<span class="lineNum">     342 </span>            :       normalC[0] = (n1)/l; normalC[1] = (n2)/l; normalC[2] = (n3)/l; \
+<span class="lineNum">     343 </span>            :       invert_normal = ((expr1) &lt; 0); \
+<span class="lineNum">     344 </span>            :       code = (cc); \
+<span class="lineNum">     345 </span>            :     } \
+<span class="lineNum">     346 </span>            :   }
+<span class="lineNum">     347 </span>            : 
+<span class="lineNum">     348 </span><span class="lineCov">      76900 :   btScalar fudge2 (1.0e-5f);</span>
+<span class="lineNum">     349 </span>            : 
+<span class="lineNum">     350 </span><span class="lineCov">      76900 :   Q11 += fudge2;</span>
+<span class="lineNum">     351 </span><span class="lineCov">      76900 :   Q12 += fudge2;</span>
+<span class="lineNum">     352 </span><span class="lineCov">      76900 :   Q13 += fudge2;</span>
+<span class="lineNum">     353 </span>            : 
+<span class="lineNum">     354 </span><span class="lineCov">      76900 :   Q21 += fudge2;</span>
+<span class="lineNum">     355 </span><span class="lineCov">      76900 :   Q22 += fudge2;</span>
+<span class="lineNum">     356 </span><span class="lineCov">      76900 :   Q23 += fudge2;</span>
+<span class="lineNum">     357 </span>            : 
+<span class="lineNum">     358 </span><span class="lineCov">      76900 :   Q31 += fudge2;</span>
+<span class="lineNum">     359 </span><span class="lineCov">      76900 :   Q32 += fudge2;</span>
+<span class="lineNum">     360 </span><span class="lineCov">      76900 :   Q33 += fudge2;</span>
+<span class="lineNum">     361 </span>            : 
+<span class="lineNum">     362 </span>            :   // separating axis = u1 x (v1,v2,v3)
+<span class="lineNum">     363 </span><span class="lineCov">     230580 :   TST(pp[2]*R21-pp[1]*R31,(A[1]*Q31+A[2]*Q21+B[1]*Q13+B[2]*Q12),0,-R31,R21,7);</span>
+<span class="lineNum">     364 </span><span class="lineCov">     230149 :   TST(pp[2]*R22-pp[1]*R32,(A[1]*Q32+A[2]*Q22+B[0]*Q13+B[2]*Q11),0,-R32,R22,8);</span>
+<span class="lineNum">     365 </span><span class="lineCov">     229461 :   TST(pp[2]*R23-pp[1]*R33,(A[1]*Q33+A[2]*Q23+B[0]*Q12+B[1]*Q11),0,-R33,R23,9);</span>
+<span class="lineNum">     366 </span>            : 
+<span class="lineNum">     367 </span>            :   // separating axis = u2 x (v1,v2,v3)
+<span class="lineNum">     368 </span><span class="lineCov">     228662 :   TST(pp[0]*R31-pp[2]*R11,(A[0]*Q31+A[2]*Q11+B[1]*Q23+B[2]*Q22),R31,0,-R11,10);</span>
+<span class="lineNum">     369 </span><span class="lineCov">     228113 :   TST(pp[0]*R32-pp[2]*R12,(A[0]*Q32+A[2]*Q12+B[0]*Q23+B[2]*Q21),R32,0,-R12,11);</span>
+<span class="lineNum">     370 </span><span class="lineCov">     227505 :   TST(pp[0]*R33-pp[2]*R13,(A[0]*Q33+A[2]*Q13+B[0]*Q22+B[1]*Q21),R33,0,-R13,12);</span>
+<span class="lineNum">     371 </span>            : 
+<span class="lineNum">     372 </span>            :   // separating axis = u3 x (v1,v2,v3)
+<span class="lineNum">     373 </span><span class="lineCov">     226828 :   TST(pp[1]*R11-pp[0]*R21,(A[0]*Q21+A[1]*Q11+B[1]*Q33+B[2]*Q32),-R21,R11,0,13);</span>
+<span class="lineNum">     374 </span><span class="lineCov">     226269 :   TST(pp[1]*R12-pp[0]*R22,(A[0]*Q22+A[1]*Q12+B[0]*Q33+B[2]*Q31),-R22,R12,0,14);</span>
+<span class="lineNum">     375 </span><span class="lineCov">     225357 :   TST(pp[1]*R13-pp[0]*R23,(A[0]*Q23+A[1]*Q13+B[0]*Q32+B[1]*Q31),-R23,R13,0,15);</span>
+<span class="lineNum">     376 </span>            : 
+<span class="lineNum">     377 </span>            : #undef TST
+<span class="lineNum">     378 </span>            : 
+<span class="lineNum">     379 </span><span class="lineCov">      74827 :   if (!code) return 0;</span>
+<span class="lineNum">     380 </span>            : 
+<span class="lineNum">     381 </span>            :   // if we get to this point, the boxes interpenetrate. compute the normal
+<span class="lineNum">     382 </span>            :   // in global coordinates.
+<span class="lineNum">     383 </span><span class="lineCov">      74827 :   if (normalR) {</span>
+<span class="lineNum">     384 </span><span class="lineCov">      72064 :     normal[0] = normalR[0];</span>
+<span class="lineNum">     385 </span><span class="lineCov">      72064 :     normal[1] = normalR[4];</span>
+<span class="lineNum">     386 </span><span class="lineCov">      72064 :     normal[2] = normalR[8];</span>
+<span class="lineNum">     387 </span>            :   }
+<span class="lineNum">     388 </span>            :   else {
+<span class="lineNum">     389 </span><span class="lineCov">      11052 :     dMULTIPLY0_331 (normal,R1,normalC);</span>
+<span class="lineNum">     390 </span>            :   }
+<span class="lineNum">     391 </span><span class="lineCov">      74827 :   if (invert_normal) {</span>
+<span class="lineNum">     392 </span><span class="lineCov">       8465 :     normal[0] = -normal[0];</span>
+<span class="lineNum">     393 </span><span class="lineCov">       8465 :     normal[1] = -normal[1];</span>
+<span class="lineNum">     394 </span><span class="lineCov">       8465 :     normal[2] = -normal[2];</span>
+<span class="lineNum">     395 </span>            :   }
+<span class="lineNum">     396 </span><span class="lineCov">      74827 :   *depth = -s;</span>
+<span class="lineNum">     397 </span>            : 
+<span class="lineNum">     398 </span>            :   // compute contact point(s)
+<span class="lineNum">     399 </span>            : 
+<span class="lineNum">     400 </span><span class="lineCov">      74827 :   if (code &gt; 6) {</span>
+<span class="lineNum">     401 </span>            :     // an edge from box 1 touches an edge from box 2.
+<span class="lineNum">     402 </span>            :     // find a point pa on the intersecting edge of box 1
+<span class="lineNum">     403 </span><span class="lineCov">       2763 :     btVector3 pa;</span>
+<span class="lineNum">     404 </span>            :     btScalar sign;
+<span class="lineNum">     405 </span><span class="lineCov">      11052 :     for (i=0; i&lt;3; i++) pa[i] = p1[i];</span>
+<span class="lineNum">     406 </span><span class="lineCov">      19341 :     for (j=0; j&lt;3; j++) {</span>
+<span class="lineNum">     407 </span><span class="lineCov">      16578 :       sign = (dDOT14(normal,R1+j) &gt; 0) ? btScalar(1.0) : btScalar(-1.0);</span>
+<span class="lineNum">     408 </span><span class="lineCov">       8289 :       for (i=0; i&lt;3; i++) pa[i] += sign * A[j] * R1[i*4+j];</span>
+<span class="lineNum">     409 </span>            :     }
+<span class="lineNum">     410 </span>            : 
+<span class="lineNum">     411 </span>            :     // find a point pb on the intersecting edge of box 2
+<span class="lineNum">     412 </span><span class="lineCov">       2763 :     btVector3 pb;</span>
+<span class="lineNum">     413 </span><span class="lineCov">      11052 :     for (i=0; i&lt;3; i++) pb[i] = p2[i];</span>
+<span class="lineNum">     414 </span><span class="lineCov">      19341 :     for (j=0; j&lt;3; j++) {</span>
+<span class="lineNum">     415 </span><span class="lineCov">      16578 :       sign = (dDOT14(normal,R2+j) &gt; 0) ? btScalar(-1.0) : btScalar(1.0);</span>
+<span class="lineNum">     416 </span><span class="lineCov">       8289 :       for (i=0; i&lt;3; i++) pb[i] += sign * B[j] * R2[i*4+j];</span>
+<span class="lineNum">     417 </span>            :     }
+<span class="lineNum">     418 </span>            : 
+<span class="lineNum">     419 </span>            :     btScalar alpha,beta;
+<span class="lineNum">     420 </span><span class="lineCov">       5526 :     btVector3 ua,ub;</span>
+<span class="lineNum">     421 </span><span class="lineCov">       2763 :     for (i=0; i&lt;3; i++) ua[i] = R1[((code)-7)/3 + i*4];</span>
+<span class="lineNum">     422 </span><span class="lineCov">      11052 :     for (i=0; i&lt;3; i++) ub[i] = R2[((code)-7)%3 + i*4];</span>
+<span class="lineNum">     423 </span>            : 
+<span class="lineNum">     424 </span><span class="lineCov">       2763 :     dLineClosestApproach (pa,ua,pb,ub,&amp;alpha,&amp;beta);</span>
+<span class="lineNum">     425 </span><span class="lineCov">       2763 :     for (i=0; i&lt;3; i++) pa[i] += ua[i]*alpha;</span>
+<span class="lineNum">     426 </span><span class="lineCov">      11052 :     for (i=0; i&lt;3; i++) pb[i] += ub[i]*beta;</span>
+<span class="lineNum">     427 </span>            : 
+<span class="lineNum">     428 </span>            :         {
+<span class="lineNum">     429 </span>            :                 
+<span class="lineNum">     430 </span>            :                 //contact[0].pos[i] = btScalar(0.5)*(pa[i]+pb[i]);
+<span class="lineNum">     431 </span>            :                 //contact[0].depth = *depth;
+<span class="lineNum">     432 </span><span class="lineCov">       2763 :                 btVector3 pointInWorld;</span>
+<span class="lineNum">     433 </span>            : 
+<span class="lineNum">     434 </span>            : #ifdef USE_CENTER_POINT
+<span class="lineNum">     435 </span>            :             for (i=0; i&lt;3; i++) 
+<span class="lineNum">     436 </span>            :                         pointInWorld[i] = (pa[i]+pb[i])*btScalar(0.5);
+<span class="lineNum">     437 </span>            :                 output.addContactPoint(-normal,pointInWorld,-*depth);
+<span class="lineNum">     438 </span>            : #else
+<span class="lineNum">     439 </span><span class="lineCov">       5526 :                 output.addContactPoint(-normal,pb,-*depth);</span>
+<span class="lineNum">     440 </span>            : 
+<span class="lineNum">     441 </span>            : #endif //
+<span class="lineNum">     442 </span><span class="lineCov">       2763 :                 *return_code = code;</span>
+<span class="lineNum">     443 </span>            :         }
+<span class="lineNum">     444 </span>            :     return 1;
+<span class="lineNum">     445 </span>            :   }
+<span class="lineNum">     446 </span>            : 
+<span class="lineNum">     447 </span>            :   // okay, we have a face-something intersection (because the separating
+<span class="lineNum">     448 </span>            :   // axis is perpendicular to a face). define face 'a' to be the reference
+<span class="lineNum">     449 </span>            :   // face (i.e. the normal vector is perpendicular to this) and face 'b' to be
+<span class="lineNum">     450 </span>            :   // the incident face (the closest face of the other box).
+<span class="lineNum">     451 </span>            : 
+<span class="lineNum">     452 </span>            :   const btScalar *Ra,*Rb,*pa,*pb,*Sa,*Sb;
+<span class="lineNum">     453 </span><span class="lineCov">      72064 :   if (code &lt;= 3) {</span>
+<span class="lineNum">     454 </span><span class="lineCov">      59190 :     Ra = R1;</span>
+<span class="lineNum">     455 </span><span class="lineCov">      59190 :     Rb = R2;</span>
+<span class="lineNum">     456 </span><span class="lineCov">      59190 :     pa = p1;</span>
+<span class="lineNum">     457 </span><span class="lineCov">      59190 :     pb = p2;</span>
+<span class="lineNum">     458 </span><span class="lineCov">      59190 :     Sa = A;</span>
+<span class="lineNum">     459 </span><span class="lineCov">      59190 :     Sb = B;</span>
+<span class="lineNum">     460 </span>            :   }
+<span class="lineNum">     461 </span>            :   else {
+<span class="lineNum">     462 </span><span class="lineCov">      12874 :     Ra = R2;</span>
+<span class="lineNum">     463 </span><span class="lineCov">      12874 :     Rb = R1;</span>
+<span class="lineNum">     464 </span><span class="lineCov">      12874 :     pa = p2;</span>
+<span class="lineNum">     465 </span><span class="lineCov">      12874 :     pb = p1;</span>
+<span class="lineNum">     466 </span><span class="lineCov">      12874 :     Sa = B;</span>
+<span class="lineNum">     467 </span><span class="lineCov">      12874 :     Sb = A;</span>
+<span class="lineNum">     468 </span>            :   }
+<span class="lineNum">     469 </span>            : 
+<span class="lineNum">     470 </span>            :   // nr = normal vector of reference face dotted with axes of incident box.
+<span class="lineNum">     471 </span>            :   // anr = absolute values of nr.
+<span class="lineNum">     472 </span><span class="lineCov">     144128 :   btVector3 normal2,nr,anr;</span>
+<span class="lineNum">     473 </span><span class="lineCov">      72064 :   if (code &lt;= 3) {</span>
+<span class="lineNum">     474 </span><span class="lineCov">      59190 :     normal2[0] = normal[0];</span>
+<span class="lineNum">     475 </span><span class="lineCov">      59190 :     normal2[1] = normal[1];</span>
+<span class="lineNum">     476 </span><span class="lineCov">      59190 :     normal2[2] = normal[2];</span>
+<span class="lineNum">     477 </span>            :   }
+<span class="lineNum">     478 </span>            :   else {
+<span class="lineNum">     479 </span><span class="lineCov">      12874 :     normal2[0] = -normal[0];</span>
+<span class="lineNum">     480 </span><span class="lineCov">      12874 :     normal2[1] = -normal[1];</span>
+<span class="lineNum">     481 </span><span class="lineCov">      12874 :     normal2[2] = -normal[2];</span>
+<span class="lineNum">     482 </span>            :   }
+<span class="lineNum">     483 </span><span class="lineCov">     288256 :   dMULTIPLY1_331 (nr,Rb,normal2);</span>
+<span class="lineNum">     484 </span><span class="lineCov">     144128 :   anr[0] = btFabs (nr[0]);</span>
+<span class="lineNum">     485 </span><span class="lineCov">     144128 :   anr[1] = btFabs (nr[1]);</span>
+<span class="lineNum">     486 </span><span class="lineCov">     144128 :   anr[2] = btFabs (nr[2]);</span>
+<span class="lineNum">     487 </span>            : 
+<span class="lineNum">     488 </span>            :   // find the largest compontent of anr: this corresponds to the normal
+<span class="lineNum">     489 </span>            :   // for the indident face. the other axis numbers of the indicent face
+<span class="lineNum">     490 </span>            :   // are stored in a1,a2.
+<span class="lineNum">     491 </span>            :   int lanr,a1,a2;
+<span class="lineNum">     492 </span><span class="lineCov">      72064 :   if (anr[1] &gt; anr[0]) {</span>
+<span class="lineNum">     493 </span><span class="lineCov">      17155 :     if (anr[1] &gt; anr[2]) {</span>
+<span class="lineNum">     494 </span>            :       a1 = 0;
+<span class="lineNum">     495 </span>            :       lanr = 1;
+<span class="lineNum">     496 </span>            :       a2 = 2;
+<span class="lineNum">     497 </span>            :     }
+<span class="lineNum">     498 </span>            :     else {
+<span class="lineNum">     499 </span><span class="lineCov">       6353 :       a1 = 0;</span>
+<span class="lineNum">     500 </span><span class="lineCov">       6353 :       a2 = 1;</span>
+<span class="lineNum">     501 </span><span class="lineCov">       6353 :       lanr = 2;</span>
+<span class="lineNum">     502 </span>            :     }
+<span class="lineNum">     503 </span>            :   }
+<span class="lineNum">     504 </span>            :   else {
+<span class="lineNum">     505 </span><span class="lineCov">      54909 :     if (anr[0] &gt; anr[2]) {</span>
+<span class="lineNum">     506 </span>            :       lanr = 0;
+<span class="lineNum">     507 </span>            :       a1 = 1;
+<span class="lineNum">     508 </span>            :       a2 = 2;
+<span class="lineNum">     509 </span>            :     }
+<span class="lineNum">     510 </span>            :     else {
+<span class="lineNum">     511 </span><span class="lineCov">       5696 :       a1 = 0;</span>
+<span class="lineNum">     512 </span><span class="lineCov">       5696 :       a2 = 1;</span>
+<span class="lineNum">     513 </span><span class="lineCov">       5696 :       lanr = 2;</span>
+<span class="lineNum">     514 </span>            :     }
+<span class="lineNum">     515 </span>            :   }
+<span class="lineNum">     516 </span>            : 
+<span class="lineNum">     517 </span>            :   // compute center point of incident face, in reference-face coordinates
+<span class="lineNum">     518 </span><span class="lineCov">      72064 :   btVector3 center;</span>
+<span class="lineNum">     519 </span><span class="lineCov">      72064 :   if (nr[lanr] &lt; 0) {</span>
+<span class="lineNum">     520 </span><span class="lineCov">      90084 :     for (i=0; i&lt;3; i++) center[i] = pb[i] - pa[i] + Sb[lanr] * Rb[i*4+lanr];</span>
+<span class="lineNum">     521 </span>            :   }
+<span class="lineNum">     522 </span>            :   else {
+<span class="lineNum">     523 </span><span class="lineCov">     198172 :     for (i=0; i&lt;3; i++) center[i] = pb[i] - pa[i] - Sb[lanr] * Rb[i*4+lanr];</span>
+<span class="lineNum">     524 </span>            :   }
+<span class="lineNum">     525 </span>            : 
+<span class="lineNum">     526 </span>            :   // find the normal and non-normal axis numbers of the reference box
+<span class="lineNum">     527 </span>            :   int codeN,code1,code2;
+<span class="lineNum">     528 </span><span class="lineCov">      72064 :   if (code &lt;= 3) codeN = code-1; else codeN = code-4;</span>
+<span class="lineNum">     529 </span><span class="lineCov">      72064 :   if (codeN==0) {</span>
+<span class="lineNum">     530 </span>            :     code1 = 1;
+<span class="lineNum">     531 </span>            :     code2 = 2;
+<span class="lineNum">     532 </span>            :   }
+<span class="lineNum">     533 </span><span class="lineCov">       9232 :   else if (codeN==1) {</span>
+<span class="lineNum">     534 </span>            :     code1 = 0;
+<span class="lineNum">     535 </span>            :     code2 = 2;
+<span class="lineNum">     536 </span>            :   }
+<span class="lineNum">     537 </span>            :   else {
+<span class="lineNum">     538 </span><span class="lineCov">       3090 :     code1 = 0;</span>
+<span class="lineNum">     539 </span><span class="lineCov">       3090 :     code2 = 1;</span>
+<span class="lineNum">     540 </span>            :   }
+<span class="lineNum">     541 </span>            : 
+<span class="lineNum">     542 </span>            :   // find the four corners of the incident face, in reference-face coordinates
+<span class="lineNum">     543 </span>            :   btScalar quad[8];     // 2D coordinate of incident face (x,y pairs)
+<span class="lineNum">     544 </span>            :   btScalar c1,c2,m11,m12,m21,m22;
+<span class="lineNum">     545 </span><span class="lineCov">     144128 :   c1 = dDOT14 (center,Ra+code1);</span>
+<span class="lineNum">     546 </span><span class="lineCov">     144128 :   c2 = dDOT14 (center,Ra+code2);</span>
+<span class="lineNum">     547 </span>            :   // optimize this? - we have already computed this data above, but it is not
+<span class="lineNum">     548 </span>            :   // stored in an easy-to-index format. for now it's quicker just to recompute
+<span class="lineNum">     549 </span>            :   // the four dot products.
+<span class="lineNum">     550 </span><span class="lineCov">     144128 :   m11 = dDOT44 (Ra+code1,Rb+a1);</span>
+<span class="lineNum">     551 </span><span class="lineCov">     144128 :   m12 = dDOT44 (Ra+code1,Rb+a2);</span>
+<span class="lineNum">     552 </span><span class="lineCov">     144128 :   m21 = dDOT44 (Ra+code2,Rb+a1);</span>
+<span class="lineNum">     553 </span><span class="lineCov">     144128 :   m22 = dDOT44 (Ra+code2,Rb+a2);</span>
+<span class="lineNum">     554 </span>            :   {
+<span class="lineNum">     555 </span><span class="lineCov">      72064 :     btScalar k1 = m11*Sb[a1];</span>
+<span class="lineNum">     556 </span><span class="lineCov">      72064 :     btScalar k2 = m21*Sb[a1];</span>
+<span class="lineNum">     557 </span><span class="lineCov">      72064 :     btScalar k3 = m12*Sb[a2];</span>
+<span class="lineNum">     558 </span><span class="lineCov">      72064 :     btScalar k4 = m22*Sb[a2];</span>
+<span class="lineNum">     559 </span><span class="lineCov">      72064 :     quad[0] = c1 - k1 - k3;</span>
+<span class="lineNum">     560 </span><span class="lineCov">      72064 :     quad[1] = c2 - k2 - k4;</span>
+<span class="lineNum">     561 </span><span class="lineCov">      72064 :     quad[2] = c1 - k1 + k3;</span>
+<span class="lineNum">     562 </span><span class="lineCov">      72064 :     quad[3] = c2 - k2 + k4;</span>
+<span class="lineNum">     563 </span><span class="lineCov">      72064 :     quad[4] = c1 + k1 + k3;</span>
+<span class="lineNum">     564 </span><span class="lineCov">      72064 :     quad[5] = c2 + k2 + k4;</span>
+<span class="lineNum">     565 </span><span class="lineCov">      72064 :     quad[6] = c1 + k1 - k3;</span>
+<span class="lineNum">     566 </span><span class="lineCov">      72064 :     quad[7] = c2 + k2 - k4;</span>
+<span class="lineNum">     567 </span>            :   }
+<span class="lineNum">     568 </span>            : 
+<span class="lineNum">     569 </span>            :   // find the size of the reference face
+<span class="lineNum">     570 </span>            :   btScalar rect[2];
+<span class="lineNum">     571 </span><span class="lineCov">      72064 :   rect[0] = Sa[code1];</span>
+<span class="lineNum">     572 </span><span class="lineCov">      72064 :   rect[1] = Sa[code2];</span>
+<span class="lineNum">     573 </span>            : 
+<span class="lineNum">     574 </span>            :   // intersect the incident and reference faces
+<span class="lineNum">     575 </span>            :   btScalar ret[16];
+<span class="lineNum">     576 </span><span class="lineCov">      72064 :   int n = intersectRectQuad2 (rect,quad,ret);</span>
+<span class="lineNum">     577 </span><span class="lineCov">      72064 :   if (n &lt; 1) return 0;               // this should never happen</span>
+<span class="lineNum">     578 </span>            : 
+<span class="lineNum">     579 </span>            :   // convert the intersection points into reference-face coordinates,
+<span class="lineNum">     580 </span>            :   // and compute the contact position and depth for each point. only keep
+<span class="lineNum">     581 </span>            :   // those points that have a positive (penetrating) depth. delete points in
+<span class="lineNum">     582 </span>            :   // the 'ret' array as necessary so that 'point' and 'ret' correspond.
+<span class="lineNum">     583 </span>            :   btScalar point[3*8];          // penetrating contact points
+<span class="lineNum">     584 </span>            :   btScalar dep[8];                      // depths for those points
+<span class="lineNum">     585 </span><span class="lineCov">      72032 :   btScalar det1 = 1.f/(m11*m22 - m12*m21);</span>
+<span class="lineNum">     586 </span><span class="lineCov">      72032 :   m11 *= det1;</span>
+<span class="lineNum">     587 </span><span class="lineCov">      72032 :   m12 *= det1;</span>
+<span class="lineNum">     588 </span><span class="lineCov">      72032 :   m21 *= det1;</span>
+<span class="lineNum">     589 </span><span class="lineCov">      72032 :   m22 *= det1;</span>
+<span class="lineNum">     590 </span><span class="lineCov">      72032 :   int cnum = 0;                 // number of penetrating contact points found</span>
+<span class="lineNum">     591 </span><span class="lineCov">     376184 :   for (j=0; j &lt; n; j++) {</span>
+<span class="lineNum">     592 </span><span class="lineCov">     304152 :     btScalar k1 =  m22*(ret[j*2]-c1) - m12*(ret[j*2+1]-c2);</span>
+<span class="lineNum">     593 </span><span class="lineCov">     304152 :     btScalar k2 = -m21*(ret[j*2]-c1) + m11*(ret[j*2+1]-c2);</span>
+<span class="lineNum">     594 </span><span class="lineCov">    2129064 :     for (i=0; i&lt;3; i++) point[cnum*3+i] =</span>
+<span class="lineNum">     595 </span><span class="lineCov">    1824912 :                           center[i] + k1*Rb[i*4+a1] + k2*Rb[i*4+a2];</span>
+<span class="lineNum">     596 </span><span class="lineCov">     608304 :     dep[cnum] = Sa[codeN] - dDOT(normal2,point+cnum*3);</span>
+<span class="lineNum">     597 </span><span class="lineCov">     304152 :     if (dep[cnum] &gt;= 0) {</span>
+<span class="lineNum">     598 </span><span class="lineCov">     215638 :       ret[cnum*2] = ret[j*2];</span>
+<span class="lineNum">     599 </span><span class="lineCov">     215638 :       ret[cnum*2+1] = ret[j*2+1];</span>
+<span class="lineNum">     600 </span><span class="lineCov">     215638 :       cnum++;</span>
+<span class="lineNum">     601 </span>            :     }
+<span class="lineNum">     602 </span>            :   }
+<span class="lineNum">     603 </span><span class="lineCov">      72032 :   if (cnum &lt; 1) return 0;    // this should never happen</span>
+<span class="lineNum">     604 </span>            : 
+<span class="lineNum">     605 </span>            :   // we can't generate more contacts than we actually have
+<span class="lineNum">     606 </span><span class="lineCov">      71773 :   if (maxc &gt; cnum) maxc = cnum;</span>
+<span class="lineNum">     607 </span><span class="lineCov">      71773 :   if (maxc &lt; 1) maxc = 1;</span>
+<span class="lineNum">     608 </span>            : 
+<span class="lineNum">     609 </span><span class="lineCov">      71773 :   if (cnum &lt;= maxc) {</span>
+<span class="lineNum">     610 </span>            : 
+<span class="lineNum">     611 </span><span class="lineCov">      67690 :           if (code&lt;4) </span>
+<span class="lineNum">     612 </span>            :           {
+<span class="lineNum">     613 </span>            :     // we have less contacts than we need, so we use them all
+<span class="lineNum">     614 </span><span class="lineCov">     383491 :     for (j=0; j &lt; cnum; j++) </span>
+<span class="lineNum">     615 </span>            :         {
+<span class="lineNum">     616 </span><span class="lineCov">     163352 :                 btVector3 pointInWorld;</span>
+<span class="lineNum">     617 </span><span class="lineCov">     653408 :                 for (i=0; i&lt;3; i++) </span>
+<span class="lineNum">     618 </span><span class="lineCov">     490056 :                         pointInWorld[i] = point[j*3+i] + pa[i];</span>
+<span class="lineNum">     619 </span><span class="lineCov">     326704 :                 output.addContactPoint(-normal,pointInWorld,-dep[j]);</span>
+<span class="lineNum">     620 </span>            : 
+<span class="lineNum">     621 </span>            :     }
+<span class="lineNum">     622 </span>            :           } else
+<span class="lineNum">     623 </span>            :           {
+<span class="lineNum">     624 </span>            :                   // we have less contacts than we need, so we use them all
+<span class="lineNum">     625 </span><span class="lineCov">      65421 :                 for (j=0; j &lt; cnum; j++) </span>
+<span class="lineNum">     626 </span>            :                 {
+<span class="lineNum">     627 </span><span class="lineCov">      27259 :                         btVector3 pointInWorld;</span>
+<span class="lineNum">     628 </span><span class="lineCov">     109036 :                         for (i=0; i&lt;3; i++) </span>
+<span class="lineNum">     629 </span><span class="lineCov">     163554 :                                 pointInWorld[i] = point[j*3+i] + pa[i]-normal[i]*dep[j];</span>
+<span class="lineNum">     630 </span>            :                                 //pointInWorld[i] = point[j*3+i] + pa[i];
+<span class="lineNum">     631 </span><span class="lineCov">      54518 :                         output.addContactPoint(-normal,pointInWorld,-dep[j]);</span>
+<span class="lineNum">     632 </span>            :                 }
+<span class="lineNum">     633 </span>            :           }
+<span class="lineNum">     634 </span>            :   }
+<span class="lineNum">     635 </span>            :   else {
+<span class="lineNum">     636 </span>            :     // we have more contacts than are wanted, some of them must be culled.
+<span class="lineNum">     637 </span>            :     // find the deepest point, it is always the first contact.
+<span class="lineNum">     638 </span><span class="lineCov">       4083 :     int i1 = 0;</span>
+<span class="lineNum">     639 </span><span class="lineCov">       4083 :     btScalar maxdepth = dep[0];</span>
+<span class="lineNum">     640 </span><span class="lineCov">      25027 :     for (i=1; i&lt;cnum; i++) {</span>
+<span class="lineNum">     641 </span><span class="lineCov">      20944 :       if (dep[i] &gt; maxdepth) {</span>
+<span class="lineNum">     642 </span><span class="lineCov">       7910 :         maxdepth = dep[i];</span>
+<span class="lineNum">     643 </span><span class="lineCov">       7910 :         i1 = i;</span>
+<span class="lineNum">     644 </span>            :       }
+<span class="lineNum">     645 </span>            :     }
+<span class="lineNum">     646 </span>            : 
+<span class="lineNum">     647 </span>            :     int iret[8];
+<span class="lineNum">     648 </span><span class="lineCov">       4083 :     cullPoints2 (cnum,ret,maxc,i1,iret);</span>
+<span class="lineNum">     649 </span>            : 
+<span class="lineNum">     650 </span><span class="lineCov">      20415 :     for (j=0; j &lt; maxc; j++) {</span>
+<span class="lineNum">     651 </span>            : //      dContactGeom *con = CONTACT(contact,skip*j);
+<span class="lineNum">     652 </span>            :   //    for (i=0; i&lt;3; i++) con-&gt;pos[i] = point[iret[j]*3+i] + pa[i];
+<span class="lineNum">     653 </span>            :     //  con-&gt;depth = dep[iret[j]];
+<span class="lineNum">     654 </span>            : 
+<span class="lineNum">     655 </span><span class="lineCov">      16332 :                 btVector3 posInWorld;</span>
+<span class="lineNum">     656 </span><span class="lineCov">      65328 :                 for (i=0; i&lt;3; i++) </span>
+<span class="lineNum">     657 </span><span class="lineCov">      48996 :                         posInWorld[i] = point[iret[j]*3+i] + pa[i];</span>
+<span class="lineNum">     658 </span><span class="lineCov">      16332 :                 if (code&lt;4) </span>
+<span class="lineNum">     659 </span>            :            {
+<span class="lineNum">     660 </span><span class="lineCov">      17968 :                         output.addContactPoint(-normal,posInWorld,-dep[iret[j]]);</span>
+<span class="lineNum">     661 </span>            :                 } else
+<span class="lineNum">     662 </span>            :                 {
+<span class="lineNum">     663 </span><span class="lineCov">      29392 :                         output.addContactPoint(-normal,posInWorld-normal*dep[iret[j]],-dep[iret[j]]);</span>
+<span class="lineNum">     664 </span>            :                 }
+<span class="lineNum">     665 </span>            :     }
+<span class="lineNum">     666 </span><span class="lineCov">       4083 :     cnum = maxc;</span>
+<span class="lineNum">     667 </span>            :   }
+<span class="lineNum">     668 </span>            : 
+<span class="lineNum">     669 </span><span class="lineCov">      71773 :   *return_code = code;</span>
+<span class="lineNum">     670 </span><span class="lineCov">      71773 :   return cnum;</span>
+<a name="671"><span class="lineNum">     671 </span>            : }</a>
+<span class="lineNum">     672 </span>            : 
+<span class="lineNum">     673 </span><span class="lineCov">     150550 : void    btBoxBoxDetector::getClosestPoints(const ClosestPointInput&amp; input,Result&amp; output,class btIDebugDraw* /*debugDraw*/,bool /*swapResults*/)</span>
+<span class="lineNum">     674 </span>            : {
+<span class="lineNum">     675 </span>            :         
+<span class="lineNum">     676 </span><span class="lineCov">     150550 :         const btTransform&amp; transformA = input.m_transformA;</span>
+<span class="lineNum">     677 </span><span class="lineCov">     150550 :         const btTransform&amp; transformB = input.m_transformB;</span>
+<span class="lineNum">     678 </span>            :         
+<span class="lineNum">     679 </span><span class="lineCov">     150550 :         int skip = 0;</span>
+<span class="lineNum">     680 </span><span class="lineCov">     150550 :         dContactGeom *contact = 0;</span>
+<span class="lineNum">     681 </span>            : 
+<span class="lineNum">     682 </span>            :         dMatrix3 R1;
+<span class="lineNum">     683 </span>            :         dMatrix3 R2;
+<span class="lineNum">     684 </span>            : 
+<span class="lineNum">     685 </span><span class="lineCov">     602200 :         for (int j=0;j&lt;3;j++)</span>
+<span class="lineNum">     686 </span>            :         {
+<span class="lineNum">     687 </span><span class="lineCov">     451650 :                 R1[0+4*j] = transformA.getBasis()[j].x();</span>
+<span class="lineNum">     688 </span><span class="lineCov">     451650 :                 R2[0+4*j] = transformB.getBasis()[j].x();</span>
+<span class="lineNum">     689 </span>            : 
+<span class="lineNum">     690 </span><span class="lineCov">     451650 :                 R1[1+4*j] = transformA.getBasis()[j].y();</span>
+<span class="lineNum">     691 </span><span class="lineCov">     451650 :                 R2[1+4*j] = transformB.getBasis()[j].y();</span>
+<span class="lineNum">     692 </span>            : 
+<span class="lineNum">     693 </span>            : 
+<span class="lineNum">     694 </span><span class="lineCov">     451650 :                 R1[2+4*j] = transformA.getBasis()[j].z();</span>
+<span class="lineNum">     695 </span><span class="lineCov">     451650 :                 R2[2+4*j] = transformB.getBasis()[j].z();</span>
+<span class="lineNum">     696 </span>            : 
+<span class="lineNum">     697 </span>            :         }
+<span class="lineNum">     698 </span>            : 
+<span class="lineNum">     699 </span>            :         
+<span class="lineNum">     700 </span>            : 
+<span class="lineNum">     701 </span><span class="lineCov">     150550 :         btVector3 normal;</span>
+<span class="lineNum">     702 </span>            :         btScalar depth;
+<span class="lineNum">     703 </span>            :         int return_code;
+<span class="lineNum">     704 </span><span class="lineCov">     150550 :         int maxc = 4;</span>
+<span class="lineNum">     705 </span>            : 
+<span class="lineNum">     706 </span>            : 
+<span class="lineNum">     707 </span><span class="lineCov">     301100 :         dBoxBox2 (transformA.getOrigin(), </span>
+<span class="lineNum">     708 </span>            :         R1,
+<span class="lineNum">     709 </span><span class="lineCov">     451650 :         2.f*m_box1-&gt;getHalfExtentsWithMargin(),</span>
+<span class="lineNum">     710 </span>            :         transformB.getOrigin(),
+<span class="lineNum">     711 </span>            :         R2, 
+<span class="lineNum">     712 </span><span class="lineCov">     451650 :         2.f*m_box2-&gt;getHalfExtentsWithMargin(),</span>
+<span class="lineNum">     713 </span>            :         normal, &amp;depth, &amp;return_code,
+<span class="lineNum">     714 </span>            :         maxc, contact, skip,
+<span class="lineNum">     715 </span>            :         output
+<span class="lineNum">     716 </span>            :         );
+<span class="lineNum">     717 </span>            : 
+<span class="lineNum">     718 </span><span class="lineCov">     150550 : }</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

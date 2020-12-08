@@ -1,0 +1,265 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/NarrowPhaseCollision/btVoronoiSimplexSolver.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/NarrowPhaseCollision</a> - btVoronoiSimplexSolver.h<span style="font-size: 80%;"> (source / <a href="btVoronoiSimplexSolver.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntryHi">-</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span>            : #ifndef BT_VORONOI_SIMPLEX_SOLVER_H
+<span class="lineNum">      19 </span>            : #define BT_VORONOI_SIMPLEX_SOLVER_H
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span>            : #include &quot;btSimplexSolverInterface.h&quot;
+<span class="lineNum">      22 </span>            : 
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : #define VORONOI_SIMPLEX_MAX_VERTS 5
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span>            : ///disable next define, or use defaultCollisionConfiguration-&gt;getSimplexSolver()-&gt;setEqualVertexThreshold(0.f) to disable/configure
+<span class="lineNum">      28 </span>            : #define BT_USE_EQUAL_VERTEX_THRESHOLD
+<span class="lineNum">      29 </span>            : #define VORONOI_DEFAULT_EQUAL_VERTEX_THRESHOLD 0.0001f
+<span class="lineNum">      30 </span>            : 
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span>            : struct btUsageBitfield{
+<span class="lineNum">      33 </span>            :         btUsageBitfield()
+<span class="lineNum">      34 </span><span class="lineCov">      35110 :         {</span>
+<span class="lineNum">      35 </span><span class="lineCov">      35110 :                 reset();</span>
+<span class="lineNum">      36 </span>            :         }
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            :         void reset()
+<span class="lineNum">      39 </span>            :         {
+<span class="lineNum">      40 </span><span class="lineCov">     293091 :                 usedVertexA = false;</span>
+<span class="lineNum">      41 </span><span class="lineCov">     277311 :                 usedVertexB = false;</span>
+<span class="lineNum">      42 </span><span class="lineCov">     269434 :                 usedVertexC = false;</span>
+<span class="lineNum">      43 </span><span class="lineCov">     269432 :                 usedVertexD = false;</span>
+<span class="lineNum">      44 </span>            :         }
+<span class="lineNum">      45 </span>            :         unsigned short usedVertexA      : 1;
+<span class="lineNum">      46 </span>            :         unsigned short usedVertexB      : 1;
+<span class="lineNum">      47 </span>            :         unsigned short usedVertexC      : 1;
+<span class="lineNum">      48 </span>            :         unsigned short usedVertexD      : 1;
+<span class="lineNum">      49 </span>            :         unsigned short unused1          : 1;
+<span class="lineNum">      50 </span>            :         unsigned short unused2          : 1;
+<span class="lineNum">      51 </span>            :         unsigned short unused3          : 1;
+<span class="lineNum">      52 </span>            :         unsigned short unused4          : 1;
+<span class="lineNum">      53 </span>            : };
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            : 
+<span class="lineNum">      56 </span><span class="lineCov">     105330 : struct  btSubSimplexClosestResult</span>
+<span class="lineNum">      57 </span>            : {
+<span class="lineNum">      58 </span>            :         btVector3       m_closestPointOnSimplex;
+<span class="lineNum">      59 </span>            :         //MASK for m_usedVertices
+<span class="lineNum">      60 </span>            :         //stores the simplex vertex-usage, using the MASK, 
+<span class="lineNum">      61 </span>            :         // if m_usedVertices &amp; MASK then the related vertex is used
+<span class="lineNum">      62 </span>            :         btUsageBitfield m_usedVertices;
+<span class="lineNum">      63 </span>            :         btScalar        m_barycentricCoords[4];
+<span class="lineNum">      64 </span>            :         bool m_degenerate;
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            :         void    reset()
+<span class="lineNum">      67 </span>            :         {
+<span class="lineNum">      68 </span><span class="lineCov">     201792 :                 m_degenerate = false;</span>
+<span class="lineNum">      69 </span><span class="lineCov">     201792 :                 setBarycentricCoordinates();</span>
+<span class="lineNum">      70 </span><span class="lineCov">     368454 :                 m_usedVertices.reset();</span>
+<span class="lineNum">      71 </span>            :         }
+<span class="lineNum">      72 </span>            :         bool    isValid()
+<span class="lineNum">      73 </span>            :         {
+<span class="lineNum">      74 </span><span class="lineCov">     310758 :                 bool valid = (m_barycentricCoords[0] &gt;= btScalar(0.)) &amp;&amp;</span>
+<span class="lineNum">      75 </span><span class="lineCov">     183752 :                         (m_barycentricCoords[1] &gt;= btScalar(0.)) &amp;&amp;</span>
+<span class="lineNum">      76 </span><span class="lineCov">     275628 :                         (m_barycentricCoords[2] &gt;= btScalar(0.)) &amp;&amp;</span>
+<span class="lineNum">      77 </span><span class="lineCov">      91876 :                         (m_barycentricCoords[3] &gt;= btScalar(0.));</span>
+<span class="lineNum">      78 </span>            : 
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span>            :                 return valid;
+<span class="lineNum">      81 </span>            :         }
+<span class="lineNum">      82 </span>            :         void    setBarycentricCoordinates(btScalar a=btScalar(0.),btScalar b=btScalar(0.),btScalar c=btScalar(0.),btScalar d=btScalar(0.))
+<span class="lineNum">      83 </span>            :         {
+<span class="lineNum">      84 </span><span class="lineCov">     333085 :                 m_barycentricCoords[0] = a;</span>
+<span class="lineNum">      85 </span><span class="lineCov">     297955 :                 m_barycentricCoords[1] = b;</span>
+<span class="lineNum">      86 </span><span class="lineCov">     265862 :                 m_barycentricCoords[2] = c;</span>
+<span class="lineNum">      87 </span><span class="lineCov">     265862 :                 m_barycentricCoords[3] = d;</span>
+<span class="lineNum">      88 </span>            :         }
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span>            : };
+<span class="lineNum">      91 </span>            : 
+<span class="lineNum">      92 </span>            : /// btVoronoiSimplexSolver is an implementation of the closest point distance algorithm from a 1-4 points simplex to the origin.
+<span class="lineNum">      93 </span>            : /// Can be used with GJK, as an alternative to Johnson distance algorithm.
+<span class="lineNum">      94 </span>            : #ifdef NO_VIRTUAL_INTERFACE
+<span class="lineNum">      95 </span>            : ATTRIBUTE_ALIGNED16(class) btVoronoiSimplexSolver
+<span class="lineNum">      96 </span>            : #else
+<span class="lineNum">      97 </span>            : ATTRIBUTE_ALIGNED16(class) btVoronoiSimplexSolver : public btSimplexSolverInterface
+<span class="lineNum">      98 </span>            : #endif
+<span class="lineNum">      99 </span>            : {
+<span class="lineNum">     100 </span>            : public:
+<span class="lineNum">     101 </span>            : 
+<span class="lineNum">     102 </span>            :         BT_DECLARE_ALIGNED_ALLOCATOR();
+<span class="lineNum">     103 </span>            : 
+<span class="lineNum">     104 </span>            :         int     m_numVertices;
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span>            :         btVector3       m_simplexVectorW[VORONOI_SIMPLEX_MAX_VERTS];
+<span class="lineNum">     107 </span>            :         btVector3       m_simplexPointsP[VORONOI_SIMPLEX_MAX_VERTS];
+<span class="lineNum">     108 </span>            :         btVector3       m_simplexPointsQ[VORONOI_SIMPLEX_MAX_VERTS];
+<span class="lineNum">     109 </span>            : 
+<span class="lineNum">     110 </span>            :         
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span>            :         btVector3       m_cachedP1;
+<span class="lineNum">     113 </span>            :         btVector3       m_cachedP2;
+<span class="lineNum">     114 </span>            :         btVector3       m_cachedV;
+<span class="lineNum">     115 </span>            :         btVector3       m_lastW;
+<span class="lineNum">     116 </span>            :         
+<span class="lineNum">     117 </span>            :         btScalar        m_equalVertexThreshold;
+<span class="lineNum">     118 </span>            :         bool            m_cachedValidClosest;
+<span class="lineNum">     119 </span>            : 
+<span class="lineNum">     120 </span>            : 
+<span class="lineNum">     121 </span>            :         btSubSimplexClosestResult m_cachedBC;
+<span class="lineNum">     122 </span>            : 
+<span class="lineNum">     123 </span>            :         bool    m_needsUpdate;
+<span class="lineNum">     124 </span>            :         
+<span class="lineNum">     125 </span>            :         void    removeVertex(int index);
+<span class="lineNum">     126 </span>            :         void    reduceVertices (const btUsageBitfield&amp; usedVerts);
+<span class="lineNum">     127 </span>            :         bool    updateClosestVectorAndPoints();
+<span class="lineNum">     128 </span>            : 
+<span class="lineNum">     129 </span>            :         bool    closestPtPointTetrahedron(const btVector3&amp; p, const btVector3&amp; a, const btVector3&amp; b, const btVector3&amp; c, const btVector3&amp; d, btSubSimplexClosestResult&amp; finalResult);
+<span class="lineNum">     130 </span>            :         int             pointOutsideOfPlane(const btVector3&amp; p, const btVector3&amp; a, const btVector3&amp; b, const btVector3&amp; c, const btVector3&amp; d);
+<span class="lineNum">     131 </span>            :         bool    closestPtPointTriangle(const btVector3&amp; p, const btVector3&amp; a, const btVector3&amp; b, const btVector3&amp; c,btSubSimplexClosestResult&amp; result);
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span>            : public:
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span>            :         btVoronoiSimplexSolver()
+<span class="lineNum">     136 </span><span class="lineCov">         24 :                 :  m_equalVertexThreshold(VORONOI_DEFAULT_EQUAL_VERTEX_THRESHOLD)</span>
+<span class="lineNum">     137 </span>            :         {
+<span class="lineNum">     138 </span>            :         }
+<span class="lineNum">     139 </span>            :          void reset();
+<span class="lineNum">     140 </span>            : 
+<span class="lineNum">     141 </span>            :          void addVertex(const btVector3&amp; w, const btVector3&amp; p, const btVector3&amp; q);
+<span class="lineNum">     142 </span>            : 
+<span class="lineNum">     143 </span>            :          void   setEqualVertexThreshold(btScalar threshold)
+<span class="lineNum">     144 </span>            :          {
+<span class="lineNum">     145 </span>            :                  m_equalVertexThreshold = threshold;
+<span class="lineNum">     146 </span>            :          }
+<span class="lineNum">     147 </span>            : 
+<span class="lineNum">     148 </span>            :          btScalar       getEqualVertexThreshold() const
+<span class="lineNum">     149 </span>            :          {
+<span class="lineNum">     150 </span>            :                  return m_equalVertexThreshold;
+<span class="lineNum">     151 </span>            :          }
+<span class="lineNum">     152 </span>            : 
+<span class="lineNum">     153 </span>            :          bool closest(btVector3&amp; v);
+<span class="lineNum">     154 </span>            : 
+<span class="lineNum">     155 </span>            :          btScalar maxVertex();
+<span class="lineNum">     156 </span>            : 
+<span class="lineNum">     157 </span>            :          bool fullSimplex() const
+<span class="lineNum">     158 </span>            :          {
+<span class="lineNum">     159 </span>            :                  return (m_numVertices == 4);
+<span class="lineNum">     160 </span>            :          }
+<span class="lineNum">     161 </span>            : 
+<span class="lineNum">     162 </span>            :          int getSimplex(btVector3 *pBuf, btVector3 *qBuf, btVector3 *yBuf) const;
+<span class="lineNum">     163 </span>            : 
+<span class="lineNum">     164 </span>            :          bool inSimplex(const btVector3&amp; w);
+<span class="lineNum">     165 </span>            :         
+<span class="lineNum">     166 </span>            :          void backup_closest(btVector3&amp; v) ;
+<span class="lineNum">     167 </span>            : 
+<span class="lineNum">     168 </span>            :          bool emptySimplex() const ;
+<span class="lineNum">     169 </span>            : 
+<span class="lineNum">     170 </span>            :          void compute_points(btVector3&amp; p1, btVector3&amp; p2) ;
+<span class="lineNum">     171 </span>            : 
+<span class="lineNum">     172 </span>            :          int numVertices() const 
+<span class="lineNum">     173 </span>            :          {
+<span class="lineNum">     174 </span>            :                  return m_numVertices;
+<span class="lineNum">     175 </span>            :          }
+<span class="lineNum">     176 </span>            : 
+<span class="lineNum">     177 </span>            : 
+<span class="lineNum">     178 </span>            : };
+<span class="lineNum">     179 </span>            : 
+<span class="lineNum">     180 </span>            : #endif //BT_VORONOI_SIMPLEX_SOLVER_H
+<span class="lineNum">     181 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,1219 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletDynamics/ConstraintSolver/btConeTwistConstraint.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletDynamics/ConstraintSolver</a> - btConeTwistConstraint.cpp<span style="font-size: 80%;"> (source / <a href="btConeTwistConstraint.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">571</td>
+            <td class="headerCovTableEntryLo">0.4 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">23</td>
+            <td class="headerCovTableEntryLo">4.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : btConeTwistConstraint is Copyright (c) 2007 Starbreeze Studios
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : 
+<span class="lineNum">      15 </span>            : Written by: Marcus Hennix
+<span class="lineNum">      16 </span>            : */
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : #include &quot;btConeTwistConstraint.h&quot;
+<span class="lineNum">      20 </span>            : #include &quot;BulletDynamics/Dynamics/btRigidBody.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;LinearMath/btTransformUtil.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;LinearMath/btMinMax.h&quot;
+<span class="lineNum">      23 </span>            : #include &lt;new&gt;
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span>            : //#define CONETWIST_USE_OBSOLETE_SOLVER true
+<span class="lineNum">      28 </span>            : #define CONETWIST_USE_OBSOLETE_SOLVER false
+<span class="lineNum">      29 </span>            : #define CONETWIST_DEF_FIX_THRESH btScalar(.05f)
+<span class="lineNum">      30 </span>            : 
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE btScalar computeAngularImpulseDenominator(const btVector3&amp; axis, const btMatrix3x3&amp; invInertiaWorld)</span>
+<span class="lineNum">      33 </span>            : {
+<span class="lineNum">      34 </span><span class="lineNoCov">          0 :         btVector3 vec = axis * invInertiaWorld;</span>
+<span class="lineNum">      35 </span><span class="lineNoCov">          0 :         return axis.dot(vec);</span>
+<span class="lineNum">      36 </span>            : }
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span><span class="lineNoCov">          0 : btConeTwistConstraint::btConeTwistConstraint(btRigidBody&amp; rbA,btRigidBody&amp; rbB, </span>
+<span class="lineNum">      42 </span><span class="lineNoCov">          0 :                                                                                          const btTransform&amp; rbAFrame,const btTransform&amp; rbBFrame)</span>
+<span class="lineNum">      43 </span>            :                                                                                          :btTypedConstraint(CONETWIST_CONSTRAINT_TYPE, rbA,rbB),m_rbAFrame(rbAFrame),m_rbBFrame(rbBFrame),
+<span class="lineNum">      44 </span>            :                                                                                          m_angularOnly(false),
+<span class="lineNum">      45 </span><span class="lineNoCov">          0 :                                                                                          m_useSolveConstraintObsolete(CONETWIST_USE_OBSOLETE_SOLVER)</span>
+<span class="lineNum">      46 </span>            : {
+<span class="lineNum">      47 </span><span class="lineNoCov">          0 :         init();</span>
+<span class="lineNum">      48 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span><span class="lineNoCov">          0 : btConeTwistConstraint::btConeTwistConstraint(btRigidBody&amp; rbA,const btTransform&amp; rbAFrame)</span>
+<span class="lineNum">      51 </span>            :                                                                                         :btTypedConstraint(CONETWIST_CONSTRAINT_TYPE,rbA),m_rbAFrame(rbAFrame),
+<span class="lineNum">      52 </span>            :                                                                                          m_angularOnly(false),
+<span class="lineNum">      53 </span><span class="lineNoCov">          0 :                                                                                          m_useSolveConstraintObsolete(CONETWIST_USE_OBSOLETE_SOLVER)</span>
+<span class="lineNum">      54 </span>            : {
+<span class="lineNum">      55 </span><span class="lineNoCov">          0 :         m_rbBFrame = m_rbAFrame;</span>
+<span class="lineNum">      56 </span><span class="lineNoCov">          0 :         init(); </span>
+<span class="lineNum">      57 </span><span class="lineNoCov">          0 : }</span>
+<a name="58"><span class="lineNum">      58 </span>            : </a>
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::init()</span>
+<span class="lineNum">      61 </span>            : {
+<span class="lineNum">      62 </span><span class="lineNoCov">          0 :         m_angularOnly = false;</span>
+<span class="lineNum">      63 </span><span class="lineNoCov">          0 :         m_solveTwistLimit = false;</span>
+<span class="lineNum">      64 </span><span class="lineNoCov">          0 :         m_solveSwingLimit = false;</span>
+<span class="lineNum">      65 </span><span class="lineNoCov">          0 :         m_bMotorEnabled = false;</span>
+<span class="lineNum">      66 </span><span class="lineNoCov">          0 :         m_maxMotorImpulse = btScalar(-1);</span>
+<span class="lineNum">      67 </span>            : 
+<span class="lineNum">      68 </span><span class="lineNoCov">          0 :         setLimit(btScalar(BT_LARGE_FLOAT), btScalar(BT_LARGE_FLOAT), btScalar(BT_LARGE_FLOAT));</span>
+<span class="lineNum">      69 </span><span class="lineNoCov">          0 :         m_damping = btScalar(0.01);</span>
+<span class="lineNum">      70 </span><span class="lineNoCov">          0 :         m_fixThresh = CONETWIST_DEF_FIX_THRESH;</span>
+<span class="lineNum">      71 </span><span class="lineNoCov">          0 :         m_flags = 0;</span>
+<span class="lineNum">      72 </span><span class="lineNoCov">          0 :         m_linCFM = btScalar(0.f);</span>
+<span class="lineNum">      73 </span><span class="lineNoCov">          0 :         m_linERP = btScalar(0.7f);</span>
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 :         m_angCFM = btScalar(0.f);</span>
+<span class="lineNum">      75 </span><span class="lineNoCov">          0 : }</span>
+<a name="76"><span class="lineNum">      76 </span>            : </a>
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::getInfo1 (btConstraintInfo1* info)</span>
+<span class="lineNum">      79 </span>            : {
+<span class="lineNum">      80 </span><span class="lineNoCov">          0 :         if (m_useSolveConstraintObsolete)</span>
+<span class="lineNum">      81 </span>            :         {
+<span class="lineNum">      82 </span><span class="lineNoCov">          0 :                 info-&gt;m_numConstraintRows = 0;</span>
+<span class="lineNum">      83 </span><span class="lineNoCov">          0 :                 info-&gt;nub = 0;</span>
+<span class="lineNum">      84 </span>            :         } 
+<span class="lineNum">      85 </span>            :         else
+<span class="lineNum">      86 </span>            :         {
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :                 info-&gt;m_numConstraintRows = 3;</span>
+<span class="lineNum">      88 </span><span class="lineNoCov">          0 :                 info-&gt;nub = 3;</span>
+<span class="lineNum">      89 </span><span class="lineNoCov">          0 :                 calcAngleInfo2(m_rbA.getCenterOfMassTransform(),m_rbB.getCenterOfMassTransform(),m_rbA.getInvInertiaTensorWorld(),m_rbB.getInvInertiaTensorWorld());</span>
+<span class="lineNum">      90 </span><span class="lineNoCov">          0 :                 if(m_solveSwingLimit)</span>
+<span class="lineNum">      91 </span>            :                 {
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :                         info-&gt;m_numConstraintRows++;</span>
+<span class="lineNum">      93 </span><span class="lineNoCov">          0 :                         info-&gt;nub--;</span>
+<span class="lineNum">      94 </span><span class="lineNoCov">          0 :                         if((m_swingSpan1 &lt; m_fixThresh) &amp;&amp; (m_swingSpan2 &lt; m_fixThresh))</span>
+<span class="lineNum">      95 </span>            :                         {
+<span class="lineNum">      96 </span><span class="lineNoCov">          0 :                                 info-&gt;m_numConstraintRows++;</span>
+<span class="lineNum">      97 </span><span class="lineNoCov">          0 :                                 info-&gt;nub--;</span>
+<span class="lineNum">      98 </span>            :                         }
+<span class="lineNum">      99 </span>            :                 }
+<span class="lineNum">     100 </span><span class="lineNoCov">          0 :                 if(m_solveTwistLimit)</span>
+<span class="lineNum">     101 </span>            :                 {
+<span class="lineNum">     102 </span><span class="lineNoCov">          0 :                         info-&gt;m_numConstraintRows++;</span>
+<span class="lineNum">     103 </span><span class="lineNoCov">          0 :                         info-&gt;nub--;</span>
+<span class="lineNum">     104 </span>            :                 }
+<span class="lineNum">     105 </span>            :         }
+<a name="106"><span class="lineNum">     106 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     107 </span>            : 
+<span class="lineNum">     108 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::getInfo1NonVirtual (btConstraintInfo1* info)</span>
+<span class="lineNum">     109 </span>            : {
+<span class="lineNum">     110 </span>            :         //always reserve 6 rows: object transform is not available on SPU
+<span class="lineNum">     111 </span><span class="lineNoCov">          0 :         info-&gt;m_numConstraintRows = 6;</span>
+<span class="lineNum">     112 </span><span class="lineNoCov">          0 :         info-&gt;nub = 0;</span>
+<span class="lineNum">     113 </span>            :                 
+<span class="lineNum">     114 </span><span class="lineNoCov">          0 : }</span>
+<a name="115"><span class="lineNum">     115 </span>            :         </a>
+<span class="lineNum">     116 </span>            : 
+<span class="lineNum">     117 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::getInfo2 (btConstraintInfo2* info)</span>
+<span class="lineNum">     118 </span>            : {
+<span class="lineNum">     119 </span><span class="lineNoCov">          0 :         getInfo2NonVirtual(info,m_rbA.getCenterOfMassTransform(),m_rbB.getCenterOfMassTransform(),m_rbA.getInvInertiaTensorWorld(),m_rbB.getInvInertiaTensorWorld());</span>
+<span class="lineNum">     120 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     121 </span>            : 
+<span class="lineNum">     122 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::getInfo2NonVirtual (btConstraintInfo2* info,const btTransform&amp; transA,const btTransform&amp; transB,const btMatrix3x3&amp; invInertiaWorldA,const btMatrix3x3&amp; invInertiaWorldB)</span>
+<span class="lineNum">     123 </span>            : {
+<span class="lineNum">     124 </span><span class="lineNoCov">          0 :         calcAngleInfo2(transA,transB,invInertiaWorldA,invInertiaWorldB);</span>
+<span class="lineNum">     125 </span>            :         
+<span class="lineNum">     126 </span>            :         btAssert(!m_useSolveConstraintObsolete);
+<span class="lineNum">     127 </span>            :     // set jacobian
+<span class="lineNum">     128 </span><span class="lineNoCov">          0 :     info-&gt;m_J1linearAxis[0] = 1;</span>
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :     info-&gt;m_J1linearAxis[info-&gt;rowskip+1] = 1;</span>
+<span class="lineNum">     130 </span><span class="lineNoCov">          0 :     info-&gt;m_J1linearAxis[2*info-&gt;rowskip+2] = 1;</span>
+<span class="lineNum">     131 </span><span class="lineNoCov">          0 :         btVector3 a1 = transA.getBasis() * m_rbAFrame.getOrigin();</span>
+<span class="lineNum">     132 </span>            :         {
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :                 btVector3* angular0 = (btVector3*)(info-&gt;m_J1angularAxis);</span>
+<span class="lineNum">     134 </span><span class="lineNoCov">          0 :                 btVector3* angular1 = (btVector3*)(info-&gt;m_J1angularAxis+info-&gt;rowskip);</span>
+<span class="lineNum">     135 </span><span class="lineNoCov">          0 :                 btVector3* angular2 = (btVector3*)(info-&gt;m_J1angularAxis+2*info-&gt;rowskip);</span>
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 :                 btVector3 a1neg = -a1;</span>
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 :                 a1neg.getSkewSymmetricMatrix(angular0,angular1,angular2);</span>
+<span class="lineNum">     138 </span>            :         }
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :         btVector3 a2 = transB.getBasis() * m_rbBFrame.getOrigin();</span>
+<span class="lineNum">     140 </span>            :         {
+<span class="lineNum">     141 </span><span class="lineNoCov">          0 :                 btVector3* angular0 = (btVector3*)(info-&gt;m_J2angularAxis);</span>
+<span class="lineNum">     142 </span><span class="lineNoCov">          0 :                 btVector3* angular1 = (btVector3*)(info-&gt;m_J2angularAxis+info-&gt;rowskip);</span>
+<span class="lineNum">     143 </span><span class="lineNoCov">          0 :                 btVector3* angular2 = (btVector3*)(info-&gt;m_J2angularAxis+2*info-&gt;rowskip);</span>
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :                 a2.getSkewSymmetricMatrix(angular0,angular1,angular2);</span>
+<span class="lineNum">     145 </span>            :         }
+<span class="lineNum">     146 </span>            :     // set right hand side
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :         btScalar linERP = (m_flags &amp; BT_CONETWIST_FLAGS_LIN_ERP) ? m_linERP : info-&gt;erp;</span>
+<span class="lineNum">     148 </span><span class="lineNoCov">          0 :     btScalar k = info-&gt;fps * linERP;</span>
+<span class="lineNum">     149 </span>            :     int j;
+<span class="lineNum">     150 </span><span class="lineNoCov">          0 :         for (j=0; j&lt;3; j++)</span>
+<span class="lineNum">     151 </span>            :     {
+<span class="lineNum">     152 </span><span class="lineNoCov">          0 :         info-&gt;m_constraintError[j*info-&gt;rowskip] = k * (a2[j] + transB.getOrigin()[j] - a1[j] - transA.getOrigin()[j]);</span>
+<span class="lineNum">     153 </span><span class="lineNoCov">          0 :                 info-&gt;m_lowerLimit[j*info-&gt;rowskip] = -SIMD_INFINITY;</span>
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :                 info-&gt;m_upperLimit[j*info-&gt;rowskip] = SIMD_INFINITY;</span>
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :                 if(m_flags &amp; BT_CONETWIST_FLAGS_LIN_CFM)</span>
+<span class="lineNum">     156 </span>            :                 {
+<span class="lineNum">     157 </span><span class="lineNoCov">          0 :                         info-&gt;cfm[j*info-&gt;rowskip] = m_linCFM;</span>
+<span class="lineNum">     158 </span>            :                 }
+<span class="lineNum">     159 </span>            :     }
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :         int row = 3;</span>
+<span class="lineNum">     161 </span><span class="lineNoCov">          0 :     int srow = row * info-&gt;rowskip;</span>
+<span class="lineNum">     162 </span><span class="lineNoCov">          0 :         btVector3 ax1;</span>
+<span class="lineNum">     163 </span>            :         // angular limits
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :         if(m_solveSwingLimit)</span>
+<span class="lineNum">     165 </span>            :         {
+<span class="lineNum">     166 </span><span class="lineNoCov">          0 :                 btScalar *J1 = info-&gt;m_J1angularAxis;</span>
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :                 btScalar *J2 = info-&gt;m_J2angularAxis;</span>
+<span class="lineNum">     168 </span><span class="lineNoCov">          0 :                 if((m_swingSpan1 &lt; m_fixThresh) &amp;&amp; (m_swingSpan2 &lt; m_fixThresh))</span>
+<span class="lineNum">     169 </span>            :                 {
+<span class="lineNum">     170 </span><span class="lineNoCov">          0 :                         btTransform trA = transA*m_rbAFrame;</span>
+<span class="lineNum">     171 </span><span class="lineNoCov">          0 :                         btVector3 p = trA.getBasis().getColumn(1);</span>
+<span class="lineNum">     172 </span><span class="lineNoCov">          0 :                         btVector3 q = trA.getBasis().getColumn(2);</span>
+<span class="lineNum">     173 </span><span class="lineNoCov">          0 :                         int srow1 = srow + info-&gt;rowskip;</span>
+<span class="lineNum">     174 </span><span class="lineNoCov">          0 :                         J1[srow+0] = p[0];</span>
+<span class="lineNum">     175 </span><span class="lineNoCov">          0 :                         J1[srow+1] = p[1];</span>
+<span class="lineNum">     176 </span><span class="lineNoCov">          0 :                         J1[srow+2] = p[2];</span>
+<span class="lineNum">     177 </span><span class="lineNoCov">          0 :                         J1[srow1+0] = q[0];</span>
+<span class="lineNum">     178 </span><span class="lineNoCov">          0 :                         J1[srow1+1] = q[1];</span>
+<span class="lineNum">     179 </span><span class="lineNoCov">          0 :                         J1[srow1+2] = q[2];</span>
+<span class="lineNum">     180 </span><span class="lineNoCov">          0 :                         J2[srow+0] = -p[0];</span>
+<span class="lineNum">     181 </span><span class="lineNoCov">          0 :                         J2[srow+1] = -p[1];</span>
+<span class="lineNum">     182 </span><span class="lineNoCov">          0 :                         J2[srow+2] = -p[2];</span>
+<span class="lineNum">     183 </span><span class="lineNoCov">          0 :                         J2[srow1+0] = -q[0];</span>
+<span class="lineNum">     184 </span><span class="lineNoCov">          0 :                         J2[srow1+1] = -q[1];</span>
+<span class="lineNum">     185 </span><span class="lineNoCov">          0 :                         J2[srow1+2] = -q[2];</span>
+<span class="lineNum">     186 </span><span class="lineNoCov">          0 :                         btScalar fact = info-&gt;fps * m_relaxationFactor;</span>
+<span class="lineNum">     187 </span><span class="lineNoCov">          0 :                         info-&gt;m_constraintError[srow] =   fact * m_swingAxis.dot(p);</span>
+<span class="lineNum">     188 </span><span class="lineNoCov">          0 :                         info-&gt;m_constraintError[srow1] =  fact * m_swingAxis.dot(q);</span>
+<span class="lineNum">     189 </span><span class="lineNoCov">          0 :                         info-&gt;m_lowerLimit[srow] = -SIMD_INFINITY;</span>
+<span class="lineNum">     190 </span><span class="lineNoCov">          0 :                         info-&gt;m_upperLimit[srow] = SIMD_INFINITY;</span>
+<span class="lineNum">     191 </span><span class="lineNoCov">          0 :                         info-&gt;m_lowerLimit[srow1] = -SIMD_INFINITY;</span>
+<span class="lineNum">     192 </span><span class="lineNoCov">          0 :                         info-&gt;m_upperLimit[srow1] = SIMD_INFINITY;</span>
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 :                         srow = srow1 + info-&gt;rowskip;</span>
+<span class="lineNum">     194 </span>            :                 }
+<span class="lineNum">     195 </span>            :                 else
+<span class="lineNum">     196 </span>            :                 {
+<span class="lineNum">     197 </span><span class="lineNoCov">          0 :                         ax1 = m_swingAxis * m_relaxationFactor * m_relaxationFactor;</span>
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :                         J1[srow+0] = ax1[0];</span>
+<span class="lineNum">     199 </span><span class="lineNoCov">          0 :                         J1[srow+1] = ax1[1];</span>
+<span class="lineNum">     200 </span><span class="lineNoCov">          0 :                         J1[srow+2] = ax1[2];</span>
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 :                         J2[srow+0] = -ax1[0];</span>
+<span class="lineNum">     202 </span><span class="lineNoCov">          0 :                         J2[srow+1] = -ax1[1];</span>
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :                         J2[srow+2] = -ax1[2];</span>
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :                         btScalar k = info-&gt;fps * m_biasFactor;</span>
+<span class="lineNum">     205 </span>            : 
+<span class="lineNum">     206 </span><span class="lineNoCov">          0 :                         info-&gt;m_constraintError[srow] = k * m_swingCorrection;</span>
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 :                         if(m_flags &amp; BT_CONETWIST_FLAGS_ANG_CFM)</span>
+<span class="lineNum">     208 </span>            :                         {
+<span class="lineNum">     209 </span><span class="lineNoCov">          0 :                                 info-&gt;cfm[srow] = m_angCFM;</span>
+<span class="lineNum">     210 </span>            :                         }
+<span class="lineNum">     211 </span>            :                         // m_swingCorrection is always positive or 0
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :                         info-&gt;m_lowerLimit[srow] = 0;</span>
+<span class="lineNum">     213 </span><span class="lineNoCov">          0 :                         info-&gt;m_upperLimit[srow] = SIMD_INFINITY;</span>
+<span class="lineNum">     214 </span><span class="lineNoCov">          0 :                         srow += info-&gt;rowskip;</span>
+<span class="lineNum">     215 </span>            :                 }
+<span class="lineNum">     216 </span>            :         }
+<span class="lineNum">     217 </span><span class="lineNoCov">          0 :         if(m_solveTwistLimit)</span>
+<span class="lineNum">     218 </span>            :         {
+<span class="lineNum">     219 </span><span class="lineNoCov">          0 :                 ax1 = m_twistAxis * m_relaxationFactor * m_relaxationFactor;</span>
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :                 btScalar *J1 = info-&gt;m_J1angularAxis;</span>
+<span class="lineNum">     221 </span><span class="lineNoCov">          0 :                 btScalar *J2 = info-&gt;m_J2angularAxis;</span>
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :                 J1[srow+0] = ax1[0];</span>
+<span class="lineNum">     223 </span><span class="lineNoCov">          0 :                 J1[srow+1] = ax1[1];</span>
+<span class="lineNum">     224 </span><span class="lineNoCov">          0 :                 J1[srow+2] = ax1[2];</span>
+<span class="lineNum">     225 </span><span class="lineNoCov">          0 :                 J2[srow+0] = -ax1[0];</span>
+<span class="lineNum">     226 </span><span class="lineNoCov">          0 :                 J2[srow+1] = -ax1[1];</span>
+<span class="lineNum">     227 </span><span class="lineNoCov">          0 :                 J2[srow+2] = -ax1[2];</span>
+<span class="lineNum">     228 </span><span class="lineNoCov">          0 :                 btScalar k = info-&gt;fps * m_biasFactor;</span>
+<span class="lineNum">     229 </span><span class="lineNoCov">          0 :                 info-&gt;m_constraintError[srow] = k * m_twistCorrection;</span>
+<span class="lineNum">     230 </span><span class="lineNoCov">          0 :                 if(m_flags &amp; BT_CONETWIST_FLAGS_ANG_CFM)</span>
+<span class="lineNum">     231 </span>            :                 {
+<span class="lineNum">     232 </span><span class="lineNoCov">          0 :                         info-&gt;cfm[srow] = m_angCFM;</span>
+<span class="lineNum">     233 </span>            :                 }
+<span class="lineNum">     234 </span><span class="lineNoCov">          0 :                 if(m_twistSpan &gt; 0.0f)</span>
+<span class="lineNum">     235 </span>            :                 {
+<span class="lineNum">     236 </span>            : 
+<span class="lineNum">     237 </span><span class="lineNoCov">          0 :                         if(m_twistCorrection &gt; 0.0f)</span>
+<span class="lineNum">     238 </span>            :                         {
+<span class="lineNum">     239 </span><span class="lineNoCov">          0 :                                 info-&gt;m_lowerLimit[srow] = 0;</span>
+<span class="lineNum">     240 </span><span class="lineNoCov">          0 :                                 info-&gt;m_upperLimit[srow] = SIMD_INFINITY;</span>
+<span class="lineNum">     241 </span>            :                         } 
+<span class="lineNum">     242 </span>            :                         else
+<span class="lineNum">     243 </span>            :                         {
+<span class="lineNum">     244 </span><span class="lineNoCov">          0 :                                 info-&gt;m_lowerLimit[srow] = -SIMD_INFINITY;</span>
+<span class="lineNum">     245 </span><span class="lineNoCov">          0 :                                 info-&gt;m_upperLimit[srow] = 0;</span>
+<span class="lineNum">     246 </span>            :                         } 
+<span class="lineNum">     247 </span>            :                 }
+<span class="lineNum">     248 </span>            :                 else
+<span class="lineNum">     249 </span>            :                 {
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :                         info-&gt;m_lowerLimit[srow] = -SIMD_INFINITY;</span>
+<span class="lineNum">     251 </span><span class="lineNoCov">          0 :                         info-&gt;m_upperLimit[srow] = SIMD_INFINITY;</span>
+<span class="lineNum">     252 </span>            :                 }
+<span class="lineNum">     253 </span><span class="lineNoCov">          0 :                 srow += info-&gt;rowskip;</span>
+<span class="lineNum">     254 </span>            :         }
+<span class="lineNum">     255 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     256 </span>            :         
+<span class="lineNum">     257 </span>            : 
+<span class="lineNum">     258 </span>            : 
+<span class="lineNum">     259 </span><span class="lineNoCov">          0 : void    btConeTwistConstraint::buildJacobian()</span>
+<span class="lineNum">     260 </span>            : {
+<span class="lineNum">     261 </span><span class="lineNoCov">          0 :         if (m_useSolveConstraintObsolete)</span>
+<span class="lineNum">     262 </span>            :         {
+<span class="lineNum">     263 </span><span class="lineNoCov">          0 :                 m_appliedImpulse = btScalar(0.);</span>
+<span class="lineNum">     264 </span><span class="lineNoCov">          0 :                 m_accTwistLimitImpulse = btScalar(0.);</span>
+<span class="lineNum">     265 </span><span class="lineNoCov">          0 :                 m_accSwingLimitImpulse = btScalar(0.);</span>
+<span class="lineNum">     266 </span><span class="lineNoCov">          0 :                 m_accMotorImpulse = btVector3(0.,0.,0.);</span>
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span><span class="lineNoCov">          0 :                 if (!m_angularOnly)</span>
+<span class="lineNum">     269 </span>            :                 {
+<span class="lineNum">     270 </span><span class="lineNoCov">          0 :                         btVector3 pivotAInW = m_rbA.getCenterOfMassTransform()*m_rbAFrame.getOrigin();</span>
+<span class="lineNum">     271 </span><span class="lineNoCov">          0 :                         btVector3 pivotBInW = m_rbB.getCenterOfMassTransform()*m_rbBFrame.getOrigin();</span>
+<span class="lineNum">     272 </span><span class="lineNoCov">          0 :                         btVector3 relPos = pivotBInW - pivotAInW;</span>
+<span class="lineNum">     273 </span>            : 
+<span class="lineNum">     274 </span><span class="lineNoCov">          0 :                         btVector3 normal[3];</span>
+<span class="lineNum">     275 </span><span class="lineNoCov">          0 :                         if (relPos.length2() &gt; SIMD_EPSILON)</span>
+<span class="lineNum">     276 </span>            :                         {
+<span class="lineNum">     277 </span><span class="lineNoCov">          0 :                                 normal[0] = relPos.normalized();</span>
+<span class="lineNum">     278 </span>            :                         }
+<span class="lineNum">     279 </span>            :                         else
+<span class="lineNum">     280 </span>            :                         {
+<span class="lineNum">     281 </span><span class="lineNoCov">          0 :                                 normal[0].setValue(btScalar(1.0),0,0);</span>
+<span class="lineNum">     282 </span>            :                         }
+<span class="lineNum">     283 </span>            : 
+<span class="lineNum">     284 </span><span class="lineNoCov">          0 :                         btPlaneSpace1(normal[0], normal[1], normal[2]);</span>
+<span class="lineNum">     285 </span>            : 
+<span class="lineNum">     286 </span><span class="lineNoCov">          0 :                         for (int i=0;i&lt;3;i++)</span>
+<span class="lineNum">     287 </span>            :                         {
+<span class="lineNum">     288 </span><span class="lineNoCov">          0 :                                 new (&amp;m_jac[i]) btJacobianEntry(</span>
+<span class="lineNum">     289 </span><span class="lineNoCov">          0 :                                 m_rbA.getCenterOfMassTransform().getBasis().transpose(),</span>
+<span class="lineNum">     290 </span><span class="lineNoCov">          0 :                                 m_rbB.getCenterOfMassTransform().getBasis().transpose(),</span>
+<span class="lineNum">     291 </span><span class="lineNoCov">          0 :                                 pivotAInW - m_rbA.getCenterOfMassPosition(),</span>
+<span class="lineNum">     292 </span><span class="lineNoCov">          0 :                                 pivotBInW - m_rbB.getCenterOfMassPosition(),</span>
+<span class="lineNum">     293 </span>            :                                 normal[i],
+<span class="lineNum">     294 </span><span class="lineNoCov">          0 :                                 m_rbA.getInvInertiaDiagLocal(),</span>
+<span class="lineNum">     295 </span><span class="lineNoCov">          0 :                                 m_rbA.getInvMass(),</span>
+<span class="lineNum">     296 </span><span class="lineNoCov">          0 :                                 m_rbB.getInvInertiaDiagLocal(),</span>
+<span class="lineNum">     297 </span><span class="lineNoCov">          0 :                                 m_rbB.getInvMass());</span>
+<span class="lineNum">     298 </span>            :                         }
+<span class="lineNum">     299 </span>            :                 }
+<span class="lineNum">     300 </span>            : 
+<span class="lineNum">     301 </span><span class="lineNoCov">          0 :                 calcAngleInfo2(m_rbA.getCenterOfMassTransform(),m_rbB.getCenterOfMassTransform(),m_rbA.getInvInertiaTensorWorld(),m_rbB.getInvInertiaTensorWorld());</span>
+<span class="lineNum">     302 </span>            :         }
+<span class="lineNum">     303 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     304 </span>            : 
+<span class="lineNum">     305 </span>            : 
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span><span class="lineNoCov">          0 : void    btConeTwistConstraint::solveConstraintObsolete(btSolverBody&amp; bodyA,btSolverBody&amp; bodyB,btScalar timeStep)</span>
+<span class="lineNum">     308 </span>            : {
+<span class="lineNum">     309 </span>            :         #ifndef __SPU__
+<span class="lineNum">     310 </span><span class="lineNoCov">          0 :         if (m_useSolveConstraintObsolete)</span>
+<span class="lineNum">     311 </span>            :         {
+<span class="lineNum">     312 </span><span class="lineNoCov">          0 :                 btVector3 pivotAInW = m_rbA.getCenterOfMassTransform()*m_rbAFrame.getOrigin();</span>
+<span class="lineNum">     313 </span><span class="lineNoCov">          0 :                 btVector3 pivotBInW = m_rbB.getCenterOfMassTransform()*m_rbBFrame.getOrigin();</span>
+<span class="lineNum">     314 </span>            : 
+<span class="lineNum">     315 </span><span class="lineNoCov">          0 :                 btScalar tau = btScalar(0.3);</span>
+<span class="lineNum">     316 </span>            : 
+<span class="lineNum">     317 </span>            :                 //linear part
+<span class="lineNum">     318 </span><span class="lineNoCov">          0 :                 if (!m_angularOnly)</span>
+<span class="lineNum">     319 </span>            :                 {
+<span class="lineNum">     320 </span><span class="lineNoCov">          0 :                         btVector3 rel_pos1 = pivotAInW - m_rbA.getCenterOfMassPosition(); </span>
+<span class="lineNum">     321 </span><span class="lineNoCov">          0 :                         btVector3 rel_pos2 = pivotBInW - m_rbB.getCenterOfMassPosition();</span>
+<span class="lineNum">     322 </span>            : 
+<span class="lineNum">     323 </span><span class="lineNoCov">          0 :                         btVector3 vel1;</span>
+<span class="lineNum">     324 </span><span class="lineNoCov">          0 :                         bodyA.internalGetVelocityInLocalPointObsolete(rel_pos1,vel1);</span>
+<span class="lineNum">     325 </span><span class="lineNoCov">          0 :                         btVector3 vel2;</span>
+<span class="lineNum">     326 </span><span class="lineNoCov">          0 :                         bodyB.internalGetVelocityInLocalPointObsolete(rel_pos2,vel2);</span>
+<span class="lineNum">     327 </span><span class="lineNoCov">          0 :                         btVector3 vel = vel1 - vel2;</span>
+<span class="lineNum">     328 </span>            : 
+<span class="lineNum">     329 </span><span class="lineNoCov">          0 :                         for (int i=0;i&lt;3;i++)</span>
+<span class="lineNum">     330 </span>            :                         {               
+<span class="lineNum">     331 </span><span class="lineNoCov">          0 :                                 const btVector3&amp; normal = m_jac[i].m_linearJointAxis;</span>
+<span class="lineNum">     332 </span><span class="lineNoCov">          0 :                                 btScalar jacDiagABInv = btScalar(1.) / m_jac[i].getDiagonal();</span>
+<span class="lineNum">     333 </span>            : 
+<span class="lineNum">     334 </span>            :                                 btScalar rel_vel;
+<span class="lineNum">     335 </span><span class="lineNoCov">          0 :                                 rel_vel = normal.dot(vel);</span>
+<span class="lineNum">     336 </span>            :                                 //positional error (zeroth order error)
+<span class="lineNum">     337 </span><span class="lineNoCov">          0 :                                 btScalar depth = -(pivotAInW - pivotBInW).dot(normal); //this is the error projected on the normal</span>
+<span class="lineNum">     338 </span><span class="lineNoCov">          0 :                                 btScalar impulse = depth*tau/timeStep  * jacDiagABInv -  rel_vel * jacDiagABInv;</span>
+<span class="lineNum">     339 </span><span class="lineNoCov">          0 :                                 m_appliedImpulse += impulse;</span>
+<span class="lineNum">     340 </span>            :                                 
+<span class="lineNum">     341 </span><span class="lineNoCov">          0 :                                 btVector3 ftorqueAxis1 = rel_pos1.cross(normal);</span>
+<span class="lineNum">     342 </span><span class="lineNoCov">          0 :                                 btVector3 ftorqueAxis2 = rel_pos2.cross(normal);</span>
+<span class="lineNum">     343 </span><span class="lineNoCov">          0 :                                 bodyA.internalApplyImpulse(normal*m_rbA.getInvMass(), m_rbA.getInvInertiaTensorWorld()*ftorqueAxis1,impulse);</span>
+<span class="lineNum">     344 </span><span class="lineNoCov">          0 :                                 bodyB.internalApplyImpulse(normal*m_rbB.getInvMass(), m_rbB.getInvInertiaTensorWorld()*ftorqueAxis2,-impulse);</span>
+<span class="lineNum">     345 </span>            :                 
+<span class="lineNum">     346 </span>            :                         }
+<span class="lineNum">     347 </span>            :                 }
+<span class="lineNum">     348 </span>            : 
+<span class="lineNum">     349 </span>            :                 // apply motor
+<span class="lineNum">     350 </span><span class="lineNoCov">          0 :                 if (m_bMotorEnabled)</span>
+<span class="lineNum">     351 </span>            :                 {
+<span class="lineNum">     352 </span>            :                         // compute current and predicted transforms
+<span class="lineNum">     353 </span><span class="lineNoCov">          0 :                         btTransform trACur = m_rbA.getCenterOfMassTransform();</span>
+<span class="lineNum">     354 </span><span class="lineNoCov">          0 :                         btTransform trBCur = m_rbB.getCenterOfMassTransform();</span>
+<span class="lineNum">     355 </span><span class="lineNoCov">          0 :                         btVector3 omegaA; bodyA.internalGetAngularVelocity(omegaA);</span>
+<span class="lineNum">     356 </span><span class="lineNoCov">          0 :                         btVector3 omegaB; bodyB.internalGetAngularVelocity(omegaB);</span>
+<span class="lineNum">     357 </span><span class="lineNoCov">          0 :                         btTransform trAPred; trAPred.setIdentity(); </span>
+<span class="lineNum">     358 </span><span class="lineNoCov">          0 :                         btVector3 zerovec(0,0,0);</span>
+<span class="lineNum">     359 </span><span class="lineNoCov">          0 :                         btTransformUtil::integrateTransform(</span>
+<span class="lineNum">     360 </span>            :                                 trACur, zerovec, omegaA, timeStep, trAPred);
+<span class="lineNum">     361 </span><span class="lineNoCov">          0 :                         btTransform trBPred; trBPred.setIdentity(); </span>
+<span class="lineNum">     362 </span><span class="lineNoCov">          0 :                         btTransformUtil::integrateTransform(</span>
+<span class="lineNum">     363 </span>            :                                 trBCur, zerovec, omegaB, timeStep, trBPred);
+<span class="lineNum">     364 </span>            : 
+<span class="lineNum">     365 </span>            :                         // compute desired transforms in world
+<span class="lineNum">     366 </span><span class="lineNoCov">          0 :                         btTransform trPose(m_qTarget);</span>
+<span class="lineNum">     367 </span><span class="lineNoCov">          0 :                         btTransform trABDes = m_rbBFrame * trPose * m_rbAFrame.inverse();</span>
+<span class="lineNum">     368 </span><span class="lineNoCov">          0 :                         btTransform trADes = trBPred * trABDes;</span>
+<span class="lineNum">     369 </span><span class="lineNoCov">          0 :                         btTransform trBDes = trAPred * trABDes.inverse();</span>
+<span class="lineNum">     370 </span>            : 
+<span class="lineNum">     371 </span>            :                         // compute desired omegas in world
+<span class="lineNum">     372 </span><span class="lineNoCov">          0 :                         btVector3 omegaADes, omegaBDes;</span>
+<span class="lineNum">     373 </span>            :                         
+<span class="lineNum">     374 </span><span class="lineNoCov">          0 :                         btTransformUtil::calculateVelocity(trACur, trADes, timeStep, zerovec, omegaADes);</span>
+<span class="lineNum">     375 </span><span class="lineNoCov">          0 :                         btTransformUtil::calculateVelocity(trBCur, trBDes, timeStep, zerovec, omegaBDes);</span>
+<span class="lineNum">     376 </span>            : 
+<span class="lineNum">     377 </span>            :                         // compute delta omegas
+<span class="lineNum">     378 </span><span class="lineNoCov">          0 :                         btVector3 dOmegaA = omegaADes - omegaA;</span>
+<span class="lineNum">     379 </span><span class="lineNoCov">          0 :                         btVector3 dOmegaB = omegaBDes - omegaB;</span>
+<span class="lineNum">     380 </span>            : 
+<span class="lineNum">     381 </span>            :                         // compute weighted avg axis of dOmega (weighting based on inertias)
+<span class="lineNum">     382 </span><span class="lineNoCov">          0 :                         btVector3 axisA, axisB;</span>
+<span class="lineNum">     383 </span><span class="lineNoCov">          0 :                         btScalar kAxisAInv = 0, kAxisBInv = 0;</span>
+<span class="lineNum">     384 </span>            : 
+<span class="lineNum">     385 </span><span class="lineNoCov">          0 :                         if (dOmegaA.length2() &gt; SIMD_EPSILON)</span>
+<span class="lineNum">     386 </span>            :                         {
+<span class="lineNum">     387 </span><span class="lineNoCov">          0 :                                 axisA = dOmegaA.normalized();</span>
+<span class="lineNum">     388 </span><span class="lineNoCov">          0 :                                 kAxisAInv = getRigidBodyA().computeAngularImpulseDenominator(axisA);</span>
+<span class="lineNum">     389 </span>            :                         }
+<span class="lineNum">     390 </span>            : 
+<span class="lineNum">     391 </span><span class="lineNoCov">          0 :                         if (dOmegaB.length2() &gt; SIMD_EPSILON)</span>
+<span class="lineNum">     392 </span>            :                         {
+<span class="lineNum">     393 </span><span class="lineNoCov">          0 :                                 axisB = dOmegaB.normalized();</span>
+<span class="lineNum">     394 </span><span class="lineNoCov">          0 :                                 kAxisBInv = getRigidBodyB().computeAngularImpulseDenominator(axisB);</span>
+<span class="lineNum">     395 </span>            :                         }
+<span class="lineNum">     396 </span>            : 
+<span class="lineNum">     397 </span><span class="lineNoCov">          0 :                         btVector3 avgAxis = kAxisAInv * axisA + kAxisBInv * axisB;</span>
+<span class="lineNum">     398 </span>            : 
+<span class="lineNum">     399 </span>            :                         static bool bDoTorque = true;
+<span class="lineNum">     400 </span><span class="lineNoCov">          0 :                         if (bDoTorque &amp;&amp; avgAxis.length2() &gt; SIMD_EPSILON)</span>
+<span class="lineNum">     401 </span>            :                         {
+<span class="lineNum">     402 </span><span class="lineNoCov">          0 :                                 avgAxis.normalize();</span>
+<span class="lineNum">     403 </span><span class="lineNoCov">          0 :                                 kAxisAInv = getRigidBodyA().computeAngularImpulseDenominator(avgAxis);</span>
+<span class="lineNum">     404 </span><span class="lineNoCov">          0 :                                 kAxisBInv = getRigidBodyB().computeAngularImpulseDenominator(avgAxis);</span>
+<span class="lineNum">     405 </span><span class="lineNoCov">          0 :                                 btScalar kInvCombined = kAxisAInv + kAxisBInv;</span>
+<span class="lineNum">     406 </span>            : 
+<span class="lineNum">     407 </span><span class="lineNoCov">          0 :                                 btVector3 impulse = (kAxisAInv * dOmegaA - kAxisBInv * dOmegaB) /</span>
+<span class="lineNum">     408 </span><span class="lineNoCov">          0 :                                                                         (kInvCombined * kInvCombined);</span>
+<span class="lineNum">     409 </span>            : 
+<span class="lineNum">     410 </span><span class="lineNoCov">          0 :                                 if (m_maxMotorImpulse &gt;= 0)</span>
+<span class="lineNum">     411 </span>            :                                 {
+<span class="lineNum">     412 </span><span class="lineNoCov">          0 :                                         btScalar fMaxImpulse = m_maxMotorImpulse;</span>
+<span class="lineNum">     413 </span><span class="lineNoCov">          0 :                                         if (m_bNormalizedMotorStrength)</span>
+<span class="lineNum">     414 </span><span class="lineNoCov">          0 :                                                 fMaxImpulse = fMaxImpulse/kAxisAInv;</span>
+<span class="lineNum">     415 </span>            : 
+<span class="lineNum">     416 </span><span class="lineNoCov">          0 :                                         btVector3 newUnclampedAccImpulse = m_accMotorImpulse + impulse;</span>
+<span class="lineNum">     417 </span><span class="lineNoCov">          0 :                                         btScalar  newUnclampedMag = newUnclampedAccImpulse.length();</span>
+<span class="lineNum">     418 </span><span class="lineNoCov">          0 :                                         if (newUnclampedMag &gt; fMaxImpulse)</span>
+<span class="lineNum">     419 </span>            :                                         {
+<span class="lineNum">     420 </span><span class="lineNoCov">          0 :                                                 newUnclampedAccImpulse.normalize();</span>
+<span class="lineNum">     421 </span><span class="lineNoCov">          0 :                                                 newUnclampedAccImpulse *= fMaxImpulse;</span>
+<span class="lineNum">     422 </span><span class="lineNoCov">          0 :                                                 impulse = newUnclampedAccImpulse - m_accMotorImpulse;</span>
+<span class="lineNum">     423 </span>            :                                         }
+<span class="lineNum">     424 </span><span class="lineNoCov">          0 :                                         m_accMotorImpulse += impulse;</span>
+<span class="lineNum">     425 </span>            :                                 }
+<span class="lineNum">     426 </span>            : 
+<span class="lineNum">     427 </span><span class="lineNoCov">          0 :                                 btScalar  impulseMag  = impulse.length();</span>
+<span class="lineNum">     428 </span><span class="lineNoCov">          0 :                                 btVector3 impulseAxis =  impulse / impulseMag;</span>
+<span class="lineNum">     429 </span>            : 
+<span class="lineNum">     430 </span><span class="lineNoCov">          0 :                                 bodyA.internalApplyImpulse(btVector3(0,0,0), m_rbA.getInvInertiaTensorWorld()*impulseAxis, impulseMag);</span>
+<span class="lineNum">     431 </span><span class="lineNoCov">          0 :                                 bodyB.internalApplyImpulse(btVector3(0,0,0), m_rbB.getInvInertiaTensorWorld()*impulseAxis, -impulseMag);</span>
+<span class="lineNum">     432 </span>            : 
+<span class="lineNum">     433 </span>            :                         }
+<span class="lineNum">     434 </span>            :                 }
+<span class="lineNum">     435 </span><span class="lineNoCov">          0 :                 else if (m_damping &gt; SIMD_EPSILON) // no motor: do a little damping</span>
+<span class="lineNum">     436 </span>            :                 {
+<span class="lineNum">     437 </span><span class="lineNoCov">          0 :                         btVector3 angVelA; bodyA.internalGetAngularVelocity(angVelA);</span>
+<span class="lineNum">     438 </span><span class="lineNoCov">          0 :                         btVector3 angVelB; bodyB.internalGetAngularVelocity(angVelB);</span>
+<span class="lineNum">     439 </span><span class="lineNoCov">          0 :                         btVector3 relVel = angVelB - angVelA;</span>
+<span class="lineNum">     440 </span><span class="lineNoCov">          0 :                         if (relVel.length2() &gt; SIMD_EPSILON)</span>
+<span class="lineNum">     441 </span>            :                         {
+<span class="lineNum">     442 </span><span class="lineNoCov">          0 :                                 btVector3 relVelAxis = relVel.normalized();</span>
+<span class="lineNum">     443 </span>            :                                 btScalar m_kDamping =  btScalar(1.) /
+<span class="lineNum">     444 </span><span class="lineNoCov">          0 :                                         (getRigidBodyA().computeAngularImpulseDenominator(relVelAxis) +</span>
+<span class="lineNum">     445 </span><span class="lineNoCov">          0 :                                          getRigidBodyB().computeAngularImpulseDenominator(relVelAxis));</span>
+<span class="lineNum">     446 </span><span class="lineNoCov">          0 :                                 btVector3 impulse = m_damping * m_kDamping * relVel;</span>
+<span class="lineNum">     447 </span>            : 
+<span class="lineNum">     448 </span><span class="lineNoCov">          0 :                                 btScalar  impulseMag  = impulse.length();</span>
+<span class="lineNum">     449 </span><span class="lineNoCov">          0 :                                 btVector3 impulseAxis = impulse / impulseMag;</span>
+<span class="lineNum">     450 </span><span class="lineNoCov">          0 :                                 bodyA.internalApplyImpulse(btVector3(0,0,0), m_rbA.getInvInertiaTensorWorld()*impulseAxis, impulseMag);</span>
+<span class="lineNum">     451 </span><span class="lineNoCov">          0 :                                 bodyB.internalApplyImpulse(btVector3(0,0,0), m_rbB.getInvInertiaTensorWorld()*impulseAxis, -impulseMag);</span>
+<span class="lineNum">     452 </span>            :                         }
+<span class="lineNum">     453 </span>            :                 }
+<span class="lineNum">     454 </span>            : 
+<span class="lineNum">     455 </span>            :                 // joint limits
+<span class="lineNum">     456 </span>            :                 {
+<span class="lineNum">     457 </span>            :                         ///solve angular part
+<span class="lineNum">     458 </span><span class="lineNoCov">          0 :                         btVector3 angVelA;</span>
+<span class="lineNum">     459 </span><span class="lineNoCov">          0 :                         bodyA.internalGetAngularVelocity(angVelA);</span>
+<span class="lineNum">     460 </span><span class="lineNoCov">          0 :                         btVector3 angVelB;</span>
+<span class="lineNum">     461 </span><span class="lineNoCov">          0 :                         bodyB.internalGetAngularVelocity(angVelB);</span>
+<span class="lineNum">     462 </span>            : 
+<span class="lineNum">     463 </span>            :                         // solve swing limit
+<span class="lineNum">     464 </span><span class="lineNoCov">          0 :                         if (m_solveSwingLimit)</span>
+<span class="lineNum">     465 </span>            :                         {
+<span class="lineNum">     466 </span><span class="lineNoCov">          0 :                                 btScalar amplitude = m_swingLimitRatio * m_swingCorrection*m_biasFactor/timeStep;</span>
+<span class="lineNum">     467 </span><span class="lineNoCov">          0 :                                 btScalar relSwingVel = (angVelB - angVelA).dot(m_swingAxis);</span>
+<span class="lineNum">     468 </span><span class="lineNoCov">          0 :                                 if (relSwingVel &gt; 0)</span>
+<span class="lineNum">     469 </span><span class="lineNoCov">          0 :                                         amplitude += m_swingLimitRatio * relSwingVel * m_relaxationFactor;</span>
+<span class="lineNum">     470 </span><span class="lineNoCov">          0 :                                 btScalar impulseMag = amplitude * m_kSwing;</span>
+<span class="lineNum">     471 </span>            : 
+<span class="lineNum">     472 </span>            :                                 // Clamp the accumulated impulse
+<span class="lineNum">     473 </span><span class="lineNoCov">          0 :                                 btScalar temp = m_accSwingLimitImpulse;</span>
+<span class="lineNum">     474 </span><span class="lineNoCov">          0 :                                 m_accSwingLimitImpulse = btMax(m_accSwingLimitImpulse + impulseMag, btScalar(0.0) );</span>
+<span class="lineNum">     475 </span><span class="lineNoCov">          0 :                                 impulseMag = m_accSwingLimitImpulse - temp;</span>
+<span class="lineNum">     476 </span>            : 
+<span class="lineNum">     477 </span><span class="lineNoCov">          0 :                                 btVector3 impulse = m_swingAxis * impulseMag;</span>
+<span class="lineNum">     478 </span>            : 
+<span class="lineNum">     479 </span>            :                                 // don't let cone response affect twist
+<span class="lineNum">     480 </span>            :                                 // (this can happen since body A's twist doesn't match body B's AND we use an elliptical cone limit)
+<span class="lineNum">     481 </span>            :                                 {
+<span class="lineNum">     482 </span><span class="lineNoCov">          0 :                                         btVector3 impulseTwistCouple = impulse.dot(m_twistAxisA) * m_twistAxisA;</span>
+<span class="lineNum">     483 </span><span class="lineNoCov">          0 :                                         btVector3 impulseNoTwistCouple = impulse - impulseTwistCouple;</span>
+<span class="lineNum">     484 </span><span class="lineNoCov">          0 :                                         impulse = impulseNoTwistCouple;</span>
+<span class="lineNum">     485 </span>            :                                 }
+<span class="lineNum">     486 </span>            : 
+<span class="lineNum">     487 </span><span class="lineNoCov">          0 :                                 impulseMag = impulse.length();</span>
+<span class="lineNum">     488 </span><span class="lineNoCov">          0 :                                 btVector3 noTwistSwingAxis = impulse / impulseMag;</span>
+<span class="lineNum">     489 </span>            : 
+<span class="lineNum">     490 </span><span class="lineNoCov">          0 :                                 bodyA.internalApplyImpulse(btVector3(0,0,0), m_rbA.getInvInertiaTensorWorld()*noTwistSwingAxis, impulseMag);</span>
+<span class="lineNum">     491 </span><span class="lineNoCov">          0 :                                 bodyB.internalApplyImpulse(btVector3(0,0,0), m_rbB.getInvInertiaTensorWorld()*noTwistSwingAxis, -impulseMag);</span>
+<span class="lineNum">     492 </span>            :                         }
+<span class="lineNum">     493 </span>            : 
+<span class="lineNum">     494 </span>            : 
+<span class="lineNum">     495 </span>            :                         // solve twist limit
+<span class="lineNum">     496 </span><span class="lineNoCov">          0 :                         if (m_solveTwistLimit)</span>
+<span class="lineNum">     497 </span>            :                         {
+<span class="lineNum">     498 </span><span class="lineNoCov">          0 :                                 btScalar amplitude = m_twistLimitRatio * m_twistCorrection*m_biasFactor/timeStep;</span>
+<span class="lineNum">     499 </span><span class="lineNoCov">          0 :                                 btScalar relTwistVel = (angVelB - angVelA).dot( m_twistAxis );</span>
+<span class="lineNum">     500 </span><span class="lineNoCov">          0 :                                 if (relTwistVel &gt; 0) // only damp when moving towards limit (m_twistAxis flipping is important)</span>
+<span class="lineNum">     501 </span><span class="lineNoCov">          0 :                                         amplitude += m_twistLimitRatio * relTwistVel * m_relaxationFactor;</span>
+<span class="lineNum">     502 </span><span class="lineNoCov">          0 :                                 btScalar impulseMag = amplitude * m_kTwist;</span>
+<span class="lineNum">     503 </span>            : 
+<span class="lineNum">     504 </span>            :                                 // Clamp the accumulated impulse
+<span class="lineNum">     505 </span><span class="lineNoCov">          0 :                                 btScalar temp = m_accTwistLimitImpulse;</span>
+<span class="lineNum">     506 </span><span class="lineNoCov">          0 :                                 m_accTwistLimitImpulse = btMax(m_accTwistLimitImpulse + impulseMag, btScalar(0.0) );</span>
+<span class="lineNum">     507 </span><span class="lineNoCov">          0 :                                 impulseMag = m_accTwistLimitImpulse - temp;</span>
+<span class="lineNum">     508 </span>            : 
+<span class="lineNum">     509 </span>            :                 //              btVector3 impulse = m_twistAxis * impulseMag;
+<span class="lineNum">     510 </span>            : 
+<span class="lineNum">     511 </span><span class="lineNoCov">          0 :                                 bodyA.internalApplyImpulse(btVector3(0,0,0), m_rbA.getInvInertiaTensorWorld()*m_twistAxis,impulseMag);</span>
+<span class="lineNum">     512 </span><span class="lineNoCov">          0 :                                 bodyB.internalApplyImpulse(btVector3(0,0,0), m_rbB.getInvInertiaTensorWorld()*m_twistAxis,-impulseMag);</span>
+<span class="lineNum">     513 </span>            :                         }               
+<span class="lineNum">     514 </span>            :                 }
+<span class="lineNum">     515 </span>            :         }
+<span class="lineNum">     516 </span>            : #else
+<span class="lineNum">     517 </span>            : btAssert(0);
+<span class="lineNum">     518 </span>            : #endif //__SPU__
+<span class="lineNum">     519 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     520 </span>            : 
+<span class="lineNum">     521 </span>            : 
+<a name="522"><span class="lineNum">     522 </span>            : </a>
+<span class="lineNum">     523 </span>            : 
+<span class="lineNum">     524 </span><span class="lineNoCov">          0 : void    btConeTwistConstraint::updateRHS(btScalar       timeStep)</span>
+<span class="lineNum">     525 </span>            : {
+<span class="lineNum">     526 </span>            :         (void)timeStep;
+<span class="lineNum">     527 </span>            : 
+<span class="lineNum">     528 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     529 </span>            : 
+<span class="lineNum">     530 </span>            : 
+<span class="lineNum">     531 </span>            : #ifndef __SPU__
+<span class="lineNum">     532 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::calcAngleInfo()</span>
+<span class="lineNum">     533 </span>            : {
+<span class="lineNum">     534 </span><span class="lineNoCov">          0 :         m_swingCorrection = btScalar(0.);</span>
+<span class="lineNum">     535 </span><span class="lineNoCov">          0 :         m_twistLimitSign = btScalar(0.);</span>
+<span class="lineNum">     536 </span><span class="lineNoCov">          0 :         m_solveTwistLimit = false;</span>
+<span class="lineNum">     537 </span><span class="lineNoCov">          0 :         m_solveSwingLimit = false;</span>
+<span class="lineNum">     538 </span>            : 
+<span class="lineNum">     539 </span><span class="lineNoCov">          0 :         btVector3 b1Axis1,b1Axis2,b1Axis3;</span>
+<span class="lineNum">     540 </span><span class="lineNoCov">          0 :         btVector3 b2Axis1,b2Axis2;</span>
+<span class="lineNum">     541 </span>            : 
+<span class="lineNum">     542 </span><span class="lineNoCov">          0 :         b1Axis1 = getRigidBodyA().getCenterOfMassTransform().getBasis() * this-&gt;m_rbAFrame.getBasis().getColumn(0);</span>
+<span class="lineNum">     543 </span><span class="lineNoCov">          0 :         b2Axis1 = getRigidBodyB().getCenterOfMassTransform().getBasis() * this-&gt;m_rbBFrame.getBasis().getColumn(0);</span>
+<span class="lineNum">     544 </span>            : 
+<span class="lineNum">     545 </span><span class="lineNoCov">          0 :         btScalar swing1=btScalar(0.),swing2 = btScalar(0.);</span>
+<span class="lineNum">     546 </span>            : 
+<span class="lineNum">     547 </span><span class="lineNoCov">          0 :         btScalar swx=btScalar(0.),swy = btScalar(0.);</span>
+<span class="lineNum">     548 </span><span class="lineNoCov">          0 :         btScalar thresh = btScalar(10.);</span>
+<span class="lineNum">     549 </span>            :         btScalar fact;
+<span class="lineNum">     550 </span>            : 
+<span class="lineNum">     551 </span>            :         // Get Frame into world space
+<span class="lineNum">     552 </span><span class="lineNoCov">          0 :         if (m_swingSpan1 &gt;= btScalar(0.05f))</span>
+<span class="lineNum">     553 </span>            :         {
+<span class="lineNum">     554 </span><span class="lineNoCov">          0 :                 b1Axis2 = getRigidBodyA().getCenterOfMassTransform().getBasis() * this-&gt;m_rbAFrame.getBasis().getColumn(1);</span>
+<span class="lineNum">     555 </span><span class="lineNoCov">          0 :                 swx = b2Axis1.dot(b1Axis1);</span>
+<span class="lineNum">     556 </span><span class="lineNoCov">          0 :                 swy = b2Axis1.dot(b1Axis2);</span>
+<span class="lineNum">     557 </span><span class="lineNoCov">          0 :                 swing1  = btAtan2Fast(swy, swx);</span>
+<span class="lineNum">     558 </span><span class="lineNoCov">          0 :                 fact = (swy*swy + swx*swx) * thresh * thresh;</span>
+<span class="lineNum">     559 </span><span class="lineNoCov">          0 :                 fact = fact / (fact + btScalar(1.0));</span>
+<span class="lineNum">     560 </span><span class="lineNoCov">          0 :                 swing1 *= fact; </span>
+<span class="lineNum">     561 </span>            :         }
+<span class="lineNum">     562 </span>            : 
+<span class="lineNum">     563 </span><span class="lineNoCov">          0 :         if (m_swingSpan2 &gt;= btScalar(0.05f))</span>
+<span class="lineNum">     564 </span>            :         {
+<span class="lineNum">     565 </span><span class="lineNoCov">          0 :                 b1Axis3 = getRigidBodyA().getCenterOfMassTransform().getBasis() * this-&gt;m_rbAFrame.getBasis().getColumn(2);                  </span>
+<span class="lineNum">     566 </span><span class="lineNoCov">          0 :                 swx = b2Axis1.dot(b1Axis1);</span>
+<span class="lineNum">     567 </span><span class="lineNoCov">          0 :                 swy = b2Axis1.dot(b1Axis3);</span>
+<span class="lineNum">     568 </span><span class="lineNoCov">          0 :                 swing2  = btAtan2Fast(swy, swx);</span>
+<span class="lineNum">     569 </span><span class="lineNoCov">          0 :                 fact = (swy*swy + swx*swx) * thresh * thresh;</span>
+<span class="lineNum">     570 </span><span class="lineNoCov">          0 :                 fact = fact / (fact + btScalar(1.0));</span>
+<span class="lineNum">     571 </span><span class="lineNoCov">          0 :                 swing2 *= fact; </span>
+<span class="lineNum">     572 </span>            :         }
+<span class="lineNum">     573 </span>            : 
+<span class="lineNum">     574 </span><span class="lineNoCov">          0 :         btScalar RMaxAngle1Sq = 1.0f / (m_swingSpan1*m_swingSpan1);             </span>
+<span class="lineNum">     575 </span><span class="lineNoCov">          0 :         btScalar RMaxAngle2Sq = 1.0f / (m_swingSpan2*m_swingSpan2);     </span>
+<span class="lineNum">     576 </span><span class="lineNoCov">          0 :         btScalar EllipseAngle = btFabs(swing1*swing1)* RMaxAngle1Sq + btFabs(swing2*swing2) * RMaxAngle2Sq;</span>
+<span class="lineNum">     577 </span>            : 
+<span class="lineNum">     578 </span><span class="lineNoCov">          0 :         if (EllipseAngle &gt; 1.0f)</span>
+<span class="lineNum">     579 </span>            :         {
+<span class="lineNum">     580 </span><span class="lineNoCov">          0 :                 m_swingCorrection = EllipseAngle-1.0f;</span>
+<span class="lineNum">     581 </span><span class="lineNoCov">          0 :                 m_solveSwingLimit = true;</span>
+<span class="lineNum">     582 </span>            :                 // Calculate necessary axis &amp; factors
+<span class="lineNum">     583 </span><span class="lineNoCov">          0 :                 m_swingAxis = b2Axis1.cross(b1Axis2* b2Axis1.dot(b1Axis2) + b1Axis3* b2Axis1.dot(b1Axis3));</span>
+<span class="lineNum">     584 </span><span class="lineNoCov">          0 :                 m_swingAxis.normalize();</span>
+<span class="lineNum">     585 </span><span class="lineNoCov">          0 :                 btScalar swingAxisSign = (b2Axis1.dot(b1Axis1) &gt;= 0.0f) ? 1.0f : -1.0f;</span>
+<span class="lineNum">     586 </span><span class="lineNoCov">          0 :                 m_swingAxis *= swingAxisSign;</span>
+<span class="lineNum">     587 </span>            :         }
+<span class="lineNum">     588 </span>            : 
+<span class="lineNum">     589 </span>            :         // Twist limits
+<span class="lineNum">     590 </span><span class="lineNoCov">          0 :         if (m_twistSpan &gt;= btScalar(0.))</span>
+<span class="lineNum">     591 </span>            :         {
+<span class="lineNum">     592 </span><span class="lineNoCov">          0 :                 btVector3 b2Axis2 = getRigidBodyB().getCenterOfMassTransform().getBasis() * this-&gt;m_rbBFrame.getBasis().getColumn(1);</span>
+<span class="lineNum">     593 </span><span class="lineNoCov">          0 :                 btQuaternion rotationArc = shortestArcQuat(b2Axis1,b1Axis1);</span>
+<span class="lineNum">     594 </span><span class="lineNoCov">          0 :                 btVector3 TwistRef = quatRotate(rotationArc,b2Axis2); </span>
+<span class="lineNum">     595 </span><span class="lineNoCov">          0 :                 btScalar twist = btAtan2Fast( TwistRef.dot(b1Axis3), TwistRef.dot(b1Axis2) );</span>
+<span class="lineNum">     596 </span><span class="lineNoCov">          0 :                 m_twistAngle = twist;</span>
+<span class="lineNum">     597 </span>            : 
+<span class="lineNum">     598 </span>            : //              btScalar lockedFreeFactor = (m_twistSpan &gt; btScalar(0.05f)) ? m_limitSoftness : btScalar(0.);
+<span class="lineNum">     599 </span><span class="lineNoCov">          0 :                 btScalar lockedFreeFactor = (m_twistSpan &gt; btScalar(0.05f)) ? btScalar(1.0f) : btScalar(0.);</span>
+<span class="lineNum">     600 </span><span class="lineNoCov">          0 :                 if (twist &lt;= -m_twistSpan*lockedFreeFactor)</span>
+<span class="lineNum">     601 </span>            :                 {
+<span class="lineNum">     602 </span><span class="lineNoCov">          0 :                         m_twistCorrection = -(twist + m_twistSpan);</span>
+<span class="lineNum">     603 </span><span class="lineNoCov">          0 :                         m_solveTwistLimit = true;</span>
+<span class="lineNum">     604 </span><span class="lineNoCov">          0 :                         m_twistAxis = (b2Axis1 + b1Axis1) * 0.5f;</span>
+<span class="lineNum">     605 </span><span class="lineNoCov">          0 :                         m_twistAxis.normalize();</span>
+<span class="lineNum">     606 </span><span class="lineNoCov">          0 :                         m_twistAxis *= -1.0f;</span>
+<span class="lineNum">     607 </span>            :                 }
+<span class="lineNum">     608 </span><span class="lineNoCov">          0 :                 else if (twist &gt;  m_twistSpan*lockedFreeFactor)</span>
+<span class="lineNum">     609 </span>            :                 {
+<span class="lineNum">     610 </span><span class="lineNoCov">          0 :                         m_twistCorrection = (twist - m_twistSpan);</span>
+<span class="lineNum">     611 </span><span class="lineNoCov">          0 :                         m_solveTwistLimit = true;</span>
+<span class="lineNum">     612 </span><span class="lineNoCov">          0 :                         m_twistAxis = (b2Axis1 + b1Axis1) * 0.5f;</span>
+<span class="lineNum">     613 </span><span class="lineNoCov">          0 :                         m_twistAxis.normalize();</span>
+<span class="lineNum">     614 </span>            :                 }
+<span class="lineNum">     615 </span>            :         }
+<span class="lineNum">     616 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     617 </span>            : #endif //__SPU__
+<span class="lineNum">     618 </span>            : 
+<span class="lineNum">     619 </span><span class="lineCov">          2 : static btVector3 vTwist(1,0,0); // twist axis in constraint's space</span>
+<span class="lineNum">     620 </span>            : 
+<span class="lineNum">     621 </span>            : 
+<span class="lineNum">     622 </span>            : 
+<span class="lineNum">     623 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::calcAngleInfo2(const btTransform&amp; transA, const btTransform&amp; transB, const btMatrix3x3&amp; invInertiaWorldA,const btMatrix3x3&amp; invInertiaWorldB)</span>
+<span class="lineNum">     624 </span>            : {
+<span class="lineNum">     625 </span><span class="lineNoCov">          0 :         m_swingCorrection = btScalar(0.);</span>
+<span class="lineNum">     626 </span><span class="lineNoCov">          0 :         m_twistLimitSign = btScalar(0.);</span>
+<span class="lineNum">     627 </span><span class="lineNoCov">          0 :         m_solveTwistLimit = false;</span>
+<span class="lineNum">     628 </span><span class="lineNoCov">          0 :         m_solveSwingLimit = false;</span>
+<span class="lineNum">     629 </span>            :         // compute rotation of A wrt B (in constraint space)
+<span class="lineNum">     630 </span><span class="lineNoCov">          0 :         if (m_bMotorEnabled &amp;&amp; (!m_useSolveConstraintObsolete))</span>
+<span class="lineNum">     631 </span>            :         {       // it is assumed that setMotorTarget() was alredy called 
+<span class="lineNum">     632 </span>            :                 // and motor target m_qTarget is within constraint limits
+<span class="lineNum">     633 </span>            :                 // TODO : split rotation to pure swing and pure twist
+<span class="lineNum">     634 </span>            :                 // compute desired transforms in world
+<span class="lineNum">     635 </span><span class="lineNoCov">          0 :                 btTransform trPose(m_qTarget);</span>
+<span class="lineNum">     636 </span><span class="lineNoCov">          0 :                 btTransform trA = transA * m_rbAFrame;</span>
+<span class="lineNum">     637 </span><span class="lineNoCov">          0 :                 btTransform trB = transB * m_rbBFrame;</span>
+<span class="lineNum">     638 </span><span class="lineNoCov">          0 :                 btTransform trDeltaAB = trB * trPose * trA.inverse();</span>
+<span class="lineNum">     639 </span><span class="lineNoCov">          0 :                 btQuaternion qDeltaAB = trDeltaAB.getRotation();</span>
+<span class="lineNum">     640 </span><span class="lineNoCov">          0 :                 btVector3 swingAxis =   btVector3(qDeltaAB.x(), qDeltaAB.y(), qDeltaAB.z());</span>
+<span class="lineNum">     641 </span><span class="lineNoCov">          0 :                 float swingAxisLen2 = swingAxis.length2();</span>
+<span class="lineNum">     642 </span><span class="lineNoCov">          0 :                 if(btFuzzyZero(swingAxisLen2))</span>
+<span class="lineNum">     643 </span>            :                 {
+<span class="lineNum">     644 </span>            :                    return;
+<span class="lineNum">     645 </span>            :                 }
+<span class="lineNum">     646 </span><span class="lineNoCov">          0 :                 m_swingAxis = swingAxis;</span>
+<span class="lineNum">     647 </span><span class="lineNoCov">          0 :                 m_swingAxis.normalize();</span>
+<span class="lineNum">     648 </span><span class="lineNoCov">          0 :                 m_swingCorrection = qDeltaAB.getAngle();</span>
+<span class="lineNum">     649 </span><span class="lineNoCov">          0 :                 if(!btFuzzyZero(m_swingCorrection))</span>
+<span class="lineNum">     650 </span>            :                 {
+<span class="lineNum">     651 </span><span class="lineNoCov">          0 :                         m_solveSwingLimit = true;</span>
+<span class="lineNum">     652 </span>            :                 }
+<span class="lineNum">     653 </span>            :                 return;
+<span class="lineNum">     654 </span>            :         }
+<span class="lineNum">     655 </span>            : 
+<span class="lineNum">     656 </span>            : 
+<span class="lineNum">     657 </span>            :         {
+<span class="lineNum">     658 </span>            :                 // compute rotation of A wrt B (in constraint space)
+<span class="lineNum">     659 </span><span class="lineNoCov">          0 :                 btQuaternion qA = transA.getRotation() * m_rbAFrame.getRotation();</span>
+<span class="lineNum">     660 </span><span class="lineNoCov">          0 :                 btQuaternion qB = transB.getRotation() * m_rbBFrame.getRotation();</span>
+<span class="lineNum">     661 </span><span class="lineNoCov">          0 :                 btQuaternion qAB = qB.inverse() * qA;</span>
+<span class="lineNum">     662 </span>            :                 // split rotation into cone and twist
+<span class="lineNum">     663 </span>            :                 // (all this is done from B's perspective. Maybe I should be averaging axes...)
+<span class="lineNum">     664 </span><span class="lineNoCov">          0 :                 btVector3 vConeNoTwist = quatRotate(qAB, vTwist); vConeNoTwist.normalize();</span>
+<span class="lineNum">     665 </span><span class="lineNoCov">          0 :                 btQuaternion qABCone  = shortestArcQuat(vTwist, vConeNoTwist); qABCone.normalize();</span>
+<span class="lineNum">     666 </span><span class="lineNoCov">          0 :                 btQuaternion qABTwist = qABCone.inverse() * qAB; qABTwist.normalize();</span>
+<span class="lineNum">     667 </span>            : 
+<span class="lineNum">     668 </span><span class="lineNoCov">          0 :                 if (m_swingSpan1 &gt;= m_fixThresh &amp;&amp; m_swingSpan2 &gt;= m_fixThresh)</span>
+<span class="lineNum">     669 </span>            :                 {
+<span class="lineNum">     670 </span><span class="lineNoCov">          0 :                         btScalar swingAngle, swingLimit = 0; btVector3 swingAxis;</span>
+<span class="lineNum">     671 </span><span class="lineNoCov">          0 :                         computeConeLimitInfo(qABCone, swingAngle, swingAxis, swingLimit);</span>
+<span class="lineNum">     672 </span>            : 
+<span class="lineNum">     673 </span><span class="lineNoCov">          0 :                         if (swingAngle &gt; swingLimit * m_limitSoftness)</span>
+<span class="lineNum">     674 </span>            :                         {
+<span class="lineNum">     675 </span><span class="lineNoCov">          0 :                                 m_solveSwingLimit = true;</span>
+<span class="lineNum">     676 </span>            : 
+<span class="lineNum">     677 </span>            :                                 // compute limit ratio: 0-&gt;1, where
+<span class="lineNum">     678 </span>            :                                 // 0 == beginning of soft limit
+<span class="lineNum">     679 </span>            :                                 // 1 == hard/real limit
+<span class="lineNum">     680 </span><span class="lineNoCov">          0 :                                 m_swingLimitRatio = 1.f;</span>
+<span class="lineNum">     681 </span><span class="lineNoCov">          0 :                                 if (swingAngle &lt; swingLimit &amp;&amp; m_limitSoftness &lt; 1.f - SIMD_EPSILON)</span>
+<span class="lineNum">     682 </span>            :                                 {
+<span class="lineNum">     683 </span><span class="lineNoCov">          0 :                                         m_swingLimitRatio = (swingAngle - swingLimit * m_limitSoftness)/</span>
+<span class="lineNum">     684 </span><span class="lineNoCov">          0 :                                                                                 (swingLimit - swingLimit * m_limitSoftness);</span>
+<span class="lineNum">     685 </span>            :                                 }                               
+<span class="lineNum">     686 </span>            : 
+<span class="lineNum">     687 </span>            :                                 // swing correction tries to get back to soft limit
+<span class="lineNum">     688 </span><span class="lineNoCov">          0 :                                 m_swingCorrection = swingAngle - (swingLimit * m_limitSoftness);</span>
+<span class="lineNum">     689 </span>            : 
+<span class="lineNum">     690 </span>            :                                 // adjustment of swing axis (based on ellipse normal)
+<span class="lineNum">     691 </span><span class="lineNoCov">          0 :                                 adjustSwingAxisToUseEllipseNormal(swingAxis);</span>
+<span class="lineNum">     692 </span>            : 
+<span class="lineNum">     693 </span>            :                                 // Calculate necessary axis &amp; factors               
+<span class="lineNum">     694 </span><span class="lineNoCov">          0 :                                 m_swingAxis = quatRotate(qB, -swingAxis);</span>
+<span class="lineNum">     695 </span>            : 
+<span class="lineNum">     696 </span><span class="lineNoCov">          0 :                                 m_twistAxisA.setValue(0,0,0);</span>
+<span class="lineNum">     697 </span>            : 
+<span class="lineNum">     698 </span><span class="lineNoCov">          0 :                                 m_kSwing =  btScalar(1.) /</span>
+<span class="lineNum">     699 </span><span class="lineNoCov">          0 :                                         (computeAngularImpulseDenominator(m_swingAxis,invInertiaWorldA) +</span>
+<span class="lineNum">     700 </span><span class="lineNoCov">          0 :                                          computeAngularImpulseDenominator(m_swingAxis,invInertiaWorldB));</span>
+<span class="lineNum">     701 </span><span class="lineNoCov">          0 :                         }</span>
+<span class="lineNum">     702 </span>            :                 }
+<span class="lineNum">     703 </span>            :                 else
+<span class="lineNum">     704 </span>            :                 {
+<span class="lineNum">     705 </span>            :                         // you haven't set any limits;
+<span class="lineNum">     706 </span>            :                         // or you're trying to set at least one of the swing limits too small. (if so, do you really want a conetwist constraint?)
+<span class="lineNum">     707 </span>            :                         // anyway, we have either hinge or fixed joint
+<span class="lineNum">     708 </span><span class="lineNoCov">          0 :                         btVector3 ivA = transA.getBasis() * m_rbAFrame.getBasis().getColumn(0);</span>
+<span class="lineNum">     709 </span><span class="lineNoCov">          0 :                         btVector3 jvA = transA.getBasis() * m_rbAFrame.getBasis().getColumn(1);</span>
+<span class="lineNum">     710 </span><span class="lineNoCov">          0 :                         btVector3 kvA = transA.getBasis() * m_rbAFrame.getBasis().getColumn(2);</span>
+<span class="lineNum">     711 </span><span class="lineNoCov">          0 :                         btVector3 ivB = transB.getBasis() * m_rbBFrame.getBasis().getColumn(0);</span>
+<span class="lineNum">     712 </span><span class="lineNoCov">          0 :                         btVector3 target;</span>
+<span class="lineNum">     713 </span><span class="lineNoCov">          0 :                         btScalar x = ivB.dot(ivA);</span>
+<span class="lineNum">     714 </span><span class="lineNoCov">          0 :                         btScalar y = ivB.dot(jvA);</span>
+<span class="lineNum">     715 </span><span class="lineNoCov">          0 :                         btScalar z = ivB.dot(kvA);</span>
+<span class="lineNum">     716 </span><span class="lineNoCov">          0 :                         if((m_swingSpan1 &lt; m_fixThresh) &amp;&amp; (m_swingSpan2 &lt; m_fixThresh))</span>
+<span class="lineNum">     717 </span>            :                         { // fixed. We'll need to add one more row to constraint
+<span class="lineNum">     718 </span><span class="lineNoCov">          0 :                                 if((!btFuzzyZero(y)) || (!(btFuzzyZero(z))))</span>
+<span class="lineNum">     719 </span>            :                                 {
+<span class="lineNum">     720 </span><span class="lineNoCov">          0 :                                         m_solveSwingLimit = true;</span>
+<span class="lineNum">     721 </span><span class="lineNoCov">          0 :                                         m_swingAxis = -ivB.cross(ivA);</span>
+<span class="lineNum">     722 </span>            :                                 }
+<span class="lineNum">     723 </span>            :                         }
+<span class="lineNum">     724 </span>            :                         else
+<span class="lineNum">     725 </span>            :                         {
+<span class="lineNum">     726 </span><span class="lineNoCov">          0 :                                 if(m_swingSpan1 &lt; m_fixThresh)</span>
+<span class="lineNum">     727 </span>            :                                 { // hinge around Y axis
+<span class="lineNum">     728 </span><span class="lineNoCov">          0 :                                         if(!(btFuzzyZero(y)))</span>
+<span class="lineNum">     729 </span>            :                                         {
+<span class="lineNum">     730 </span><span class="lineNoCov">          0 :                                                 m_solveSwingLimit = true;</span>
+<span class="lineNum">     731 </span><span class="lineNoCov">          0 :                                                 if(m_swingSpan2 &gt;= m_fixThresh)</span>
+<span class="lineNum">     732 </span>            :                                                 {
+<span class="lineNum">     733 </span><span class="lineNoCov">          0 :                                                         y = btScalar(0.f);</span>
+<span class="lineNum">     734 </span><span class="lineNoCov">          0 :                                                         btScalar span2 = btAtan2(z, x);</span>
+<span class="lineNum">     735 </span><span class="lineNoCov">          0 :                                                         if(span2 &gt; m_swingSpan2)</span>
+<span class="lineNum">     736 </span>            :                                                         {
+<span class="lineNum">     737 </span><span class="lineNoCov">          0 :                                                                 x = btCos(m_swingSpan2);</span>
+<span class="lineNum">     738 </span><span class="lineNoCov">          0 :                                                                 z = btSin(m_swingSpan2);</span>
+<span class="lineNum">     739 </span>            :                                                         }
+<span class="lineNum">     740 </span><span class="lineNoCov">          0 :                                                         else if(span2 &lt; -m_swingSpan2)</span>
+<span class="lineNum">     741 </span>            :                                                         {
+<span class="lineNum">     742 </span><span class="lineNoCov">          0 :                                                                 x =  btCos(m_swingSpan2);</span>
+<span class="lineNum">     743 </span><span class="lineNoCov">          0 :                                                                 z = -btSin(m_swingSpan2);</span>
+<span class="lineNum">     744 </span>            :                                                         }
+<span class="lineNum">     745 </span>            :                                                 }
+<span class="lineNum">     746 </span>            :                                         }
+<span class="lineNum">     747 </span>            :                                 }
+<span class="lineNum">     748 </span>            :                                 else
+<span class="lineNum">     749 </span>            :                                 { // hinge around Z axis
+<span class="lineNum">     750 </span><span class="lineNoCov">          0 :                                         if(!btFuzzyZero(z))</span>
+<span class="lineNum">     751 </span>            :                                         {
+<span class="lineNum">     752 </span><span class="lineNoCov">          0 :                                                 m_solveSwingLimit = true;</span>
+<span class="lineNum">     753 </span><span class="lineNoCov">          0 :                                                 if(m_swingSpan1 &gt;= m_fixThresh)</span>
+<span class="lineNum">     754 </span>            :                                                 {
+<span class="lineNum">     755 </span><span class="lineNoCov">          0 :                                                         z = btScalar(0.f);</span>
+<span class="lineNum">     756 </span><span class="lineNoCov">          0 :                                                         btScalar span1 = btAtan2(y, x);</span>
+<span class="lineNum">     757 </span><span class="lineNoCov">          0 :                                                         if(span1 &gt; m_swingSpan1)</span>
+<span class="lineNum">     758 </span>            :                                                         {
+<span class="lineNum">     759 </span><span class="lineNoCov">          0 :                                                                 x = btCos(m_swingSpan1);</span>
+<span class="lineNum">     760 </span><span class="lineNoCov">          0 :                                                                 y = btSin(m_swingSpan1);</span>
+<span class="lineNum">     761 </span>            :                                                         }
+<span class="lineNum">     762 </span><span class="lineNoCov">          0 :                                                         else if(span1 &lt; -m_swingSpan1)</span>
+<span class="lineNum">     763 </span>            :                                                         {
+<span class="lineNum">     764 </span><span class="lineNoCov">          0 :                                                                 x =  btCos(m_swingSpan1);</span>
+<span class="lineNum">     765 </span><span class="lineNoCov">          0 :                                                                 y = -btSin(m_swingSpan1);</span>
+<span class="lineNum">     766 </span>            :                                                         }
+<span class="lineNum">     767 </span>            :                                                 }
+<span class="lineNum">     768 </span>            :                                         }
+<span class="lineNum">     769 </span>            :                                 }
+<span class="lineNum">     770 </span><span class="lineNoCov">          0 :                                 target[0] = x * ivA[0] + y * jvA[0] + z * kvA[0];</span>
+<span class="lineNum">     771 </span><span class="lineNoCov">          0 :                                 target[1] = x * ivA[1] + y * jvA[1] + z * kvA[1];</span>
+<span class="lineNum">     772 </span><span class="lineNoCov">          0 :                                 target[2] = x * ivA[2] + y * jvA[2] + z * kvA[2];</span>
+<span class="lineNum">     773 </span><span class="lineNoCov">          0 :                                 target.normalize();</span>
+<span class="lineNum">     774 </span><span class="lineNoCov">          0 :                                 m_swingAxis = -ivB.cross(target);</span>
+<span class="lineNum">     775 </span><span class="lineNoCov">          0 :                                 m_swingCorrection = m_swingAxis.length();</span>
+<span class="lineNum">     776 </span><span class="lineNoCov">          0 :                                 m_swingAxis.normalize();</span>
+<span class="lineNum">     777 </span>            :                         }
+<span class="lineNum">     778 </span>            :                 }
+<span class="lineNum">     779 </span>            : 
+<span class="lineNum">     780 </span><span class="lineNoCov">          0 :                 if (m_twistSpan &gt;= btScalar(0.f))</span>
+<span class="lineNum">     781 </span>            :                 {
+<span class="lineNum">     782 </span><span class="lineNoCov">          0 :                         btVector3 twistAxis;</span>
+<span class="lineNum">     783 </span><span class="lineNoCov">          0 :                         computeTwistLimitInfo(qABTwist, m_twistAngle, twistAxis);</span>
+<span class="lineNum">     784 </span>            : 
+<span class="lineNum">     785 </span><span class="lineNoCov">          0 :                         if (m_twistAngle &gt; m_twistSpan*m_limitSoftness)</span>
+<span class="lineNum">     786 </span>            :                         {
+<span class="lineNum">     787 </span><span class="lineNoCov">          0 :                                 m_solveTwistLimit = true;</span>
+<span class="lineNum">     788 </span>            : 
+<span class="lineNum">     789 </span><span class="lineNoCov">          0 :                                 m_twistLimitRatio = 1.f;</span>
+<span class="lineNum">     790 </span><span class="lineNoCov">          0 :                                 if (m_twistAngle &lt; m_twistSpan &amp;&amp; m_limitSoftness &lt; 1.f - SIMD_EPSILON)</span>
+<span class="lineNum">     791 </span>            :                                 {
+<span class="lineNum">     792 </span><span class="lineNoCov">          0 :                                         m_twistLimitRatio = (m_twistAngle - m_twistSpan * m_limitSoftness)/</span>
+<span class="lineNum">     793 </span><span class="lineNoCov">          0 :                                                                                 (m_twistSpan  - m_twistSpan * m_limitSoftness);</span>
+<span class="lineNum">     794 </span>            :                                 }
+<span class="lineNum">     795 </span>            : 
+<span class="lineNum">     796 </span>            :                                 // twist correction tries to get back to soft limit
+<span class="lineNum">     797 </span><span class="lineNoCov">          0 :                                 m_twistCorrection = m_twistAngle - (m_twistSpan * m_limitSoftness);</span>
+<span class="lineNum">     798 </span>            : 
+<span class="lineNum">     799 </span><span class="lineNoCov">          0 :                                 m_twistAxis = quatRotate(qB, -twistAxis);</span>
+<span class="lineNum">     800 </span>            : 
+<span class="lineNum">     801 </span><span class="lineNoCov">          0 :                                 m_kTwist = btScalar(1.) /</span>
+<span class="lineNum">     802 </span><span class="lineNoCov">          0 :                                         (computeAngularImpulseDenominator(m_twistAxis,invInertiaWorldA) +</span>
+<span class="lineNum">     803 </span><span class="lineNoCov">          0 :                                          computeAngularImpulseDenominator(m_twistAxis,invInertiaWorldB));</span>
+<span class="lineNum">     804 </span>            :                         }
+<span class="lineNum">     805 </span>            : 
+<span class="lineNum">     806 </span><span class="lineNoCov">          0 :                         if (m_solveSwingLimit)</span>
+<span class="lineNum">     807 </span><span class="lineNoCov">          0 :                                 m_twistAxisA = quatRotate(qA, -twistAxis);</span>
+<span class="lineNum">     808 </span>            :                 }
+<span class="lineNum">     809 </span>            :                 else
+<span class="lineNum">     810 </span>            :                 {
+<span class="lineNum">     811 </span><span class="lineNoCov">          0 :                         m_twistAngle = btScalar(0.f);</span>
+<span class="lineNum">     812 </span>            :                 }
+<span class="lineNum">     813 </span>            :         }
+<span class="lineNum">     814 </span>            : }
+<span class="lineNum">     815 </span>            : 
+<span class="lineNum">     816 </span>            : 
+<span class="lineNum">     817 </span>            : 
+<span class="lineNum">     818 </span>            : // given a cone rotation in constraint space, (pre: twist must already be removed)
+<span class="lineNum">     819 </span>            : // this method computes its corresponding swing angle and axis.
+<span class="lineNum">     820 </span>            : // more interestingly, it computes the cone/swing limit (angle) for this cone &quot;pose&quot;.
+<span class="lineNum">     821 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::computeConeLimitInfo(const btQuaternion&amp; qCone,</span>
+<span class="lineNum">     822 </span>            :                                                                                                  btScalar&amp; swingAngle, // out
+<span class="lineNum">     823 </span>            :                                                                                                  btVector3&amp; vSwingAxis, // out
+<span class="lineNum">     824 </span>            :                                                                                                  btScalar&amp; swingLimit) // out
+<span class="lineNum">     825 </span>            : {
+<span class="lineNum">     826 </span><span class="lineNoCov">          0 :         swingAngle = qCone.getAngle();</span>
+<span class="lineNum">     827 </span><span class="lineNoCov">          0 :         if (swingAngle &gt; SIMD_EPSILON)</span>
+<span class="lineNum">     828 </span>            :         {
+<span class="lineNum">     829 </span><span class="lineNoCov">          0 :                 vSwingAxis = btVector3(qCone.x(), qCone.y(), qCone.z());</span>
+<span class="lineNum">     830 </span><span class="lineNoCov">          0 :                 vSwingAxis.normalize();</span>
+<span class="lineNum">     831 </span>            : #if 0
+<span class="lineNum">     832 </span>            :         // non-zero twist?! this should never happen.
+<span class="lineNum">     833 </span>            :        btAssert(fabs(vSwingAxis.x()) &lt;= SIMD_EPSILON));
+<span class="lineNum">     834 </span>            : #endif
+<span class="lineNum">     835 </span>            :         
+<span class="lineNum">     836 </span>            :                 // Compute limit for given swing. tricky:
+<span class="lineNum">     837 </span>            :                 // Given a swing axis, we're looking for the intersection with the bounding cone ellipse.
+<span class="lineNum">     838 </span>            :                 // (Since we're dealing with angles, this ellipse is embedded on the surface of a sphere.)
+<span class="lineNum">     839 </span>            : 
+<span class="lineNum">     840 </span>            :                 // For starters, compute the direction from center to surface of ellipse.
+<span class="lineNum">     841 </span>            :                 // This is just the perpendicular (ie. rotate 2D vector by PI/2) of the swing axis.
+<span class="lineNum">     842 </span>            :                 // (vSwingAxis is the cone rotation (in z,y); change vars and rotate to (x,y) coords.)
+<span class="lineNum">     843 </span><span class="lineNoCov">          0 :                 btScalar xEllipse =  vSwingAxis.y();</span>
+<span class="lineNum">     844 </span><span class="lineNoCov">          0 :                 btScalar yEllipse = -vSwingAxis.z();</span>
+<span class="lineNum">     845 </span>            : 
+<span class="lineNum">     846 </span>            :                 // Now, we use the slope of the vector (using x/yEllipse) and find the length
+<span class="lineNum">     847 </span>            :                 // of the line that intersects the ellipse:
+<span class="lineNum">     848 </span>            :                 //  x^2   y^2
+<span class="lineNum">     849 </span>            :                 //  --- + --- = 1, where a and b are semi-major axes 2 and 1 respectively (ie. the limits)
+<span class="lineNum">     850 </span>            :                 //  a^2   b^2
+<span class="lineNum">     851 </span>            :                 // Do the math and it should be clear.
+<span class="lineNum">     852 </span>            : 
+<span class="lineNum">     853 </span><span class="lineNoCov">          0 :                 swingLimit = m_swingSpan1; // if xEllipse == 0, we have a pure vSwingAxis.z rotation: just use swingspan1</span>
+<span class="lineNum">     854 </span><span class="lineNoCov">          0 :                 if (fabs(xEllipse) &gt; SIMD_EPSILON)</span>
+<span class="lineNum">     855 </span>            :                 {
+<span class="lineNum">     856 </span><span class="lineNoCov">          0 :                         btScalar surfaceSlope2 = (yEllipse*yEllipse)/(xEllipse*xEllipse);</span>
+<span class="lineNum">     857 </span><span class="lineNoCov">          0 :                         btScalar norm = 1 / (m_swingSpan2 * m_swingSpan2);</span>
+<span class="lineNum">     858 </span><span class="lineNoCov">          0 :                         norm += surfaceSlope2 / (m_swingSpan1 * m_swingSpan1);</span>
+<span class="lineNum">     859 </span><span class="lineNoCov">          0 :                         btScalar swingLimit2 = (1 + surfaceSlope2) / norm;</span>
+<span class="lineNum">     860 </span><span class="lineNoCov">          0 :                         swingLimit = sqrt(swingLimit2);</span>
+<span class="lineNum">     861 </span>            :                 }
+<span class="lineNum">     862 </span>            : 
+<span class="lineNum">     863 </span>            :                 // test!
+<span class="lineNum">     864 </span>            :                 /*swingLimit = m_swingSpan2;
+<span class="lineNum">     865 </span>            :                 if (fabs(vSwingAxis.z()) &gt; SIMD_EPSILON)
+<span class="lineNum">     866 </span>            :                 {
+<span class="lineNum">     867 </span>            :                 btScalar mag_2 = m_swingSpan1*m_swingSpan1 + m_swingSpan2*m_swingSpan2;
+<span class="lineNum">     868 </span>            :                 btScalar sinphi = m_swingSpan2 / sqrt(mag_2);
+<span class="lineNum">     869 </span>            :                 btScalar phi = asin(sinphi);
+<span class="lineNum">     870 </span>            :                 btScalar theta = atan2(fabs(vSwingAxis.y()),fabs(vSwingAxis.z()));
+<span class="lineNum">     871 </span>            :                 btScalar alpha = 3.14159f - theta - phi;
+<span class="lineNum">     872 </span>            :                 btScalar sinalpha = sin(alpha);
+<span class="lineNum">     873 </span>            :                 swingLimit = m_swingSpan1 * sinphi/sinalpha;
+<span class="lineNum">     874 </span>            :                 }*/
+<span class="lineNum">     875 </span>            :         }
+<span class="lineNum">     876 </span>            :         else if (swingAngle &lt; 0)
+<span class="lineNum">     877 </span>            :         {
+<span class="lineNum">     878 </span>            :                 // this should never happen!
+<span class="lineNum">     879 </span>            : #if 0
+<span class="lineNum">     880 </span>            :         btAssert(0);
+<span class="lineNum">     881 </span>            : #endif
+<span class="lineNum">     882 </span>            :         }
+<span class="lineNum">     883 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     884 </span>            : 
+<span class="lineNum">     885 </span><span class="lineNoCov">          0 : btVector3 btConeTwistConstraint::GetPointForAngle(btScalar fAngleInRadians, btScalar fLength) const</span>
+<span class="lineNum">     886 </span>            : {
+<span class="lineNum">     887 </span>            :         // compute x/y in ellipse using cone angle (0 -&gt; 2*PI along surface of cone)
+<span class="lineNum">     888 </span><span class="lineNoCov">          0 :         btScalar xEllipse = btCos(fAngleInRadians);</span>
+<span class="lineNum">     889 </span><span class="lineNoCov">          0 :         btScalar yEllipse = btSin(fAngleInRadians);</span>
+<span class="lineNum">     890 </span>            : 
+<span class="lineNum">     891 </span>            :         // Use the slope of the vector (using x/yEllipse) and find the length
+<span class="lineNum">     892 </span>            :         // of the line that intersects the ellipse:
+<span class="lineNum">     893 </span>            :         //  x^2   y^2
+<span class="lineNum">     894 </span>            :         //  --- + --- = 1, where a and b are semi-major axes 2 and 1 respectively (ie. the limits)
+<span class="lineNum">     895 </span>            :         //  a^2   b^2
+<span class="lineNum">     896 </span>            :         // Do the math and it should be clear.
+<span class="lineNum">     897 </span>            : 
+<span class="lineNum">     898 </span><span class="lineNoCov">          0 :         float swingLimit = m_swingSpan1; // if xEllipse == 0, just use axis b (1)</span>
+<span class="lineNum">     899 </span><span class="lineNoCov">          0 :         if (fabs(xEllipse) &gt; SIMD_EPSILON)</span>
+<span class="lineNum">     900 </span>            :         {
+<span class="lineNum">     901 </span><span class="lineNoCov">          0 :                 btScalar surfaceSlope2 = (yEllipse*yEllipse)/(xEllipse*xEllipse);</span>
+<span class="lineNum">     902 </span><span class="lineNoCov">          0 :                 btScalar norm = 1 / (m_swingSpan2 * m_swingSpan2);</span>
+<span class="lineNum">     903 </span><span class="lineNoCov">          0 :                 norm += surfaceSlope2 / (m_swingSpan1 * m_swingSpan1);</span>
+<span class="lineNum">     904 </span><span class="lineNoCov">          0 :                 btScalar swingLimit2 = (1 + surfaceSlope2) / norm;</span>
+<span class="lineNum">     905 </span><span class="lineNoCov">          0 :                 swingLimit = sqrt(swingLimit2);</span>
+<span class="lineNum">     906 </span>            :         }
+<span class="lineNum">     907 </span>            : 
+<span class="lineNum">     908 </span>            :         // convert into point in constraint space:
+<span class="lineNum">     909 </span>            :         // note: twist is x-axis, swing 1 and 2 are along the z and y axes respectively
+<span class="lineNum">     910 </span><span class="lineNoCov">          0 :         btVector3 vSwingAxis(0, xEllipse, -yEllipse);</span>
+<span class="lineNum">     911 </span><span class="lineNoCov">          0 :         btQuaternion qSwing(vSwingAxis, swingLimit);</span>
+<span class="lineNum">     912 </span><span class="lineNoCov">          0 :         btVector3 vPointInConstraintSpace(fLength,0,0);</span>
+<span class="lineNum">     913 </span><span class="lineNoCov">          0 :         return quatRotate(qSwing, vPointInConstraintSpace);</span>
+<span class="lineNum">     914 </span>            : }
+<span class="lineNum">     915 </span>            : 
+<a name="916"><span class="lineNum">     916 </span>            : // given a twist rotation in constraint space, (pre: cone must already be removed)</a>
+<span class="lineNum">     917 </span>            : // this method computes its corresponding angle and axis.
+<span class="lineNum">     918 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::computeTwistLimitInfo(const btQuaternion&amp; qTwist,</span>
+<span class="lineNum">     919 </span>            :                                                                                                   btScalar&amp; twistAngle, // out
+<span class="lineNum">     920 </span>            :                                                                                                   btVector3&amp; vTwistAxis) // out
+<span class="lineNum">     921 </span>            : {
+<span class="lineNum">     922 </span><span class="lineNoCov">          0 :         btQuaternion qMinTwist = qTwist;</span>
+<span class="lineNum">     923 </span><span class="lineNoCov">          0 :         twistAngle = qTwist.getAngle();</span>
+<span class="lineNum">     924 </span>            : 
+<span class="lineNum">     925 </span><span class="lineNoCov">          0 :         if (twistAngle &gt; SIMD_PI) // long way around. flip quat and recalculate.</span>
+<span class="lineNum">     926 </span>            :         {
+<span class="lineNum">     927 </span><span class="lineNoCov">          0 :                 qMinTwist = -(qTwist);</span>
+<span class="lineNum">     928 </span><span class="lineNoCov">          0 :                 twistAngle = qMinTwist.getAngle();</span>
+<span class="lineNum">     929 </span>            :         }
+<span class="lineNum">     930 </span><span class="lineNoCov">          0 :         if (twistAngle &lt; 0)</span>
+<span class="lineNum">     931 </span>            :         {
+<span class="lineNum">     932 </span>            :                 // this should never happen
+<span class="lineNum">     933 </span>            : #if 0
+<span class="lineNum">     934 </span>            :         btAssert(0);
+<span class="lineNum">     935 </span>            : #endif
+<span class="lineNum">     936 </span>            :         }
+<span class="lineNum">     937 </span>            : 
+<span class="lineNum">     938 </span><span class="lineNoCov">          0 :         vTwistAxis = btVector3(qMinTwist.x(), qMinTwist.y(), qMinTwist.z());</span>
+<span class="lineNum">     939 </span><span class="lineNoCov">          0 :         if (twistAngle &gt; SIMD_EPSILON)</span>
+<span class="lineNum">     940 </span><span class="lineNoCov">          0 :                 vTwistAxis.normalize();</span>
+<span class="lineNum">     941 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     942 </span>            : 
+<span class="lineNum">     943 </span>            : 
+<span class="lineNum">     944 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::adjustSwingAxisToUseEllipseNormal(btVector3&amp; vSwingAxis) const</span>
+<span class="lineNum">     945 </span>            : {
+<span class="lineNum">     946 </span>            :         // the swing axis is computed as the &quot;twist-free&quot; cone rotation,
+<span class="lineNum">     947 </span>            :         // but the cone limit is not circular, but elliptical (if swingspan1 != swingspan2).
+<span class="lineNum">     948 </span>            :         // so, if we're outside the limits, the closest way back inside the cone isn't 
+<span class="lineNum">     949 </span>            :         // along the vector back to the center. better (and more stable) to use the ellipse normal.
+<span class="lineNum">     950 </span>            : 
+<span class="lineNum">     951 </span>            :         // convert swing axis to direction from center to surface of ellipse
+<span class="lineNum">     952 </span>            :         // (ie. rotate 2D vector by PI/2)
+<span class="lineNum">     953 </span><span class="lineNoCov">          0 :         btScalar y = -vSwingAxis.z();</span>
+<span class="lineNum">     954 </span><span class="lineNoCov">          0 :         btScalar z =  vSwingAxis.y();</span>
+<span class="lineNum">     955 </span>            : 
+<span class="lineNum">     956 </span>            :         // do the math...
+<span class="lineNum">     957 </span><span class="lineNoCov">          0 :         if (fabs(z) &gt; SIMD_EPSILON) // avoid division by 0. and we don't need an update if z == 0.</span>
+<span class="lineNum">     958 </span>            :         {
+<span class="lineNum">     959 </span>            :                 // compute gradient/normal of ellipse surface at current &quot;point&quot;
+<span class="lineNum">     960 </span><span class="lineNoCov">          0 :                 btScalar grad = y/z;</span>
+<span class="lineNum">     961 </span><span class="lineNoCov">          0 :                 grad *= m_swingSpan2 / m_swingSpan1;</span>
+<span class="lineNum">     962 </span>            : 
+<span class="lineNum">     963 </span>            :                 // adjust y/z to represent normal at point (instead of vector to point)
+<span class="lineNum">     964 </span><span class="lineNoCov">          0 :                 if (y &gt; 0)</span>
+<span class="lineNum">     965 </span><span class="lineNoCov">          0 :                         y =  fabs(grad * z);</span>
+<span class="lineNum">     966 </span>            :                 else
+<span class="lineNum">     967 </span><span class="lineNoCov">          0 :                         y = -fabs(grad * z);</span>
+<span class="lineNum">     968 </span>            : 
+<span class="lineNum">     969 </span>            :                 // convert ellipse direction back to swing axis
+<span class="lineNum">     970 </span><span class="lineNoCov">          0 :                 vSwingAxis.setZ(-y);</span>
+<span class="lineNum">     971 </span><span class="lineNoCov">          0 :                 vSwingAxis.setY( z);</span>
+<span class="lineNum">     972 </span><span class="lineNoCov">          0 :                 vSwingAxis.normalize();</span>
+<span class="lineNum">     973 </span>            :         }
+<span class="lineNum">     974 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     975 </span>            : 
+<a name="976"><span class="lineNum">     976 </span>            : </a>
+<span class="lineNum">     977 </span>            : 
+<span class="lineNum">     978 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::setMotorTarget(const btQuaternion &amp;q)</span>
+<span class="lineNum">     979 </span>            : {
+<span class="lineNum">     980 </span><span class="lineNoCov">          0 :         btTransform trACur = m_rbA.getCenterOfMassTransform();</span>
+<span class="lineNum">     981 </span><span class="lineNoCov">          0 :         btTransform trBCur = m_rbB.getCenterOfMassTransform();</span>
+<span class="lineNum">     982 </span>            : //      btTransform trABCur = trBCur.inverse() * trACur;
+<span class="lineNum">     983 </span>            : //      btQuaternion qABCur = trABCur.getRotation();
+<span class="lineNum">     984 </span>            : //      btTransform trConstraintCur = (trBCur * m_rbBFrame).inverse() * (trACur * m_rbAFrame);
+<span class="lineNum">     985 </span>            :         //btQuaternion qConstraintCur = trConstraintCur.getRotation();
+<span class="lineNum">     986 </span>            : 
+<span class="lineNum">     987 </span><span class="lineNoCov">          0 :         btQuaternion qConstraint = m_rbBFrame.getRotation().inverse() * q * m_rbAFrame.getRotation();</span>
+<span class="lineNum">     988 </span><span class="lineNoCov">          0 :         setMotorTargetInConstraintSpace(qConstraint);</span>
+<span class="lineNum">     989 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     990 </span>            : 
+<span class="lineNum">     991 </span>            : 
+<span class="lineNum">     992 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::setMotorTargetInConstraintSpace(const btQuaternion &amp;q)</span>
+<span class="lineNum">     993 </span>            : {
+<span class="lineNum">     994 </span><span class="lineNoCov">          0 :         m_qTarget = q;</span>
+<span class="lineNum">     995 </span>            : 
+<span class="lineNum">     996 </span>            :         // clamp motor target to within limits
+<span class="lineNum">     997 </span>            :         {
+<span class="lineNum">     998 </span><span class="lineNoCov">          0 :                 btScalar softness = 1.f;//m_limitSoftness;</span>
+<span class="lineNum">     999 </span>            : 
+<span class="lineNum">    1000 </span>            :                 // split into twist and cone
+<span class="lineNum">    1001 </span><span class="lineNoCov">          0 :                 btVector3 vTwisted = quatRotate(m_qTarget, vTwist);</span>
+<span class="lineNum">    1002 </span><span class="lineNoCov">          0 :                 btQuaternion qTargetCone  = shortestArcQuat(vTwist, vTwisted); qTargetCone.normalize();</span>
+<span class="lineNum">    1003 </span><span class="lineNoCov">          0 :                 btQuaternion qTargetTwist = qTargetCone.inverse() * m_qTarget; qTargetTwist.normalize();</span>
+<span class="lineNum">    1004 </span>            : 
+<span class="lineNum">    1005 </span>            :                 // clamp cone
+<span class="lineNum">    1006 </span><span class="lineNoCov">          0 :                 if (m_swingSpan1 &gt;= btScalar(0.05f) &amp;&amp; m_swingSpan2 &gt;= btScalar(0.05f))</span>
+<span class="lineNum">    1007 </span>            :                 {
+<span class="lineNum">    1008 </span><span class="lineNoCov">          0 :                         btScalar swingAngle, swingLimit; btVector3 swingAxis;</span>
+<span class="lineNum">    1009 </span><span class="lineNoCov">          0 :                         computeConeLimitInfo(qTargetCone, swingAngle, swingAxis, swingLimit);</span>
+<span class="lineNum">    1010 </span>            : 
+<span class="lineNum">    1011 </span><span class="lineNoCov">          0 :                         if (fabs(swingAngle) &gt; SIMD_EPSILON)</span>
+<span class="lineNum">    1012 </span>            :                         {
+<span class="lineNum">    1013 </span><span class="lineNoCov">          0 :                                 if (swingAngle &gt; swingLimit*softness)</span>
+<span class="lineNum">    1014 </span><span class="lineNoCov">          0 :                                         swingAngle = swingLimit*softness;</span>
+<span class="lineNum">    1015 </span><span class="lineNoCov">          0 :                                 else if (swingAngle &lt; -swingLimit*softness)</span>
+<span class="lineNum">    1016 </span><span class="lineNoCov">          0 :                                         swingAngle = -swingLimit*softness;</span>
+<span class="lineNum">    1017 </span><span class="lineNoCov">          0 :                                 qTargetCone = btQuaternion(swingAxis, swingAngle);</span>
+<span class="lineNum">    1018 </span>            :                         }
+<span class="lineNum">    1019 </span>            :                 }
+<span class="lineNum">    1020 </span>            : 
+<span class="lineNum">    1021 </span>            :                 // clamp twist
+<span class="lineNum">    1022 </span><span class="lineNoCov">          0 :                 if (m_twistSpan &gt;= btScalar(0.05f))</span>
+<span class="lineNum">    1023 </span>            :                 {
+<span class="lineNum">    1024 </span><span class="lineNoCov">          0 :                         btScalar twistAngle; btVector3 twistAxis;</span>
+<span class="lineNum">    1025 </span><span class="lineNoCov">          0 :                         computeTwistLimitInfo(qTargetTwist, twistAngle, twistAxis);</span>
+<span class="lineNum">    1026 </span>            : 
+<span class="lineNum">    1027 </span><span class="lineNoCov">          0 :                         if (fabs(twistAngle) &gt; SIMD_EPSILON)</span>
+<span class="lineNum">    1028 </span>            :                         {
+<span class="lineNum">    1029 </span>            :                                 // eddy todo: limitSoftness used here???
+<span class="lineNum">    1030 </span><span class="lineNoCov">          0 :                                 if (twistAngle &gt; m_twistSpan*softness)</span>
+<span class="lineNum">    1031 </span><span class="lineNoCov">          0 :                                         twistAngle = m_twistSpan*softness;</span>
+<span class="lineNum">    1032 </span><span class="lineNoCov">          0 :                                 else if (twistAngle &lt; -m_twistSpan*softness)</span>
+<span class="lineNum">    1033 </span><span class="lineNoCov">          0 :                                         twistAngle = -m_twistSpan*softness;</span>
+<span class="lineNum">    1034 </span><span class="lineNoCov">          0 :                                 qTargetTwist = btQuaternion(twistAxis, twistAngle);</span>
+<span class="lineNum">    1035 </span>            :                         }
+<span class="lineNum">    1036 </span>            :                 }
+<span class="lineNum">    1037 </span>            : 
+<span class="lineNum">    1038 </span><span class="lineNoCov">          0 :                 m_qTarget = qTargetCone * qTargetTwist;</span>
+<span class="lineNum">    1039 </span>            :         }
+<span class="lineNum">    1040 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">    1041 </span>            : 
+<a name="1042"><span class="lineNum">    1042 </span>            : ///override the default global value of a parameter (such as ERP or CFM), optionally provide the axis (0..5). </a>
+<span class="lineNum">    1043 </span>            : ///If no axis is provided, it uses the default axis for this constraint.
+<span class="lineNum">    1044 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::setParam(int num, btScalar value, int axis)</span>
+<span class="lineNum">    1045 </span>            : {
+<span class="lineNum">    1046 </span><span class="lineNoCov">          0 :         switch(num)</span>
+<span class="lineNum">    1047 </span>            :         {
+<span class="lineNum">    1048 </span><span class="lineNoCov">          0 :                 case BT_CONSTRAINT_ERP :</span>
+<span class="lineNum">    1049 </span>            :                 case BT_CONSTRAINT_STOP_ERP :
+<span class="lineNum">    1050 </span><span class="lineNoCov">          0 :                         if((axis &gt;= 0) &amp;&amp; (axis &lt; 3)) </span>
+<span class="lineNum">    1051 </span>            :                         {
+<span class="lineNum">    1052 </span><span class="lineNoCov">          0 :                                 m_linERP = value;</span>
+<span class="lineNum">    1053 </span><span class="lineNoCov">          0 :                                 m_flags |= BT_CONETWIST_FLAGS_LIN_ERP;</span>
+<span class="lineNum">    1054 </span>            :                         }
+<span class="lineNum">    1055 </span>            :                         else
+<span class="lineNum">    1056 </span>            :                         {
+<span class="lineNum">    1057 </span><span class="lineNoCov">          0 :                                 m_biasFactor = value;</span>
+<span class="lineNum">    1058 </span>            :                         }
+<span class="lineNum">    1059 </span>            :                         break;
+<span class="lineNum">    1060 </span><span class="lineNoCov">          0 :                 case BT_CONSTRAINT_CFM :</span>
+<span class="lineNum">    1061 </span>            :                 case BT_CONSTRAINT_STOP_CFM :
+<span class="lineNum">    1062 </span><span class="lineNoCov">          0 :                         if((axis &gt;= 0) &amp;&amp; (axis &lt; 3)) </span>
+<span class="lineNum">    1063 </span>            :                         {
+<span class="lineNum">    1064 </span><span class="lineNoCov">          0 :                                 m_linCFM = value;</span>
+<span class="lineNum">    1065 </span><span class="lineNoCov">          0 :                                 m_flags |= BT_CONETWIST_FLAGS_LIN_CFM;</span>
+<span class="lineNum">    1066 </span>            :                         }
+<span class="lineNum">    1067 </span>            :                         else
+<span class="lineNum">    1068 </span>            :                         {
+<span class="lineNum">    1069 </span><span class="lineNoCov">          0 :                                 m_angCFM = value;</span>
+<span class="lineNum">    1070 </span><span class="lineNoCov">          0 :                                 m_flags |= BT_CONETWIST_FLAGS_ANG_CFM;</span>
+<span class="lineNum">    1071 </span>            :                         }
+<span class="lineNum">    1072 </span>            :                         break;
+<span class="lineNum">    1073 </span>            :                 default:
+<span class="lineNum">    1074 </span>            :                         btAssertConstrParams(0);
+<span class="lineNum">    1075 </span>            :                         break;
+<span class="lineNum">    1076 </span>            :         }
+<span class="lineNum">    1077 </span><span class="lineNoCov">          0 : }</span>
+<a name="1078"><span class="lineNum">    1078 </span>            : </a>
+<span class="lineNum">    1079 </span>            : ///return the local value of parameter
+<span class="lineNum">    1080 </span><span class="lineNoCov">          0 : btScalar btConeTwistConstraint::getParam(int num, int axis) const </span>
+<span class="lineNum">    1081 </span>            : {
+<span class="lineNum">    1082 </span><span class="lineNoCov">          0 :         btScalar retVal = 0;</span>
+<span class="lineNum">    1083 </span><span class="lineNoCov">          0 :         switch(num)</span>
+<span class="lineNum">    1084 </span>            :         {
+<span class="lineNum">    1085 </span><span class="lineNoCov">          0 :                 case BT_CONSTRAINT_ERP :</span>
+<span class="lineNum">    1086 </span>            :                 case BT_CONSTRAINT_STOP_ERP :
+<span class="lineNum">    1087 </span><span class="lineNoCov">          0 :                         if((axis &gt;= 0) &amp;&amp; (axis &lt; 3)) </span>
+<span class="lineNum">    1088 </span>            :                         {
+<span class="lineNum">    1089 </span>            :                                 btAssertConstrParams(m_flags &amp; BT_CONETWIST_FLAGS_LIN_ERP);
+<span class="lineNum">    1090 </span><span class="lineNoCov">          0 :                                 retVal = m_linERP;</span>
+<span class="lineNum">    1091 </span>            :                         }
+<span class="lineNum">    1092 </span><span class="lineNoCov">          0 :                         else if((axis &gt;= 3) &amp;&amp; (axis &lt; 6)) </span>
+<span class="lineNum">    1093 </span>            :                         {
+<span class="lineNum">    1094 </span><span class="lineNoCov">          0 :                                 retVal = m_biasFactor;</span>
+<span class="lineNum">    1095 </span>            :                         }
+<span class="lineNum">    1096 </span>            :                         else
+<span class="lineNum">    1097 </span>            :                         {
+<span class="lineNum">    1098 </span>            :                                 btAssertConstrParams(0);
+<span class="lineNum">    1099 </span>            :                         }
+<span class="lineNum">    1100 </span>            :                         break;
+<span class="lineNum">    1101 </span><span class="lineNoCov">          0 :                 case BT_CONSTRAINT_CFM :</span>
+<span class="lineNum">    1102 </span>            :                 case BT_CONSTRAINT_STOP_CFM :
+<span class="lineNum">    1103 </span><span class="lineNoCov">          0 :                         if((axis &gt;= 0) &amp;&amp; (axis &lt; 3)) </span>
+<span class="lineNum">    1104 </span>            :                         {
+<span class="lineNum">    1105 </span>            :                                 btAssertConstrParams(m_flags &amp; BT_CONETWIST_FLAGS_LIN_CFM);
+<span class="lineNum">    1106 </span><span class="lineNoCov">          0 :                                 retVal = m_linCFM;</span>
+<span class="lineNum">    1107 </span>            :                         }
+<span class="lineNum">    1108 </span><span class="lineNoCov">          0 :                         else if((axis &gt;= 3) &amp;&amp; (axis &lt; 6)) </span>
+<span class="lineNum">    1109 </span>            :                         {
+<span class="lineNum">    1110 </span>            :                                 btAssertConstrParams(m_flags &amp; BT_CONETWIST_FLAGS_ANG_CFM);
+<span class="lineNum">    1111 </span><span class="lineNoCov">          0 :                                 retVal = m_angCFM;</span>
+<span class="lineNum">    1112 </span>            :                         }
+<span class="lineNum">    1113 </span>            :                         else
+<span class="lineNum">    1114 </span>            :                         {
+<span class="lineNum">    1115 </span>            :                                 btAssertConstrParams(0);
+<span class="lineNum">    1116 </span>            :                         }
+<span class="lineNum">    1117 </span>            :                         break;
+<span class="lineNum">    1118 </span><span class="lineNoCov">          0 :                 default : </span>
+<span class="lineNum">    1119 </span>            :                         btAssertConstrParams(0);
+<span class="lineNum">    1120 </span>            :         }
+<span class="lineNum">    1121 </span><span class="lineNoCov">          0 :         return retVal;</span>
+<span class="lineNum">    1122 </span>            : }
+<a name="1123"><span class="lineNum">    1123 </span>            : </a>
+<span class="lineNum">    1124 </span>            : 
+<span class="lineNum">    1125 </span><span class="lineNoCov">          0 : void btConeTwistConstraint::setFrames(const btTransform &amp; frameA, const btTransform &amp; frameB)</span>
+<span class="lineNum">    1126 </span>            : {
+<span class="lineNum">    1127 </span><span class="lineNoCov">          0 :         m_rbAFrame = frameA;</span>
+<span class="lineNum">    1128 </span><span class="lineNoCov">          0 :         m_rbBFrame = frameB;</span>
+<span class="lineNum">    1129 </span><span class="lineNoCov">          0 :         buildJacobian();</span>
+<span class="lineNum">    1130 </span>            :         //calculateTransforms();
+<span class="lineNum">    1131 </span><span class="lineCov">          2 : }</span>
+<span class="lineNum">    1132 </span>            : 
+<span class="lineNum">    1133 </span>            :  
+<span class="lineNum">    1134 </span>            : 
+<span class="lineNum">    1135 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

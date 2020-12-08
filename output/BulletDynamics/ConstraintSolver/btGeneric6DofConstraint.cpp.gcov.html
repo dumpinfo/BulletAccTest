@@ -1,0 +1,1148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletDynamics/ConstraintSolver</a> - btGeneric6DofConstraint.cpp<span style="font-size: 80%;"> (source / <a href="btGeneric6DofConstraint.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">222</td>
+            <td class="headerCovTableEntry">473</td>
+            <td class="headerCovTableEntryLo">46.9 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">15</td>
+            <td class="headerCovTableEntry">32</td>
+            <td class="headerCovTableEntryLo">46.9 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose,
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely,
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : /*
+<span class="lineNum">      16 </span>            : 2007-09-09
+<span class="lineNum">      17 </span>            : Refactored by Francisco Le?n
+<span class="lineNum">      18 </span>            : email: projectileman@yahoo.com
+<span class="lineNum">      19 </span>            : http://gimpact.sf.net
+<span class="lineNum">      20 </span>            : */
+<span class="lineNum">      21 </span>            : 
+<span class="lineNum">      22 </span>            : #include &quot;btGeneric6DofConstraint.h&quot;
+<span class="lineNum">      23 </span>            : #include &quot;BulletDynamics/Dynamics/btRigidBody.h&quot;
+<span class="lineNum">      24 </span>            : #include &quot;LinearMath/btTransformUtil.h&quot;
+<span class="lineNum">      25 </span>            : #include &quot;LinearMath/btTransformUtil.h&quot;
+<span class="lineNum">      26 </span>            : #include &lt;new&gt;
+<span class="lineNum">      27 </span>            : 
+<span class="lineNum">      28 </span>            : 
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span>            : #define D6_USE_OBSOLETE_METHOD false
+<span class="lineNum">      31 </span>            : #define D6_USE_FRAME_OFFSET true
+<span class="lineNum">      32 </span>            : 
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span><span class="lineNoCov">          0 : btGeneric6DofConstraint::btGeneric6DofConstraint(btRigidBody&amp; rbA, btRigidBody&amp; rbB, const btTransform&amp; frameInA, const btTransform&amp; frameInB, bool useLinearReferenceFrameA)</span>
+<span class="lineNum">      39 </span>            : : btTypedConstraint(D6_CONSTRAINT_TYPE, rbA, rbB)
+<span class="lineNum">      40 </span>            : , m_frameInA(frameInA)
+<span class="lineNum">      41 </span>            : , m_frameInB(frameInB),
+<span class="lineNum">      42 </span>            : m_useLinearReferenceFrameA(useLinearReferenceFrameA),
+<span class="lineNum">      43 </span>            : m_useOffsetForConstraintFrame(D6_USE_FRAME_OFFSET),
+<span class="lineNum">      44 </span>            : m_flags(0),
+<span class="lineNum">      45 </span><span class="lineNoCov">          0 : m_useSolveConstraintObsolete(D6_USE_OBSOLETE_METHOD)</span>
+<span class="lineNum">      46 </span>            : {
+<span class="lineNum">      47 </span><span class="lineNoCov">          0 :         calculateTransforms();</span>
+<span class="lineNum">      48 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span><span class="lineCov">          2 : btGeneric6DofConstraint::btGeneric6DofConstraint(btRigidBody&amp; rbB, const btTransform&amp; frameInB, bool useLinearReferenceFrameB)</span>
+<span class="lineNum">      53 </span>            :         : btTypedConstraint(D6_CONSTRAINT_TYPE, getFixedBody(), rbB),
+<span class="lineNum">      54 </span>            :                 m_frameInB(frameInB),
+<span class="lineNum">      55 </span>            :                 m_useLinearReferenceFrameA(useLinearReferenceFrameB),
+<span class="lineNum">      56 </span>            :                 m_useOffsetForConstraintFrame(D6_USE_FRAME_OFFSET),
+<span class="lineNum">      57 </span>            :                 m_flags(0),
+<span class="lineNum">      58 </span><span class="lineCov">         22 :                 m_useSolveConstraintObsolete(false)</span>
+<span class="lineNum">      59 </span>            : {
+<span class="lineNum">      60 </span>            :         ///not providing rigidbody A means implicitly using worldspace for body A
+<span class="lineNum">      61 </span><span class="lineCov">          6 :         m_frameInA = rbB.getCenterOfMassTransform() * m_frameInB;</span>
+<span class="lineNum">      62 </span><span class="lineCov">          2 :         calculateTransforms();</span>
+<span class="lineNum">      63 </span><span class="lineCov">          2 : }</span>
+<span class="lineNum">      64 </span>            : 
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span>            : 
+<span class="lineNum">      68 </span>            : #define GENERIC_D6_DISABLE_WARMSTARTING 1
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            : btScalar btGetMatrixElem(const btMatrix3x3&amp; mat, int index);
+<span class="lineNum">      73 </span><span class="lineNoCov">          0 : btScalar btGetMatrixElem(const btMatrix3x3&amp; mat, int index)</span>
+<span class="lineNum">      74 </span>            : {
+<span class="lineNum">      75 </span><span class="lineCov">         78 :         int i = index%3;</span>
+<span class="lineNum">      76 </span><span class="lineCov">         78 :         int j = index/3;</span>
+<span class="lineNum">      77 </span><span class="lineCov">         78 :         return mat[i][j];</span>
+<span class="lineNum">      78 </span>            : }
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span>            : 
+<span class="lineNum">      81 </span>            : 
+<a name="82"><span class="lineNum">      82 </span>            : ///MatrixToEulerXYZ from http://www.geometrictools.com/LibFoundation/Mathematics/Wm4Matrix3.inl.html</a>
+<span class="lineNum">      83 </span>            : bool    matrixToEulerXYZ(const btMatrix3x3&amp; mat,btVector3&amp; xyz);
+<span class="lineNum">      84 </span><span class="lineCov">         13 : bool    matrixToEulerXYZ(const btMatrix3x3&amp; mat,btVector3&amp; xyz)</span>
+<span class="lineNum">      85 </span>            : {
+<span class="lineNum">      86 </span>            :         //      // rot =  cy*cz          -cy*sz           sy
+<span class="lineNum">      87 </span>            :         //      //        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
+<span class="lineNum">      88 </span>            :         //      //       -cx*cz*sy+sx*sz  cz*sx+cx*sy*sz  cx*cy
+<span class="lineNum">      89 </span>            :         //
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span><span class="lineCov">         13 :         btScalar fi = btGetMatrixElem(mat,2);</span>
+<span class="lineNum">      92 </span><span class="lineCov">         13 :         if (fi &lt; btScalar(1.0f))</span>
+<span class="lineNum">      93 </span>            :         {
+<span class="lineNum">      94 </span><span class="lineCov">         13 :                 if (fi &gt; btScalar(-1.0f))</span>
+<span class="lineNum">      95 </span>            :                 {
+<span class="lineNum">      96 </span><span class="lineCov">         39 :                         xyz[0] = btAtan2(-btGetMatrixElem(mat,5),btGetMatrixElem(mat,8));</span>
+<span class="lineNum">      97 </span><span class="lineCov">         26 :                         xyz[1] = btAsin(btGetMatrixElem(mat,2));</span>
+<span class="lineNum">      98 </span><span class="lineCov">         39 :                         xyz[2] = btAtan2(-btGetMatrixElem(mat,1),btGetMatrixElem(mat,0));</span>
+<span class="lineNum">      99 </span><span class="lineCov">         13 :                         return true;</span>
+<span class="lineNum">     100 </span>            :                 }
+<span class="lineNum">     101 </span>            :                 else
+<span class="lineNum">     102 </span>            :                 {
+<span class="lineNum">     103 </span>            :                         // WARNING.  Not unique.  XA - ZA = -atan2(r10,r11)
+<span class="lineNum">     104 </span><span class="lineNoCov">          0 :                         xyz[0] = -btAtan2(btGetMatrixElem(mat,3),btGetMatrixElem(mat,4));</span>
+<span class="lineNum">     105 </span><span class="lineNoCov">          0 :                         xyz[1] = -SIMD_HALF_PI;</span>
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 :                         xyz[2] = btScalar(0.0);</span>
+<span class="lineNum">     107 </span><span class="lineNoCov">          0 :                         return false;</span>
+<span class="lineNum">     108 </span>            :                 }
+<span class="lineNum">     109 </span>            :         }
+<span class="lineNum">     110 </span>            :         else
+<span class="lineNum">     111 </span>            :         {
+<span class="lineNum">     112 </span>            :                 // WARNING.  Not unique.  XAngle + ZAngle = atan2(r10,r11)
+<span class="lineNum">     113 </span><span class="lineNoCov">          0 :                 xyz[0] = btAtan2(btGetMatrixElem(mat,3),btGetMatrixElem(mat,4));</span>
+<span class="lineNum">     114 </span><span class="lineNoCov">          0 :                 xyz[1] = SIMD_HALF_PI;</span>
+<span class="lineNum">     115 </span><span class="lineNoCov">          0 :                 xyz[2] = 0.0;</span>
+<span class="lineNum">     116 </span>            :         }
+<span class="lineNum">     117 </span><span class="lineNoCov">          0 :         return false;</span>
+<span class="lineNum">     118 </span>            : }
+<span class="lineNum">     119 </span>            : 
+<a name="120"><span class="lineNum">     120 </span>            : //////////////////////////// btRotationalLimitMotor ////////////////////////////////////</a>
+<span class="lineNum">     121 </span>            : 
+<span class="lineNum">     122 </span><span class="lineCov">         33 : int btRotationalLimitMotor::testLimitValue(btScalar test_value)</span>
+<span class="lineNum">     123 </span>            : {
+<span class="lineNum">     124 </span><span class="lineCov">         33 :         if(m_loLimit&gt;m_hiLimit)</span>
+<span class="lineNum">     125 </span>            :         {
+<span class="lineNum">     126 </span><span class="lineNoCov">          0 :                 m_currentLimit = 0;//Free from violation</span>
+<span class="lineNum">     127 </span><span class="lineNoCov">          0 :                 return 0;</span>
+<span class="lineNum">     128 </span>            :         }
+<span class="lineNum">     129 </span><span class="lineCov">         33 :         if (test_value &lt; m_loLimit)</span>
+<span class="lineNum">     130 </span>            :         {
+<span class="lineNum">     131 </span><span class="lineCov">         19 :                 m_currentLimit = 1;//low limit violation</span>
+<span class="lineNum">     132 </span><span class="lineCov">         19 :                 m_currentLimitError =  test_value - m_loLimit;</span>
+<span class="lineNum">     133 </span><span class="lineCov">         19 :                 if(m_currentLimitError&gt;SIMD_PI) </span>
+<span class="lineNum">     134 </span><span class="lineNoCov">          0 :                         m_currentLimitError-=SIMD_2_PI;</span>
+<span class="lineNum">     135 </span><span class="lineCov">         19 :                 else if(m_currentLimitError&lt;-SIMD_PI) </span>
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 :                         m_currentLimitError+=SIMD_2_PI;</span>
+<span class="lineNum">     137 </span>            :                 return 1;
+<span class="lineNum">     138 </span>            :         }
+<span class="lineNum">     139 </span><span class="lineCov">         14 :         else if (test_value&gt; m_hiLimit)</span>
+<span class="lineNum">     140 </span>            :         {
+<span class="lineNum">     141 </span><span class="lineCov">         14 :                 m_currentLimit = 2;//High limit violation</span>
+<span class="lineNum">     142 </span><span class="lineCov">         14 :                 m_currentLimitError = test_value - m_hiLimit;</span>
+<span class="lineNum">     143 </span><span class="lineCov">         14 :                 if(m_currentLimitError&gt;SIMD_PI) </span>
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :                         m_currentLimitError-=SIMD_2_PI;</span>
+<span class="lineNum">     145 </span><span class="lineCov">         14 :                 else if(m_currentLimitError&lt;-SIMD_PI) </span>
+<span class="lineNum">     146 </span><span class="lineNoCov">          0 :                         m_currentLimitError+=SIMD_2_PI;</span>
+<span class="lineNum">     147 </span>            :                 return 2;
+<span class="lineNum">     148 </span>            :         };
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span><span class="lineNoCov">          0 :         m_currentLimit = 0;//Free from violation</span>
+<span class="lineNum">     151 </span><span class="lineNoCov">          0 :         return 0;</span>
+<span class="lineNum">     152 </span>            : 
+<span class="lineNum">     153 </span>            : }
+<span class="lineNum">     154 </span>            : 
+<span class="lineNum">     155 </span>            : 
+<span class="lineNum">     156 </span>            : 
+<span class="lineNum">     157 </span><span class="lineNoCov">          0 : btScalar btRotationalLimitMotor::solveAngularLimits(</span>
+<span class="lineNum">     158 </span>            :         btScalar timeStep,btVector3&amp; axis,btScalar jacDiagABInv,
+<span class="lineNum">     159 </span>            :         btRigidBody * body0, btRigidBody * body1 )
+<span class="lineNum">     160 </span>            : {
+<span class="lineNum">     161 </span><span class="lineNoCov">          0 :         if (needApplyTorques()==false) return 0.0f;</span>
+<span class="lineNum">     162 </span>            : 
+<span class="lineNum">     163 </span><span class="lineNoCov">          0 :         btScalar target_velocity = m_targetVelocity;</span>
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :         btScalar maxMotorForce = m_maxMotorForce;</span>
+<span class="lineNum">     165 </span>            : 
+<span class="lineNum">     166 </span>            :         //current error correction
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :         if (m_currentLimit!=0)</span>
+<span class="lineNum">     168 </span>            :         {
+<span class="lineNum">     169 </span><span class="lineNoCov">          0 :                 target_velocity = -m_stopERP*m_currentLimitError/(timeStep);</span>
+<span class="lineNum">     170 </span><span class="lineNoCov">          0 :                 maxMotorForce = m_maxLimitForce;</span>
+<span class="lineNum">     171 </span>            :         }
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span><span class="lineNoCov">          0 :         maxMotorForce *= timeStep;</span>
+<span class="lineNum">     174 </span>            : 
+<span class="lineNum">     175 </span>            :         // current velocity difference
+<span class="lineNum">     176 </span>            : 
+<span class="lineNum">     177 </span><span class="lineNoCov">          0 :         btVector3 angVelA = body0-&gt;getAngularVelocity();</span>
+<span class="lineNum">     178 </span><span class="lineNoCov">          0 :         btVector3 angVelB = body1-&gt;getAngularVelocity();</span>
+<span class="lineNum">     179 </span>            : 
+<span class="lineNum">     180 </span><span class="lineNoCov">          0 :         btVector3 vel_diff;</span>
+<span class="lineNum">     181 </span><span class="lineNoCov">          0 :         vel_diff = angVelA-angVelB;</span>
+<span class="lineNum">     182 </span>            : 
+<span class="lineNum">     183 </span>            : 
+<span class="lineNum">     184 </span>            : 
+<span class="lineNum">     185 </span><span class="lineNoCov">          0 :         btScalar rel_vel = axis.dot(vel_diff);</span>
+<span class="lineNum">     186 </span>            : 
+<span class="lineNum">     187 </span>            :         // correction velocity
+<span class="lineNum">     188 </span><span class="lineNoCov">          0 :         btScalar motor_relvel = m_limitSoftness*(target_velocity  - m_damping*rel_vel);</span>
+<span class="lineNum">     189 </span>            : 
+<span class="lineNum">     190 </span>            : 
+<span class="lineNum">     191 </span><span class="lineNoCov">          0 :         if ( motor_relvel &lt; SIMD_EPSILON &amp;&amp; motor_relvel &gt; -SIMD_EPSILON  )</span>
+<span class="lineNum">     192 </span>            :         {
+<span class="lineNum">     193 </span>            :                 return 0.0f;//no need for applying force
+<span class="lineNum">     194 </span>            :         }
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span>            : 
+<span class="lineNum">     197 </span>            :         // correction impulse
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :         btScalar unclippedMotorImpulse = (1+m_bounce)*motor_relvel*jacDiagABInv;</span>
+<span class="lineNum">     199 </span>            : 
+<span class="lineNum">     200 </span>            :         // clip correction impulse
+<span class="lineNum">     201 </span>            :         btScalar clippedMotorImpulse;
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span>            :         ///@todo: should clip against accumulated impulse
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :         if (unclippedMotorImpulse&gt;0.0f)</span>
+<span class="lineNum">     205 </span>            :         {
+<span class="lineNum">     206 </span><span class="lineNoCov">          0 :                 clippedMotorImpulse =  unclippedMotorImpulse &gt; maxMotorForce? maxMotorForce: unclippedMotorImpulse;</span>
+<span class="lineNum">     207 </span>            :         }
+<span class="lineNum">     208 </span>            :         else
+<span class="lineNum">     209 </span>            :         {
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 :                 clippedMotorImpulse =  unclippedMotorImpulse &lt; -maxMotorForce ? -maxMotorForce: unclippedMotorImpulse;</span>
+<span class="lineNum">     211 </span>            :         }
+<span class="lineNum">     212 </span>            : 
+<span class="lineNum">     213 </span>            : 
+<span class="lineNum">     214 </span>            :         // sort with accumulated impulses
+<span class="lineNum">     215 </span><span class="lineNoCov">          0 :         btScalar        lo = btScalar(-BT_LARGE_FLOAT);</span>
+<span class="lineNum">     216 </span><span class="lineNoCov">          0 :         btScalar        hi = btScalar(BT_LARGE_FLOAT);</span>
+<span class="lineNum">     217 </span>            : 
+<span class="lineNum">     218 </span><span class="lineNoCov">          0 :         btScalar oldaccumImpulse = m_accumulatedImpulse;</span>
+<span class="lineNum">     219 </span><span class="lineNoCov">          0 :         btScalar sum = oldaccumImpulse + clippedMotorImpulse;</span>
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :         m_accumulatedImpulse = sum &gt; hi ? btScalar(0.) : sum &lt; lo ? btScalar(0.) : sum;</span>
+<span class="lineNum">     221 </span>            : 
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :         clippedMotorImpulse = m_accumulatedImpulse - oldaccumImpulse;</span>
+<span class="lineNum">     223 </span>            : 
+<span class="lineNum">     224 </span><span class="lineNoCov">          0 :         btVector3 motorImp = clippedMotorImpulse * axis;</span>
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span><span class="lineNoCov">          0 :         body0-&gt;applyTorqueImpulse(motorImp);</span>
+<span class="lineNum">     227 </span><span class="lineNoCov">          0 :         body1-&gt;applyTorqueImpulse(-motorImp);</span>
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span><span class="lineNoCov">          0 :         return clippedMotorImpulse;</span>
+<span class="lineNum">     230 </span>            : 
+<span class="lineNum">     231 </span>            : 
+<span class="lineNum">     232 </span>            : }
+<span class="lineNum">     233 </span>            : 
+<span class="lineNum">     234 </span>            : //////////////////////////// End btRotationalLimitMotor ////////////////////////////////////
+<span class="lineNum">     235 </span>            : 
+<span class="lineNum">     236 </span>            : 
+<span class="lineNum">     237 </span>            : 
+<span class="lineNum">     238 </span>            : 
+<span class="lineNum">     239 </span>            : //////////////////////////// btTranslationalLimitMotor ////////////////////////////////////
+<span class="lineNum">     240 </span>            : 
+<span class="lineNum">     241 </span>            : 
+<span class="lineNum">     242 </span><span class="lineCov">         39 : int btTranslationalLimitMotor::testLimitValue(int limitIndex, btScalar test_value)</span>
+<span class="lineNum">     243 </span>            : {
+<span class="lineNum">     244 </span><span class="lineCov">         78 :         btScalar loLimit = m_lowerLimit[limitIndex];</span>
+<span class="lineNum">     245 </span><span class="lineCov">         78 :         btScalar hiLimit = m_upperLimit[limitIndex];</span>
+<span class="lineNum">     246 </span><span class="lineCov">         39 :         if(loLimit &gt; hiLimit)</span>
+<span class="lineNum">     247 </span>            :         {
+<span class="lineNum">     248 </span><span class="lineNoCov">          0 :                 m_currentLimit[limitIndex] = 0;//Free from violation</span>
+<span class="lineNum">     249 </span><span class="lineNoCov">          0 :                 m_currentLimitError[limitIndex] = btScalar(0.f);</span>
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :                 return 0;</span>
+<span class="lineNum">     251 </span>            :         }
+<span class="lineNum">     252 </span>            : 
+<span class="lineNum">     253 </span><span class="lineCov">         39 :         if (test_value &lt; loLimit)</span>
+<span class="lineNum">     254 </span>            :         {
+<span class="lineNum">     255 </span><span class="lineCov">          7 :                 m_currentLimit[limitIndex] = 2;//low limit violation</span>
+<span class="lineNum">     256 </span><span class="lineCov">         14 :                 m_currentLimitError[limitIndex] =  test_value - loLimit;</span>
+<span class="lineNum">     257 </span><span class="lineCov">          7 :                 return 2;</span>
+<span class="lineNum">     258 </span>            :         }
+<span class="lineNum">     259 </span><span class="lineCov">         32 :         else if (test_value&gt; hiLimit)</span>
+<span class="lineNum">     260 </span>            :         {
+<span class="lineNum">     261 </span><span class="lineCov">         26 :                 m_currentLimit[limitIndex] = 1;//High limit violation</span>
+<span class="lineNum">     262 </span><span class="lineCov">         52 :                 m_currentLimitError[limitIndex] = test_value - hiLimit;</span>
+<span class="lineNum">     263 </span><span class="lineCov">         26 :                 return 1;</span>
+<span class="lineNum">     264 </span>            :         };
+<span class="lineNum">     265 </span>            : 
+<span class="lineNum">     266 </span><span class="lineCov">          6 :         m_currentLimit[limitIndex] = 0;//Free from violation</span>
+<span class="lineNum">     267 </span><span class="lineCov">         12 :         m_currentLimitError[limitIndex] = btScalar(0.f);</span>
+<span class="lineNum">     268 </span><span class="lineCov">          6 :         return 0;</span>
+<span class="lineNum">     269 </span>            : }
+<span class="lineNum">     270 </span>            : 
+<span class="lineNum">     271 </span>            : 
+<span class="lineNum">     272 </span>            : 
+<span class="lineNum">     273 </span><span class="lineNoCov">          0 : btScalar btTranslationalLimitMotor::solveLinearAxis(</span>
+<span class="lineNum">     274 </span>            :         btScalar timeStep,
+<span class="lineNum">     275 </span>            :         btScalar jacDiagABInv,
+<span class="lineNum">     276 </span>            :         btRigidBody&amp; body1,const btVector3 &amp;pointInA,
+<span class="lineNum">     277 </span>            :         btRigidBody&amp; body2,const btVector3 &amp;pointInB,
+<span class="lineNum">     278 </span>            :         int limit_index,
+<span class="lineNum">     279 </span>            :         const btVector3 &amp; axis_normal_on_a,
+<span class="lineNum">     280 </span>            :         const btVector3 &amp; anchorPos)
+<span class="lineNum">     281 </span>            : {
+<span class="lineNum">     282 </span>            : 
+<span class="lineNum">     283 </span>            :         ///find relative velocity
+<span class="lineNum">     284 </span>            :         //    btVector3 rel_pos1 = pointInA - body1.getCenterOfMassPosition();
+<span class="lineNum">     285 </span>            :         //    btVector3 rel_pos2 = pointInB - body2.getCenterOfMassPosition();
+<span class="lineNum">     286 </span><span class="lineNoCov">          0 :         btVector3 rel_pos1 = anchorPos - body1.getCenterOfMassPosition();</span>
+<span class="lineNum">     287 </span><span class="lineNoCov">          0 :         btVector3 rel_pos2 = anchorPos - body2.getCenterOfMassPosition();</span>
+<span class="lineNum">     288 </span>            : 
+<span class="lineNum">     289 </span><span class="lineNoCov">          0 :         btVector3 vel1 = body1.getVelocityInLocalPoint(rel_pos1);</span>
+<span class="lineNum">     290 </span><span class="lineNoCov">          0 :         btVector3 vel2 = body2.getVelocityInLocalPoint(rel_pos2);</span>
+<span class="lineNum">     291 </span><span class="lineNoCov">          0 :         btVector3 vel = vel1 - vel2;</span>
+<span class="lineNum">     292 </span>            : 
+<span class="lineNum">     293 </span><span class="lineNoCov">          0 :         btScalar rel_vel = axis_normal_on_a.dot(vel);</span>
+<span class="lineNum">     294 </span>            : 
+<span class="lineNum">     295 </span>            : 
+<span class="lineNum">     296 </span>            : 
+<span class="lineNum">     297 </span>            :         /// apply displacement correction
+<span class="lineNum">     298 </span>            : 
+<span class="lineNum">     299 </span>            :         //positional error (zeroth order error)
+<span class="lineNum">     300 </span><span class="lineNoCov">          0 :         btScalar depth = -(pointInA - pointInB).dot(axis_normal_on_a);</span>
+<span class="lineNum">     301 </span><span class="lineNoCov">          0 :         btScalar        lo = btScalar(-BT_LARGE_FLOAT);</span>
+<span class="lineNum">     302 </span><span class="lineNoCov">          0 :         btScalar        hi = btScalar(BT_LARGE_FLOAT);</span>
+<span class="lineNum">     303 </span>            : 
+<span class="lineNum">     304 </span><span class="lineNoCov">          0 :         btScalar minLimit = m_lowerLimit[limit_index];</span>
+<span class="lineNum">     305 </span><span class="lineNoCov">          0 :         btScalar maxLimit = m_upperLimit[limit_index];</span>
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span>            :         //handle the limits
+<span class="lineNum">     308 </span><span class="lineNoCov">          0 :         if (minLimit &lt; maxLimit)</span>
+<span class="lineNum">     309 </span>            :         {
+<span class="lineNum">     310 </span>            :                 {
+<span class="lineNum">     311 </span><span class="lineNoCov">          0 :                         if (depth &gt; maxLimit)</span>
+<span class="lineNum">     312 </span>            :                         {
+<span class="lineNum">     313 </span><span class="lineNoCov">          0 :                                 depth -= maxLimit;</span>
+<span class="lineNum">     314 </span><span class="lineNoCov">          0 :                                 lo = btScalar(0.);</span>
+<span class="lineNum">     315 </span>            : 
+<span class="lineNum">     316 </span>            :                         }
+<span class="lineNum">     317 </span>            :                         else
+<span class="lineNum">     318 </span>            :                         {
+<span class="lineNum">     319 </span><span class="lineNoCov">          0 :                                 if (depth &lt; minLimit)</span>
+<span class="lineNum">     320 </span>            :                                 {
+<span class="lineNum">     321 </span><span class="lineNoCov">          0 :                                         depth -= minLimit;</span>
+<span class="lineNum">     322 </span><span class="lineNoCov">          0 :                                         hi = btScalar(0.);</span>
+<span class="lineNum">     323 </span>            :                                 }
+<span class="lineNum">     324 </span>            :                                 else
+<span class="lineNum">     325 </span>            :                                 {
+<span class="lineNum">     326 </span>            :                                         return 0.0f;
+<span class="lineNum">     327 </span>            :                                 }
+<span class="lineNum">     328 </span>            :                         }
+<span class="lineNum">     329 </span>            :                 }
+<span class="lineNum">     330 </span>            :         }
+<span class="lineNum">     331 </span>            : 
+<span class="lineNum">     332 </span><span class="lineNoCov">          0 :         btScalar normalImpulse= m_limitSoftness*(m_restitution*depth/timeStep - m_damping*rel_vel) * jacDiagABInv;</span>
+<span class="lineNum">     333 </span>            : 
+<span class="lineNum">     334 </span>            : 
+<span class="lineNum">     335 </span>            : 
+<span class="lineNum">     336 </span>            : 
+<span class="lineNum">     337 </span><span class="lineNoCov">          0 :         btScalar oldNormalImpulse = m_accumulatedImpulse[limit_index];</span>
+<span class="lineNum">     338 </span><span class="lineNoCov">          0 :         btScalar sum = oldNormalImpulse + normalImpulse;</span>
+<span class="lineNum">     339 </span><span class="lineNoCov">          0 :         m_accumulatedImpulse[limit_index] = sum &gt; hi ? btScalar(0.) : sum &lt; lo ? btScalar(0.) : sum;</span>
+<span class="lineNum">     340 </span><span class="lineNoCov">          0 :         normalImpulse = m_accumulatedImpulse[limit_index] - oldNormalImpulse;</span>
+<span class="lineNum">     341 </span>            : 
+<span class="lineNum">     342 </span><span class="lineNoCov">          0 :         btVector3 impulse_vector = axis_normal_on_a * normalImpulse;</span>
+<span class="lineNum">     343 </span><span class="lineNoCov">          0 :         body1.applyImpulse( impulse_vector, rel_pos1);</span>
+<span class="lineNum">     344 </span><span class="lineNoCov">          0 :         body2.applyImpulse(-impulse_vector, rel_pos2);</span>
+<span class="lineNum">     345 </span>            : 
+<span class="lineNum">     346 </span>            :         
+<span class="lineNum">     347 </span>            : 
+<span class="lineNum">     348 </span><span class="lineNoCov">          0 :         return normalImpulse;</span>
+<span class="lineNum">     349 </span>            : }
+<span class="lineNum">     350 </span>            : 
+<span class="lineNum">     351 </span>            : //////////////////////////// btTranslationalLimitMotor ////////////////////////////////////
+<span class="lineNum">     352 </span>            : 
+<span class="lineNum">     353 </span><span class="lineCov">         13 : void btGeneric6DofConstraint::calculateAngleInfo()</span>
+<span class="lineNum">     354 </span>            : {
+<span class="lineNum">     355 </span><span class="lineCov">         39 :         btMatrix3x3 relative_frame = m_calculatedTransformA.getBasis().inverse()*m_calculatedTransformB.getBasis();</span>
+<span class="lineNum">     356 </span><span class="lineCov">         13 :         matrixToEulerXYZ(relative_frame,m_calculatedAxisAngleDiff);</span>
+<span class="lineNum">     357 </span>            :         // in euler angle mode we do not actually constrain the angular velocity
+<span class="lineNum">     358 </span>            :         // along the axes axis[0] and axis[2] (although we do use axis[1]) :
+<span class="lineNum">     359 </span>            :         //
+<span class="lineNum">     360 </span>            :         //    to get                    constrain w2-w1 along           ...not
+<span class="lineNum">     361 </span>            :         //    ------                    ---------------------           ------
+<span class="lineNum">     362 </span>            :         //    d(angle[0])/dt = 0        ax[1] x ax[2]                   ax[0]
+<span class="lineNum">     363 </span>            :         //    d(angle[1])/dt = 0        ax[1]
+<span class="lineNum">     364 </span>            :         //    d(angle[2])/dt = 0        ax[0] x ax[1]                   ax[2]
+<span class="lineNum">     365 </span>            :         //
+<span class="lineNum">     366 </span>            :         // constraining w2-w1 along an axis 'a' means that a'*(w2-w1)=0.
+<span class="lineNum">     367 </span>            :         // to prove the result for angle[0], write the expression for angle[0] from
+<span class="lineNum">     368 </span>            :         // GetInfo1 then take the derivative. to prove this for angle[2] it is
+<span class="lineNum">     369 </span>            :         // easier to take the euler rate expression for d(angle[2])/dt with respect
+<span class="lineNum">     370 </span>            :         // to the components of w and set that to 0.
+<span class="lineNum">     371 </span><span class="lineCov">         26 :         btVector3 axis0 = m_calculatedTransformB.getBasis().getColumn(0);</span>
+<span class="lineNum">     372 </span><span class="lineCov">         26 :         btVector3 axis2 = m_calculatedTransformA.getBasis().getColumn(2);</span>
+<span class="lineNum">     373 </span>            : 
+<span class="lineNum">     374 </span><span class="lineCov">         26 :         m_calculatedAxis[1] = axis2.cross(axis0);</span>
+<span class="lineNum">     375 </span><span class="lineCov">         26 :         m_calculatedAxis[0] = m_calculatedAxis[1].cross(axis2);</span>
+<span class="lineNum">     376 </span><span class="lineCov">         26 :         m_calculatedAxis[2] = axis0.cross(m_calculatedAxis[1]);</span>
+<span class="lineNum">     377 </span>            : 
+<span class="lineNum">     378 </span><span class="lineCov">         13 :         m_calculatedAxis[0].normalize();</span>
+<span class="lineNum">     379 </span><span class="lineCov">         13 :         m_calculatedAxis[1].normalize();</span>
+<span class="lineNum">     380 </span><span class="lineCov">         13 :         m_calculatedAxis[2].normalize();</span>
+<span class="lineNum">     381 </span>            : 
+<a name="382"><span class="lineNum">     382 </span><span class="lineCov">         13 : }</span></a>
+<span class="lineNum">     383 </span>            : 
+<span class="lineNum">     384 </span><span class="lineNoCov">          0 : void btGeneric6DofConstraint::calculateTransforms()</span>
+<span class="lineNum">     385 </span>            : {
+<span class="lineNum">     386 </span><span class="lineCov">          6 :         calculateTransforms(m_rbA.getCenterOfMassTransform(),m_rbB.getCenterOfMassTransform());</span>
+<a name="387"><span class="lineNum">     387 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     388 </span>            : 
+<span class="lineNum">     389 </span><span class="lineCov">         13 : void btGeneric6DofConstraint::calculateTransforms(const btTransform&amp; transA,const btTransform&amp; transB)</span>
+<span class="lineNum">     390 </span>            : {
+<span class="lineNum">     391 </span><span class="lineCov">         26 :         m_calculatedTransformA = transA * m_frameInA;</span>
+<span class="lineNum">     392 </span><span class="lineCov">         26 :         m_calculatedTransformB = transB * m_frameInB;</span>
+<span class="lineNum">     393 </span><span class="lineCov">         13 :         calculateLinearInfo();</span>
+<span class="lineNum">     394 </span><span class="lineCov">         13 :         calculateAngleInfo();</span>
+<span class="lineNum">     395 </span><span class="lineCov">         13 :         if(m_useOffsetForConstraintFrame)</span>
+<span class="lineNum">     396 </span>            :         {       //  get weight factors depending on masses
+<span class="lineNum">     397 </span><span class="lineCov">         13 :                 btScalar miA = getRigidBodyA().getInvMass();</span>
+<span class="lineNum">     398 </span><span class="lineCov">         13 :                 btScalar miB = getRigidBodyB().getInvMass();</span>
+<span class="lineNum">     399 </span><span class="lineCov">         13 :                 m_hasStaticBody = (miA &lt; SIMD_EPSILON) || (miB &lt; SIMD_EPSILON);</span>
+<span class="lineNum">     400 </span><span class="lineCov">         13 :                 btScalar miS = miA + miB;</span>
+<span class="lineNum">     401 </span><span class="lineCov">         13 :                 if(miS &gt; btScalar(0.f))</span>
+<span class="lineNum">     402 </span>            :                 {
+<span class="lineNum">     403 </span><span class="lineCov">         13 :                         m_factA = miB / miS;</span>
+<span class="lineNum">     404 </span>            :                 }
+<span class="lineNum">     405 </span>            :                 else 
+<span class="lineNum">     406 </span>            :                 {
+<span class="lineNum">     407 </span><span class="lineNoCov">          0 :                         m_factA = btScalar(0.5f);</span>
+<span class="lineNum">     408 </span>            :                 }
+<span class="lineNum">     409 </span><span class="lineCov">         13 :                 m_factB = btScalar(1.0f) - m_factA;</span>
+<span class="lineNum">     410 </span>            :         }
+<span class="lineNum">     411 </span><span class="lineCov">         13 : }</span>
+<span class="lineNum">     412 </span>            : 
+<span class="lineNum">     413 </span>            : 
+<span class="lineNum">     414 </span>            : 
+<span class="lineNum">     415 </span><span class="lineNoCov">          0 : void btGeneric6DofConstraint::buildLinearJacobian(</span>
+<span class="lineNum">     416 </span>            :         btJacobianEntry &amp; jacLinear,const btVector3 &amp; normalWorld,
+<span class="lineNum">     417 </span>            :         const btVector3 &amp; pivotAInW,const btVector3 &amp; pivotBInW)
+<span class="lineNum">     418 </span>            : {
+<span class="lineNum">     419 </span><span class="lineNoCov">          0 :         new (&amp;jacLinear) btJacobianEntry(</span>
+<span class="lineNum">     420 </span><span class="lineNoCov">          0 :         m_rbA.getCenterOfMassTransform().getBasis().transpose(),</span>
+<span class="lineNum">     421 </span><span class="lineNoCov">          0 :         m_rbB.getCenterOfMassTransform().getBasis().transpose(),</span>
+<span class="lineNum">     422 </span><span class="lineNoCov">          0 :         pivotAInW - m_rbA.getCenterOfMassPosition(),</span>
+<span class="lineNum">     423 </span><span class="lineNoCov">          0 :         pivotBInW - m_rbB.getCenterOfMassPosition(),</span>
+<span class="lineNum">     424 </span>            :         normalWorld,
+<span class="lineNum">     425 </span><span class="lineNoCov">          0 :         m_rbA.getInvInertiaDiagLocal(),</span>
+<span class="lineNum">     426 </span><span class="lineNoCov">          0 :         m_rbA.getInvMass(),</span>
+<span class="lineNum">     427 </span><span class="lineNoCov">          0 :         m_rbB.getInvInertiaDiagLocal(),</span>
+<span class="lineNum">     428 </span><span class="lineNoCov">          0 :         m_rbB.getInvMass());</span>
+<span class="lineNum">     429 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     430 </span>            : 
+<span class="lineNum">     431 </span>            : 
+<span class="lineNum">     432 </span>            : 
+<span class="lineNum">     433 </span><span class="lineNoCov">          0 : void btGeneric6DofConstraint::buildAngularJacobian(</span>
+<span class="lineNum">     434 </span>            :         btJacobianEntry &amp; jacAngular,const btVector3 &amp; jointAxisW)
+<span class="lineNum">     435 </span>            : {
+<span class="lineNum">     436 </span><span class="lineNoCov">          0 :          new (&amp;jacAngular)  btJacobianEntry(jointAxisW,</span>
+<span class="lineNum">     437 </span><span class="lineNoCov">          0 :                                       m_rbA.getCenterOfMassTransform().getBasis().transpose(),</span>
+<span class="lineNum">     438 </span><span class="lineNoCov">          0 :                                       m_rbB.getCenterOfMassTransform().getBasis().transpose(),</span>
+<span class="lineNum">     439 </span><span class="lineNoCov">          0 :                                       m_rbA.getInvInertiaDiagLocal(),</span>
+<span class="lineNum">     440 </span><span class="lineNoCov">          0 :                                       m_rbB.getInvInertiaDiagLocal());</span>
+<span class="lineNum">     441 </span>            : 
+<span class="lineNum">     442 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     443 </span>            : 
+<span class="lineNum">     444 </span>            : 
+<span class="lineNum">     445 </span>            : 
+<span class="lineNum">     446 </span><span class="lineCov">         33 : bool btGeneric6DofConstraint::testAngularLimitMotor(int axis_index)</span>
+<span class="lineNum">     447 </span>            : {
+<span class="lineNum">     448 </span><span class="lineCov">         66 :         btScalar angle = m_calculatedAxisAngleDiff[axis_index];</span>
+<span class="lineNum">     449 </span><span class="lineCov">         33 :         angle = btAdjustAngleToLimits(angle, m_angularLimits[axis_index].m_loLimit, m_angularLimits[axis_index].m_hiLimit);</span>
+<span class="lineNum">     450 </span><span class="lineCov">         33 :         m_angularLimits[axis_index].m_currentPosition = angle;</span>
+<span class="lineNum">     451 </span>            :         //test limits
+<span class="lineNum">     452 </span><span class="lineCov">         33 :         m_angularLimits[axis_index].testLimitValue(angle);</span>
+<span class="lineNum">     453 </span><span class="lineCov">         66 :         return m_angularLimits[axis_index].needApplyTorques();</span>
+<span class="lineNum">     454 </span>            : }
+<span class="lineNum">     455 </span>            : 
+<span class="lineNum">     456 </span>            : 
+<span class="lineNum">     457 </span>            : 
+<span class="lineNum">     458 </span><span class="lineCov">         11 : void btGeneric6DofConstraint::buildJacobian()</span>
+<span class="lineNum">     459 </span>            : {
+<span class="lineNum">     460 </span>            : #ifndef __SPU__
+<span class="lineNum">     461 </span><span class="lineCov">         11 :         if (m_useSolveConstraintObsolete)</span>
+<span class="lineNum">     462 </span>            :         {
+<span class="lineNum">     463 </span>            : 
+<span class="lineNum">     464 </span>            :                 // Clear accumulated impulses for the next simulation step
+<span class="lineNum">     465 </span><span class="lineNoCov">          0 :                 m_linearLimits.m_accumulatedImpulse.setValue(btScalar(0.), btScalar(0.), btScalar(0.));</span>
+<span class="lineNum">     466 </span>            :                 int i;
+<span class="lineNum">     467 </span><span class="lineNoCov">          0 :                 for(i = 0; i &lt; 3; i++)</span>
+<span class="lineNum">     468 </span>            :                 {
+<span class="lineNum">     469 </span><span class="lineNoCov">          0 :                         m_angularLimits[i].m_accumulatedImpulse = btScalar(0.);</span>
+<span class="lineNum">     470 </span>            :                 }
+<span class="lineNum">     471 </span>            :                 //calculates transform
+<span class="lineNum">     472 </span><span class="lineNoCov">          0 :                 calculateTransforms(m_rbA.getCenterOfMassTransform(),m_rbB.getCenterOfMassTransform());</span>
+<span class="lineNum">     473 </span>            : 
+<span class="lineNum">     474 </span>            :                 //  const btVector3&amp; pivotAInW = m_calculatedTransformA.getOrigin();
+<span class="lineNum">     475 </span>            :                 //  const btVector3&amp; pivotBInW = m_calculatedTransformB.getOrigin();
+<span class="lineNum">     476 </span><span class="lineNoCov">          0 :                 calcAnchorPos();</span>
+<span class="lineNum">     477 </span><span class="lineNoCov">          0 :                 btVector3 pivotAInW = m_AnchorPos;</span>
+<span class="lineNum">     478 </span><span class="lineNoCov">          0 :                 btVector3 pivotBInW = m_AnchorPos;</span>
+<span class="lineNum">     479 </span>            : 
+<span class="lineNum">     480 </span>            :                 // not used here
+<span class="lineNum">     481 </span>            :                 //    btVector3 rel_pos1 = pivotAInW - m_rbA.getCenterOfMassPosition();
+<span class="lineNum">     482 </span>            :                 //    btVector3 rel_pos2 = pivotBInW - m_rbB.getCenterOfMassPosition();
+<span class="lineNum">     483 </span>            : 
+<span class="lineNum">     484 </span><span class="lineNoCov">          0 :                 btVector3 normalWorld;</span>
+<span class="lineNum">     485 </span>            :                 //linear part
+<span class="lineNum">     486 </span><span class="lineNoCov">          0 :                 for (i=0;i&lt;3;i++)</span>
+<span class="lineNum">     487 </span>            :                 {
+<span class="lineNum">     488 </span><span class="lineNoCov">          0 :                         if (m_linearLimits.isLimited(i))</span>
+<span class="lineNum">     489 </span>            :                         {
+<span class="lineNum">     490 </span><span class="lineNoCov">          0 :                                 if (m_useLinearReferenceFrameA)</span>
+<span class="lineNum">     491 </span><span class="lineNoCov">          0 :                                         normalWorld = m_calculatedTransformA.getBasis().getColumn(i);</span>
+<span class="lineNum">     492 </span>            :                                 else
+<span class="lineNum">     493 </span><span class="lineNoCov">          0 :                                         normalWorld = m_calculatedTransformB.getBasis().getColumn(i);</span>
+<span class="lineNum">     494 </span>            : 
+<span class="lineNum">     495 </span><span class="lineNoCov">          0 :                                 buildLinearJacobian(</span>
+<span class="lineNum">     496 </span>            :                                         m_jacLinear[i],normalWorld ,
+<span class="lineNum">     497 </span>            :                                         pivotAInW,pivotBInW);
+<span class="lineNum">     498 </span>            : 
+<span class="lineNum">     499 </span>            :                         }
+<span class="lineNum">     500 </span>            :                 }
+<span class="lineNum">     501 </span>            : 
+<span class="lineNum">     502 </span>            :                 // angular part
+<span class="lineNum">     503 </span><span class="lineNoCov">          0 :                 for (i=0;i&lt;3;i++)</span>
+<span class="lineNum">     504 </span>            :                 {
+<span class="lineNum">     505 </span>            :                         //calculates error angle
+<span class="lineNum">     506 </span><span class="lineNoCov">          0 :                         if (testAngularLimitMotor(i))</span>
+<span class="lineNum">     507 </span>            :                         {
+<span class="lineNum">     508 </span><span class="lineNoCov">          0 :                                 normalWorld = this-&gt;getAxis(i);</span>
+<span class="lineNum">     509 </span>            :                                 // Create angular atom
+<span class="lineNum">     510 </span><span class="lineNoCov">          0 :                                 buildAngularJacobian(m_jacAng[i],normalWorld);</span>
+<span class="lineNum">     511 </span>            :                         }
+<span class="lineNum">     512 </span>            :                 }
+<span class="lineNum">     513 </span>            : 
+<span class="lineNum">     514 </span>            :         }
+<span class="lineNum">     515 </span>            : #endif //__SPU__
+<span class="lineNum">     516 </span>            : 
+<span class="lineNum">     517 </span><span class="lineCov">         11 : }</span>
+<a name="518"><span class="lineNum">     518 </span>            : </a>
+<span class="lineNum">     519 </span>            : 
+<span class="lineNum">     520 </span><span class="lineCov">         11 : void btGeneric6DofConstraint::getInfo1 (btConstraintInfo1* info)</span>
+<span class="lineNum">     521 </span>            : {
+<span class="lineNum">     522 </span><span class="lineCov">         11 :         if (m_useSolveConstraintObsolete)</span>
+<span class="lineNum">     523 </span>            :         {
+<span class="lineNum">     524 </span><span class="lineNoCov">          0 :                 info-&gt;m_numConstraintRows = 0;</span>
+<span class="lineNum">     525 </span><span class="lineNoCov">          0 :                 info-&gt;nub = 0;</span>
+<span class="lineNum">     526 </span>            :         } else
+<span class="lineNum">     527 </span>            :         {
+<span class="lineNum">     528 </span>            :                 //prepare constraint
+<span class="lineNum">     529 </span><span class="lineCov">         33 :                 calculateTransforms(m_rbA.getCenterOfMassTransform(),m_rbB.getCenterOfMassTransform());</span>
+<span class="lineNum">     530 </span><span class="lineCov">         11 :                 info-&gt;m_numConstraintRows = 0;</span>
+<span class="lineNum">     531 </span><span class="lineCov">         11 :                 info-&gt;nub = 6;</span>
+<span class="lineNum">     532 </span>            :                 int i;
+<span class="lineNum">     533 </span>            :                 //test linear limits
+<span class="lineNum">     534 </span><span class="lineCov">         44 :                 for(i = 0; i &lt; 3; i++)</span>
+<span class="lineNum">     535 </span>            :                 {
+<span class="lineNum">     536 </span><span class="lineCov">         66 :                         if(m_linearLimits.needApplyForce(i))</span>
+<span class="lineNum">     537 </span>            :                         {
+<span class="lineNum">     538 </span><span class="lineCov">         33 :                                 info-&gt;m_numConstraintRows++;</span>
+<span class="lineNum">     539 </span><span class="lineCov">         33 :                                 info-&gt;nub--;</span>
+<span class="lineNum">     540 </span>            :                         }
+<span class="lineNum">     541 </span>            :                 }
+<span class="lineNum">     542 </span>            :                 //test angular limits
+<span class="lineNum">     543 </span><span class="lineCov">         77 :                 for (i=0;i&lt;3 ;i++ )</span>
+<span class="lineNum">     544 </span>            :                 {
+<span class="lineNum">     545 </span><span class="lineCov">         33 :                         if(testAngularLimitMotor(i))</span>
+<span class="lineNum">     546 </span>            :                         {
+<span class="lineNum">     547 </span><span class="lineCov">         33 :                                 info-&gt;m_numConstraintRows++;</span>
+<span class="lineNum">     548 </span><span class="lineCov">         33 :                                 info-&gt;nub--;</span>
+<span class="lineNum">     549 </span>            :                         }
+<span class="lineNum">     550 </span>            :                 }
+<span class="lineNum">     551 </span>            :         }
+<a name="552"><span class="lineNum">     552 </span><span class="lineCov">         11 : }</span></a>
+<span class="lineNum">     553 </span>            : 
+<span class="lineNum">     554 </span><span class="lineNoCov">          0 : void btGeneric6DofConstraint::getInfo1NonVirtual (btConstraintInfo1* info)</span>
+<span class="lineNum">     555 </span>            : {
+<span class="lineNum">     556 </span><span class="lineNoCov">          0 :         if (m_useSolveConstraintObsolete)</span>
+<span class="lineNum">     557 </span>            :         {
+<span class="lineNum">     558 </span><span class="lineNoCov">          0 :                 info-&gt;m_numConstraintRows = 0;</span>
+<span class="lineNum">     559 </span><span class="lineNoCov">          0 :                 info-&gt;nub = 0;</span>
+<span class="lineNum">     560 </span>            :         } else
+<span class="lineNum">     561 </span>            :         {
+<span class="lineNum">     562 </span>            :                 //pre-allocate all 6
+<span class="lineNum">     563 </span><span class="lineNoCov">          0 :                 info-&gt;m_numConstraintRows = 6;</span>
+<span class="lineNum">     564 </span><span class="lineNoCov">          0 :                 info-&gt;nub = 0;</span>
+<span class="lineNum">     565 </span>            :         }
+<span class="lineNum">     566 </span><span class="lineNoCov">          0 : }</span>
+<a name="567"><span class="lineNum">     567 </span>            : </a>
+<span class="lineNum">     568 </span>            : 
+<span class="lineNum">     569 </span><span class="lineCov">         11 : void btGeneric6DofConstraint::getInfo2 (btConstraintInfo2* info)</span>
+<span class="lineNum">     570 </span>            : {
+<span class="lineNum">     571 </span>            :         btAssert(!m_useSolveConstraintObsolete);
+<span class="lineNum">     572 </span>            : 
+<span class="lineNum">     573 </span><span class="lineCov">         22 :         const btTransform&amp; transA = m_rbA.getCenterOfMassTransform();</span>
+<span class="lineNum">     574 </span><span class="lineCov">         22 :         const btTransform&amp; transB = m_rbB.getCenterOfMassTransform();</span>
+<span class="lineNum">     575 </span><span class="lineCov">         22 :         const btVector3&amp; linVelA = m_rbA.getLinearVelocity();</span>
+<span class="lineNum">     576 </span><span class="lineCov">         22 :         const btVector3&amp; linVelB = m_rbB.getLinearVelocity();</span>
+<span class="lineNum">     577 </span><span class="lineCov">         22 :         const btVector3&amp; angVelA = m_rbA.getAngularVelocity();</span>
+<span class="lineNum">     578 </span><span class="lineCov">         22 :         const btVector3&amp; angVelB = m_rbB.getAngularVelocity();</span>
+<span class="lineNum">     579 </span>            : 
+<span class="lineNum">     580 </span><span class="lineCov">         11 :         if(m_useOffsetForConstraintFrame)</span>
+<span class="lineNum">     581 </span>            :         { // for stability better to solve angular limits first
+<span class="lineNum">     582 </span><span class="lineCov">         11 :                 int row = setAngularLimits(info, 0,transA,transB,linVelA,linVelB,angVelA,angVelB);</span>
+<span class="lineNum">     583 </span><span class="lineCov">         11 :                 setLinearLimits(info, row, transA,transB,linVelA,linVelB,angVelA,angVelB);</span>
+<span class="lineNum">     584 </span>            :         }
+<span class="lineNum">     585 </span>            :         else
+<span class="lineNum">     586 </span>            :         { // leave old version for compatibility
+<span class="lineNum">     587 </span><span class="lineNoCov">          0 :                 int row = setLinearLimits(info, 0, transA,transB,linVelA,linVelB,angVelA,angVelB);</span>
+<span class="lineNum">     588 </span><span class="lineNoCov">          0 :                 setAngularLimits(info, row,transA,transB,linVelA,linVelB,angVelA,angVelB);</span>
+<span class="lineNum">     589 </span>            :         }
+<span class="lineNum">     590 </span>            : 
+<span class="lineNum">     591 </span><span class="lineCov">         11 : }</span>
+<a name="592"><span class="lineNum">     592 </span>            : </a>
+<span class="lineNum">     593 </span>            : 
+<span class="lineNum">     594 </span><span class="lineNoCov">          0 : void btGeneric6DofConstraint::getInfo2NonVirtual (btConstraintInfo2* info, const btTransform&amp; transA,const btTransform&amp; transB,const btVector3&amp; linVelA,const btVector3&amp; linVelB,const btVector3&amp; angVelA,const btVector3&amp; angVelB)</span>
+<span class="lineNum">     595 </span>            : {
+<span class="lineNum">     596 </span>            :         
+<span class="lineNum">     597 </span>            :         btAssert(!m_useSolveConstraintObsolete);
+<span class="lineNum">     598 </span>            :         //prepare constraint
+<span class="lineNum">     599 </span><span class="lineNoCov">          0 :         calculateTransforms(transA,transB);</span>
+<span class="lineNum">     600 </span>            : 
+<span class="lineNum">     601 </span>            :         int i;
+<span class="lineNum">     602 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;3 ;i++ )</span>
+<span class="lineNum">     603 </span>            :         {
+<span class="lineNum">     604 </span><span class="lineNoCov">          0 :                 testAngularLimitMotor(i);</span>
+<span class="lineNum">     605 </span>            :         }
+<span class="lineNum">     606 </span>            : 
+<span class="lineNum">     607 </span><span class="lineNoCov">          0 :         if(m_useOffsetForConstraintFrame)</span>
+<span class="lineNum">     608 </span>            :         { // for stability better to solve angular limits first
+<span class="lineNum">     609 </span><span class="lineNoCov">          0 :                 int row = setAngularLimits(info, 0,transA,transB,linVelA,linVelB,angVelA,angVelB);</span>
+<span class="lineNum">     610 </span><span class="lineNoCov">          0 :                 setLinearLimits(info, row, transA,transB,linVelA,linVelB,angVelA,angVelB);</span>
+<span class="lineNum">     611 </span>            :         }
+<span class="lineNum">     612 </span>            :         else
+<span class="lineNum">     613 </span>            :         { // leave old version for compatibility
+<span class="lineNum">     614 </span><span class="lineNoCov">          0 :                 int row = setLinearLimits(info, 0, transA,transB,linVelA,linVelB,angVelA,angVelB);</span>
+<span class="lineNum">     615 </span><span class="lineNoCov">          0 :                 setAngularLimits(info, row,transA,transB,linVelA,linVelB,angVelA,angVelB);</span>
+<span class="lineNum">     616 </span>            :         }
+<span class="lineNum">     617 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     618 </span>            : 
+<span class="lineNum">     619 </span>            : 
+<span class="lineNum">     620 </span>            : 
+<span class="lineNum">     621 </span><span class="lineCov">         11 : int btGeneric6DofConstraint::setLinearLimits(btConstraintInfo2* info, int row, const btTransform&amp; transA,const btTransform&amp; transB,const btVector3&amp; linVelA,const btVector3&amp; linVelB,const btVector3&amp; angVelA,const btVector3&amp; angVelB)</span>
+<span class="lineNum">     622 </span>            : {
+<span class="lineNum">     623 </span>            : //      int row = 0;
+<span class="lineNum">     624 </span>            :         //solve linear limits
+<span class="lineNum">     625 </span><span class="lineCov">         11 :         btRotationalLimitMotor limot;</span>
+<span class="lineNum">     626 </span><span class="lineCov">         44 :         for (int i=0;i&lt;3 ;i++ )</span>
+<span class="lineNum">     627 </span>            :         {
+<span class="lineNum">     628 </span><span class="lineCov">         66 :                 if(m_linearLimits.needApplyForce(i))</span>
+<span class="lineNum">     629 </span>            :                 { // re-use rotational motor code
+<span class="lineNum">     630 </span><span class="lineCov">         33 :                         limot.m_bounce = btScalar(0.f);</span>
+<span class="lineNum">     631 </span><span class="lineCov">         33 :                         limot.m_currentLimit = m_linearLimits.m_currentLimit[i];</span>
+<span class="lineNum">     632 </span><span class="lineCov">         66 :                         limot.m_currentPosition = m_linearLimits.m_currentLinearDiff[i];</span>
+<span class="lineNum">     633 </span><span class="lineCov">         66 :                         limot.m_currentLimitError  = m_linearLimits.m_currentLimitError[i];</span>
+<span class="lineNum">     634 </span><span class="lineCov">         33 :                         limot.m_damping  = m_linearLimits.m_damping;</span>
+<span class="lineNum">     635 </span><span class="lineCov">         33 :                         limot.m_enableMotor  = m_linearLimits.m_enableMotor[i];</span>
+<span class="lineNum">     636 </span><span class="lineCov">         66 :                         limot.m_hiLimit  = m_linearLimits.m_upperLimit[i];</span>
+<span class="lineNum">     637 </span><span class="lineCov">         33 :                         limot.m_limitSoftness  = m_linearLimits.m_limitSoftness;</span>
+<span class="lineNum">     638 </span><span class="lineCov">         66 :                         limot.m_loLimit  = m_linearLimits.m_lowerLimit[i];</span>
+<span class="lineNum">     639 </span><span class="lineCov">         33 :                         limot.m_maxLimitForce  = btScalar(0.f);</span>
+<span class="lineNum">     640 </span><span class="lineCov">         66 :                         limot.m_maxMotorForce  = m_linearLimits.m_maxMotorForce[i];</span>
+<span class="lineNum">     641 </span><span class="lineCov">         66 :                         limot.m_targetVelocity  = m_linearLimits.m_targetVelocity[i];</span>
+<span class="lineNum">     642 </span><span class="lineCov">         66 :                         btVector3 axis = m_calculatedTransformA.getBasis().getColumn(i);</span>
+<span class="lineNum">     643 </span><span class="lineCov">         33 :                         int flags = m_flags &gt;&gt; (i * BT_6DOF_FLAGS_AXIS_SHIFT);</span>
+<span class="lineNum">     644 </span><span class="lineCov">         33 :                         limot.m_normalCFM       = (flags &amp; BT_6DOF_FLAGS_CFM_NORM) ? m_linearLimits.m_normalCFM[i] : info-&gt;cfm[0];</span>
+<span class="lineNum">     645 </span><span class="lineCov">         66 :                         limot.m_stopCFM         = (flags &amp; BT_6DOF_FLAGS_CFM_STOP) ? m_linearLimits.m_stopCFM[i] : info-&gt;cfm[0];</span>
+<span class="lineNum">     646 </span><span class="lineCov">         66 :                         limot.m_stopERP         = (flags &amp; BT_6DOF_FLAGS_ERP_STOP) ? m_linearLimits.m_stopERP[i] : info-&gt;erp;</span>
+<span class="lineNum">     647 </span><span class="lineCov">         33 :                         if(m_useOffsetForConstraintFrame)</span>
+<span class="lineNum">     648 </span>            :                         {
+<span class="lineNum">     649 </span><span class="lineCov">         33 :                                 int indx1 = (i + 1) % 3;</span>
+<span class="lineNum">     650 </span><span class="lineCov">         33 :                                 int indx2 = (i + 2) % 3;</span>
+<span class="lineNum">     651 </span><span class="lineCov">         33 :                                 int rotAllowed = 1; // rotations around orthos to current axis</span>
+<span class="lineNum">     652 </span><span class="lineCov">         33 :                                 if(m_angularLimits[indx1].m_currentLimit &amp;&amp; m_angularLimits[indx2].m_currentLimit)</span>
+<span class="lineNum">     653 </span>            :                                 {
+<span class="lineNum">     654 </span><span class="lineCov">         33 :                                         rotAllowed = 0;</span>
+<span class="lineNum">     655 </span>            :                                 }
+<span class="lineNum">     656 </span><span class="lineCov">         33 :                                 row += get_limit_motor_info2(&amp;limot, transA,transB,linVelA,linVelB,angVelA,angVelB, info, row, axis, 0, rotAllowed);</span>
+<span class="lineNum">     657 </span>            :                         }
+<span class="lineNum">     658 </span>            :                         else
+<span class="lineNum">     659 </span>            :                         {
+<span class="lineNum">     660 </span><span class="lineNoCov">          0 :                                 row += get_limit_motor_info2(&amp;limot, transA,transB,linVelA,linVelB,angVelA,angVelB, info, row, axis, 0);</span>
+<span class="lineNum">     661 </span>            :                         }
+<span class="lineNum">     662 </span>            :                 }
+<span class="lineNum">     663 </span>            :         }
+<span class="lineNum">     664 </span><span class="lineCov">         11 :         return row;</span>
+<span class="lineNum">     665 </span>            : }
+<span class="lineNum">     666 </span>            : 
+<a name="667"><span class="lineNum">     667 </span>            : </a>
+<span class="lineNum">     668 </span>            : 
+<span class="lineNum">     669 </span><span class="lineCov">         11 : int btGeneric6DofConstraint::setAngularLimits(btConstraintInfo2 *info, int row_offset, const btTransform&amp; transA,const btTransform&amp; transB,const btVector3&amp; linVelA,const btVector3&amp; linVelB,const btVector3&amp; angVelA,const btVector3&amp; angVelB)</span>
+<span class="lineNum">     670 </span>            : {
+<span class="lineNum">     671 </span><span class="lineCov">         11 :         btGeneric6DofConstraint * d6constraint = this;</span>
+<span class="lineNum">     672 </span><span class="lineCov">         11 :         int row = row_offset;</span>
+<span class="lineNum">     673 </span>            :         //solve angular limits
+<span class="lineNum">     674 </span><span class="lineCov">         44 :         for (int i=0;i&lt;3 ;i++ )</span>
+<span class="lineNum">     675 </span>            :         {
+<span class="lineNum">     676 </span><span class="lineCov">         33 :                 if(d6constraint-&gt;getRotationalLimitMotor(i)-&gt;needApplyTorques())</span>
+<span class="lineNum">     677 </span>            :                 {
+<span class="lineNum">     678 </span><span class="lineCov">         33 :                         btVector3 axis = d6constraint-&gt;getAxis(i);</span>
+<span class="lineNum">     679 </span><span class="lineCov">         33 :                         int flags = m_flags &gt;&gt; ((i + 3) * BT_6DOF_FLAGS_AXIS_SHIFT);</span>
+<span class="lineNum">     680 </span><span class="lineCov">         33 :                         if(!(flags &amp; BT_6DOF_FLAGS_CFM_NORM))</span>
+<span class="lineNum">     681 </span>            :                         {
+<span class="lineNum">     682 </span><span class="lineCov">         33 :                                 m_angularLimits[i].m_normalCFM = info-&gt;cfm[0];</span>
+<span class="lineNum">     683 </span>            :                         }
+<span class="lineNum">     684 </span><span class="lineCov">         33 :                         if(!(flags &amp; BT_6DOF_FLAGS_CFM_STOP))</span>
+<span class="lineNum">     685 </span>            :                         {
+<span class="lineNum">     686 </span><span class="lineNoCov">          0 :                                 m_angularLimits[i].m_stopCFM = info-&gt;cfm[0];</span>
+<span class="lineNum">     687 </span>            :                         }
+<span class="lineNum">     688 </span><span class="lineCov">         33 :                         if(!(flags &amp; BT_6DOF_FLAGS_ERP_STOP))</span>
+<span class="lineNum">     689 </span>            :                         {
+<span class="lineNum">     690 </span><span class="lineNoCov">          0 :                                 m_angularLimits[i].m_stopERP = info-&gt;erp;</span>
+<span class="lineNum">     691 </span>            :                         }
+<span class="lineNum">     692 </span><span class="lineCov">         33 :                         row += get_limit_motor_info2(d6constraint-&gt;getRotationalLimitMotor(i),</span>
+<span class="lineNum">     693 </span>            :                                                                                                 transA,transB,linVelA,linVelB,angVelA,angVelB, info,row,axis,1);
+<span class="lineNum">     694 </span>            :                 }
+<span class="lineNum">     695 </span>            :         }
+<span class="lineNum">     696 </span>            : 
+<span class="lineNum">     697 </span><span class="lineCov">         11 :         return row;</span>
+<span class="lineNum">     698 </span>            : }
+<span class="lineNum">     699 </span>            : 
+<span class="lineNum">     700 </span>            : 
+<a name="701"><span class="lineNum">     701 </span>            : </a>
+<span class="lineNum">     702 </span>            : 
+<span class="lineNum">     703 </span><span class="lineNoCov">          0 : void    btGeneric6DofConstraint::updateRHS(btScalar     timeStep)</span>
+<span class="lineNum">     704 </span>            : {
+<span class="lineNum">     705 </span>            :         (void)timeStep;
+<span class="lineNum">     706 </span>            : 
+<span class="lineNum">     707 </span><span class="lineNoCov">          0 : }</span>
+<a name="708"><span class="lineNum">     708 </span>            : </a>
+<span class="lineNum">     709 </span>            : 
+<span class="lineNum">     710 </span><span class="lineNoCov">          0 : void btGeneric6DofConstraint::setFrames(const btTransform&amp; frameA, const btTransform&amp; frameB)</span>
+<span class="lineNum">     711 </span>            : {
+<span class="lineNum">     712 </span><span class="lineNoCov">          0 :         m_frameInA = frameA;</span>
+<span class="lineNum">     713 </span><span class="lineNoCov">          0 :         m_frameInB = frameB;</span>
+<span class="lineNum">     714 </span><span class="lineNoCov">          0 :         buildJacobian();</span>
+<span class="lineNum">     715 </span><span class="lineNoCov">          0 :         calculateTransforms();</span>
+<span class="lineNum">     716 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     717 </span>            : 
+<a name="718"><span class="lineNum">     718 </span>            : </a>
+<span class="lineNum">     719 </span>            : 
+<span class="lineNum">     720 </span><span class="lineNoCov">          0 : btVector3 btGeneric6DofConstraint::getAxis(int axis_index) const</span>
+<span class="lineNum">     721 </span>            : {
+<span class="lineNum">     722 </span><span class="lineCov">         33 :         return m_calculatedAxis[axis_index];</span>
+<span class="lineNum">     723 </span>            : }
+<span class="lineNum">     724 </span>            : 
+<span class="lineNum">     725 </span>            : 
+<span class="lineNum">     726 </span><span class="lineNoCov">          0 : btScalar        btGeneric6DofConstraint::getRelativePivotPosition(int axisIndex) const</span>
+<span class="lineNum">     727 </span>            : {
+<span class="lineNum">     728 </span><span class="lineNoCov">          0 :         return m_calculatedLinearDiff[axisIndex];</span>
+<span class="lineNum">     729 </span>            : }
+<span class="lineNum">     730 </span>            : 
+<span class="lineNum">     731 </span>            : 
+<span class="lineNum">     732 </span><span class="lineNoCov">          0 : btScalar btGeneric6DofConstraint::getAngle(int axisIndex) const</span>
+<span class="lineNum">     733 </span>            : {
+<span class="lineNum">     734 </span><span class="lineNoCov">          0 :         return m_calculatedAxisAngleDiff[axisIndex];</span>
+<span class="lineNum">     735 </span>            : }
+<span class="lineNum">     736 </span>            : 
+<span class="lineNum">     737 </span>            : 
+<span class="lineNum">     738 </span>            : 
+<span class="lineNum">     739 </span><span class="lineNoCov">          0 : void btGeneric6DofConstraint::calcAnchorPos(void)</span>
+<span class="lineNum">     740 </span>            : {
+<span class="lineNum">     741 </span><span class="lineNoCov">          0 :         btScalar imA = m_rbA.getInvMass();</span>
+<span class="lineNum">     742 </span><span class="lineNoCov">          0 :         btScalar imB = m_rbB.getInvMass();</span>
+<span class="lineNum">     743 </span>            :         btScalar weight;
+<span class="lineNum">     744 </span><span class="lineNoCov">          0 :         if(imB == btScalar(0.0))</span>
+<span class="lineNum">     745 </span>            :         {
+<span class="lineNum">     746 </span>            :                 weight = btScalar(1.0);
+<span class="lineNum">     747 </span>            :         }
+<span class="lineNum">     748 </span>            :         else
+<span class="lineNum">     749 </span>            :         {
+<span class="lineNum">     750 </span><span class="lineNoCov">          0 :                 weight = imA / (imA + imB);</span>
+<span class="lineNum">     751 </span>            :         }
+<span class="lineNum">     752 </span><span class="lineNoCov">          0 :         const btVector3&amp; pA = m_calculatedTransformA.getOrigin();</span>
+<span class="lineNum">     753 </span><span class="lineNoCov">          0 :         const btVector3&amp; pB = m_calculatedTransformB.getOrigin();</span>
+<span class="lineNum">     754 </span><span class="lineNoCov">          0 :         m_AnchorPos = pA * weight + pB * (btScalar(1.0) - weight);</span>
+<span class="lineNum">     755 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     756 </span>            : }
+<span class="lineNum">     757 </span>            : 
+<span class="lineNum">     758 </span>            : 
+<span class="lineNum">     759 </span>            : 
+<span class="lineNum">     760 </span><span class="lineCov">         13 : void btGeneric6DofConstraint::calculateLinearInfo()</span>
+<span class="lineNum">     761 </span>            : {
+<span class="lineNum">     762 </span><span class="lineCov">         26 :         m_calculatedLinearDiff = m_calculatedTransformB.getOrigin() - m_calculatedTransformA.getOrigin();</span>
+<span class="lineNum">     763 </span><span class="lineCov">         26 :         m_calculatedLinearDiff = m_calculatedTransformA.getBasis().inverse() * m_calculatedLinearDiff;</span>
+<span class="lineNum">     764 </span><span class="lineCov">         52 :         for(int i = 0; i &lt; 3; i++)</span>
+<span class="lineNum">     765 </span>            :         {
+<span class="lineNum">     766 </span><span class="lineCov">        117 :                 m_linearLimits.m_currentLinearDiff[i] = m_calculatedLinearDiff[i];</span>
+<span class="lineNum">     767 </span><span class="lineCov">         39 :                 m_linearLimits.testLimitValue(i, m_calculatedLinearDiff[i]);</span>
+<span class="lineNum">     768 </span>            :         }
+<span class="lineNum">     769 </span><span class="lineCov">         13 : }</span>
+<span class="lineNum">     770 </span>            : 
+<span class="lineNum">     771 </span>            : 
+<span class="lineNum">     772 </span>            : 
+<span class="lineNum">     773 </span><span class="lineCov">         66 : int btGeneric6DofConstraint::get_limit_motor_info2(</span>
+<span class="lineNum">     774 </span>            :         btRotationalLimitMotor * limot,
+<span class="lineNum">     775 </span>            :         const btTransform&amp; transA,const btTransform&amp; transB,const btVector3&amp; linVelA,const btVector3&amp; linVelB,const btVector3&amp; angVelA,const btVector3&amp; angVelB,
+<span class="lineNum">     776 </span>            :         btConstraintInfo2 *info, int row, btVector3&amp; ax1, int rotational,int rotAllowed)
+<span class="lineNum">     777 </span>            : {
+<span class="lineNum">     778 </span><span class="lineCov">         66 :     int srow = row * info-&gt;rowskip;</span>
+<span class="lineNum">     779 </span><span class="lineCov">         66 :     int powered = limot-&gt;m_enableMotor;</span>
+<span class="lineNum">     780 </span><span class="lineCov">         66 :     int limit = limot-&gt;m_currentLimit;</span>
+<span class="lineNum">     781 </span><span class="lineCov">         66 :     if (powered || limit)</span>
+<span class="lineNum">     782 </span>            :     {   // if the joint is powered, or has joint limits, add in the extra row
+<span class="lineNum">     783 </span><span class="lineCov">         66 :         btScalar *J1 = rotational ? info-&gt;m_J1angularAxis : info-&gt;m_J1linearAxis;</span>
+<span class="lineNum">     784 </span><span class="lineCov">         66 :         btScalar *J2 = rotational ? info-&gt;m_J2angularAxis : 0;</span>
+<span class="lineNum">     785 </span><span class="lineCov">         66 :         J1[srow+0] = ax1[0];</span>
+<span class="lineNum">     786 </span><span class="lineCov">         66 :         J1[srow+1] = ax1[1];</span>
+<span class="lineNum">     787 </span><span class="lineCov">         66 :         J1[srow+2] = ax1[2];</span>
+<span class="lineNum">     788 </span><span class="lineCov">         66 :         if(rotational)</span>
+<span class="lineNum">     789 </span>            :         {
+<span class="lineNum">     790 </span><span class="lineCov">         33 :             J2[srow+0] = -ax1[0];</span>
+<span class="lineNum">     791 </span><span class="lineCov">         33 :             J2[srow+1] = -ax1[1];</span>
+<span class="lineNum">     792 </span><span class="lineCov">         33 :             J2[srow+2] = -ax1[2];</span>
+<span class="lineNum">     793 </span>            :         }
+<span class="lineNum">     794 </span><span class="lineCov">         66 :         if((!rotational))</span>
+<span class="lineNum">     795 </span>            :         {
+<span class="lineNum">     796 </span><span class="lineCov">         33 :                         if (m_useOffsetForConstraintFrame)</span>
+<span class="lineNum">     797 </span>            :                         {
+<span class="lineNum">     798 </span><span class="lineCov">        132 :                                 btVector3 tmpA, tmpB, relA, relB;</span>
+<span class="lineNum">     799 </span>            :                                 // get vector from bodyB to frameB in WCS
+<span class="lineNum">     800 </span><span class="lineCov">         66 :                                 relB = m_calculatedTransformB.getOrigin() - transB.getOrigin();</span>
+<span class="lineNum">     801 </span>            :                                 // get its projection to constraint axis
+<span class="lineNum">     802 </span><span class="lineCov">         99 :                                 btVector3 projB = ax1 * relB.dot(ax1);</span>
+<span class="lineNum">     803 </span>            :                                 // get vector directed from bodyB to constraint axis (and orthogonal to it)
+<span class="lineNum">     804 </span><span class="lineCov">         66 :                                 btVector3 orthoB = relB - projB;</span>
+<span class="lineNum">     805 </span>            :                                 // same for bodyA
+<span class="lineNum">     806 </span><span class="lineCov">         66 :                                 relA = m_calculatedTransformA.getOrigin() - transA.getOrigin();</span>
+<span class="lineNum">     807 </span><span class="lineCov">         99 :                                 btVector3 projA = ax1 * relA.dot(ax1);</span>
+<span class="lineNum">     808 </span><span class="lineCov">         66 :                                 btVector3 orthoA = relA - projA;</span>
+<span class="lineNum">     809 </span>            :                                 // get desired offset between frames A and B along constraint axis
+<span class="lineNum">     810 </span><span class="lineCov">         33 :                                 btScalar desiredOffs = limot-&gt;m_currentPosition - limot-&gt;m_currentLimitError;</span>
+<span class="lineNum">     811 </span>            :                                 // desired vector from projection of center of bodyA to projection of center of bodyB to constraint axis
+<span class="lineNum">     812 </span><span class="lineCov">        132 :                                 btVector3 totalDist = projA + ax1 * desiredOffs - projB;</span>
+<span class="lineNum">     813 </span>            :                                 // get offset vectors relA and relB
+<span class="lineNum">     814 </span><span class="lineCov">         99 :                                 relA = orthoA + totalDist * m_factA;</span>
+<span class="lineNum">     815 </span><span class="lineCov">         99 :                                 relB = orthoB - totalDist * m_factB;</span>
+<span class="lineNum">     816 </span><span class="lineCov">         66 :                                 tmpA = relA.cross(ax1);</span>
+<span class="lineNum">     817 </span><span class="lineCov">         66 :                                 tmpB = relB.cross(ax1);</span>
+<span class="lineNum">     818 </span><span class="lineCov">         33 :                                 if(m_hasStaticBody &amp;&amp; (!rotAllowed))</span>
+<span class="lineNum">     819 </span>            :                                 {
+<span class="lineNum">     820 </span><span class="lineCov">         66 :                                         tmpA *= m_factA;</span>
+<span class="lineNum">     821 </span><span class="lineCov">         33 :                                         tmpB *= m_factB;</span>
+<span class="lineNum">     822 </span>            :                                 }
+<span class="lineNum">     823 </span>            :                                 int i;
+<span class="lineNum">     824 </span><span class="lineCov">        132 :                                 for (i=0; i&lt;3; i++) info-&gt;m_J1angularAxis[srow+i] = tmpA[i];</span>
+<span class="lineNum">     825 </span><span class="lineCov">        132 :                                 for (i=0; i&lt;3; i++) info-&gt;m_J2angularAxis[srow+i] = -tmpB[i];</span>
+<span class="lineNum">     826 </span>            :                         } else
+<span class="lineNum">     827 </span>            :                         {
+<span class="lineNum">     828 </span><span class="lineNoCov">          0 :                                 btVector3 ltd;  // Linear Torque Decoupling vector</span>
+<span class="lineNum">     829 </span><span class="lineNoCov">          0 :                                 btVector3 c = m_calculatedTransformB.getOrigin() - transA.getOrigin();</span>
+<span class="lineNum">     830 </span><span class="lineNoCov">          0 :                                 ltd = c.cross(ax1);</span>
+<span class="lineNum">     831 </span><span class="lineNoCov">          0 :                                 info-&gt;m_J1angularAxis[srow+0] = ltd[0];</span>
+<span class="lineNum">     832 </span><span class="lineNoCov">          0 :                                 info-&gt;m_J1angularAxis[srow+1] = ltd[1];</span>
+<span class="lineNum">     833 </span><span class="lineNoCov">          0 :                                 info-&gt;m_J1angularAxis[srow+2] = ltd[2];</span>
+<span class="lineNum">     834 </span>            : 
+<span class="lineNum">     835 </span><span class="lineNoCov">          0 :                                 c = m_calculatedTransformB.getOrigin() - transB.getOrigin();</span>
+<span class="lineNum">     836 </span><span class="lineNoCov">          0 :                                 ltd = -c.cross(ax1);</span>
+<span class="lineNum">     837 </span><span class="lineNoCov">          0 :                                 info-&gt;m_J2angularAxis[srow+0] = ltd[0];</span>
+<span class="lineNum">     838 </span><span class="lineNoCov">          0 :                                 info-&gt;m_J2angularAxis[srow+1] = ltd[1];</span>
+<span class="lineNum">     839 </span><span class="lineNoCov">          0 :                                 info-&gt;m_J2angularAxis[srow+2] = ltd[2];</span>
+<span class="lineNum">     840 </span>            :                         }
+<span class="lineNum">     841 </span>            :         }
+<span class="lineNum">     842 </span>            :         // if we're limited low and high simultaneously, the joint motor is
+<span class="lineNum">     843 </span>            :         // ineffective
+<span class="lineNum">     844 </span><span class="lineCov">         66 :         if (limit &amp;&amp; (limot-&gt;m_loLimit == limot-&gt;m_hiLimit)) powered = 0;</span>
+<span class="lineNum">     845 </span><span class="lineCov">         66 :         info-&gt;m_constraintError[srow] = btScalar(0.f);</span>
+<span class="lineNum">     846 </span><span class="lineCov">         66 :         if (powered)</span>
+<span class="lineNum">     847 </span>            :         {
+<span class="lineNum">     848 </span><span class="lineNoCov">          0 :                         info-&gt;cfm[srow] = limot-&gt;m_normalCFM;</span>
+<span class="lineNum">     849 </span><span class="lineNoCov">          0 :             if(!limit)</span>
+<span class="lineNum">     850 </span>            :             {
+<span class="lineNum">     851 </span><span class="lineNoCov">          0 :                                 btScalar tag_vel = rotational ? limot-&gt;m_targetVelocity : -limot-&gt;m_targetVelocity;</span>
+<span class="lineNum">     852 </span>            : 
+<span class="lineNum">     853 </span><span class="lineNoCov">          0 :                                 btScalar mot_fact = getMotorFactor(     limot-&gt;m_currentPosition, </span>
+<span class="lineNum">     854 </span>            :                                                                                                         limot-&gt;m_loLimit,
+<span class="lineNum">     855 </span>            :                                                                                                         limot-&gt;m_hiLimit, 
+<span class="lineNum">     856 </span>            :                                                                                                         tag_vel, 
+<span class="lineNum">     857 </span><span class="lineNoCov">          0 :                                                                                                         info-&gt;fps * limot-&gt;m_stopERP);</span>
+<span class="lineNum">     858 </span><span class="lineNoCov">          0 :                                 info-&gt;m_constraintError[srow] += mot_fact * limot-&gt;m_targetVelocity;</span>
+<span class="lineNum">     859 </span><span class="lineNoCov">          0 :                 info-&gt;m_lowerLimit[srow] = -limot-&gt;m_maxMotorForce;</span>
+<span class="lineNum">     860 </span><span class="lineNoCov">          0 :                 info-&gt;m_upperLimit[srow] = limot-&gt;m_maxMotorForce;</span>
+<span class="lineNum">     861 </span>            :             }
+<span class="lineNum">     862 </span>            :         }
+<span class="lineNum">     863 </span><span class="lineCov">         66 :         if(limit)</span>
+<span class="lineNum">     864 </span>            :         {
+<span class="lineNum">     865 </span><span class="lineCov">         66 :             btScalar k = info-&gt;fps * limot-&gt;m_stopERP;</span>
+<span class="lineNum">     866 </span><span class="lineCov">         66 :                         if(!rotational)</span>
+<span class="lineNum">     867 </span>            :                         {
+<span class="lineNum">     868 </span><span class="lineCov">         33 :                                 info-&gt;m_constraintError[srow] += k * limot-&gt;m_currentLimitError;</span>
+<span class="lineNum">     869 </span>            :                         }
+<span class="lineNum">     870 </span>            :                         else
+<span class="lineNum">     871 </span>            :                         {
+<span class="lineNum">     872 </span><span class="lineCov">         33 :                                 info-&gt;m_constraintError[srow] += -k * limot-&gt;m_currentLimitError;</span>
+<span class="lineNum">     873 </span>            :                         }
+<span class="lineNum">     874 </span><span class="lineCov">         66 :                         info-&gt;cfm[srow] = limot-&gt;m_stopCFM;</span>
+<span class="lineNum">     875 </span><span class="lineCov">         66 :             if (limot-&gt;m_loLimit == limot-&gt;m_hiLimit)</span>
+<span class="lineNum">     876 </span>            :             {   // limited low and high simultaneously
+<span class="lineNum">     877 </span><span class="lineCov">         66 :                 info-&gt;m_lowerLimit[srow] = -SIMD_INFINITY;</span>
+<span class="lineNum">     878 </span><span class="lineCov">         66 :                 info-&gt;m_upperLimit[srow] = SIMD_INFINITY;</span>
+<span class="lineNum">     879 </span>            :             }
+<span class="lineNum">     880 </span>            :             else
+<span class="lineNum">     881 </span>            :             {
+<span class="lineNum">     882 </span><span class="lineNoCov">          0 :                 if (limit == 1)</span>
+<span class="lineNum">     883 </span>            :                 {
+<span class="lineNum">     884 </span><span class="lineNoCov">          0 :                     info-&gt;m_lowerLimit[srow] = 0;</span>
+<span class="lineNum">     885 </span><span class="lineNoCov">          0 :                     info-&gt;m_upperLimit[srow] = SIMD_INFINITY;</span>
+<span class="lineNum">     886 </span>            :                 }
+<span class="lineNum">     887 </span>            :                 else
+<span class="lineNum">     888 </span>            :                 {
+<span class="lineNum">     889 </span><span class="lineNoCov">          0 :                     info-&gt;m_lowerLimit[srow] = -SIMD_INFINITY;</span>
+<span class="lineNum">     890 </span><span class="lineNoCov">          0 :                     info-&gt;m_upperLimit[srow] = 0;</span>
+<span class="lineNum">     891 </span>            :                 }
+<span class="lineNum">     892 </span>            :                 // deal with bounce
+<span class="lineNum">     893 </span><span class="lineNoCov">          0 :                 if (limot-&gt;m_bounce &gt; 0)</span>
+<span class="lineNum">     894 </span>            :                 {
+<span class="lineNum">     895 </span>            :                     // calculate joint velocity
+<span class="lineNum">     896 </span>            :                     btScalar vel;
+<span class="lineNum">     897 </span><span class="lineNoCov">          0 :                     if (rotational)</span>
+<span class="lineNum">     898 </span>            :                     {
+<span class="lineNum">     899 </span><span class="lineNoCov">          0 :                         vel = angVelA.dot(ax1);</span>
+<span class="lineNum">     900 </span>            : //make sure that if no body -&gt; angVelB == zero vec
+<span class="lineNum">     901 </span>            : //                        if (body1)
+<span class="lineNum">     902 </span><span class="lineNoCov">          0 :                             vel -= angVelB.dot(ax1);</span>
+<span class="lineNum">     903 </span>            :                     }
+<span class="lineNum">     904 </span>            :                     else
+<span class="lineNum">     905 </span>            :                     {
+<span class="lineNum">     906 </span><span class="lineNoCov">          0 :                         vel = linVelA.dot(ax1);</span>
+<span class="lineNum">     907 </span>            : //make sure that if no body -&gt; angVelB == zero vec
+<span class="lineNum">     908 </span>            : //                        if (body1)
+<span class="lineNum">     909 </span><span class="lineNoCov">          0 :                             vel -= linVelB.dot(ax1);</span>
+<span class="lineNum">     910 </span>            :                     }
+<span class="lineNum">     911 </span>            :                     // only apply bounce if the velocity is incoming, and if the
+<span class="lineNum">     912 </span>            :                     // resulting c[] exceeds what we already have.
+<span class="lineNum">     913 </span><span class="lineNoCov">          0 :                     if (limit == 1)</span>
+<span class="lineNum">     914 </span>            :                     {
+<span class="lineNum">     915 </span><span class="lineNoCov">          0 :                         if (vel &lt; 0)</span>
+<span class="lineNum">     916 </span>            :                         {
+<span class="lineNum">     917 </span><span class="lineNoCov">          0 :                             btScalar newc = -limot-&gt;m_bounce* vel;</span>
+<span class="lineNum">     918 </span><span class="lineNoCov">          0 :                             if (newc &gt; info-&gt;m_constraintError[srow]) </span>
+<span class="lineNum">     919 </span><span class="lineNoCov">          0 :                                                                 info-&gt;m_constraintError[srow] = newc;</span>
+<span class="lineNum">     920 </span>            :                         }
+<span class="lineNum">     921 </span>            :                     }
+<span class="lineNum">     922 </span>            :                     else
+<span class="lineNum">     923 </span>            :                     {
+<span class="lineNum">     924 </span><span class="lineNoCov">          0 :                         if (vel &gt; 0)</span>
+<span class="lineNum">     925 </span>            :                         {
+<span class="lineNum">     926 </span><span class="lineNoCov">          0 :                             btScalar newc = -limot-&gt;m_bounce * vel;</span>
+<span class="lineNum">     927 </span><span class="lineNoCov">          0 :                             if (newc &lt; info-&gt;m_constraintError[srow]) </span>
+<span class="lineNum">     928 </span><span class="lineNoCov">          0 :                                                                 info-&gt;m_constraintError[srow] = newc;</span>
+<span class="lineNum">     929 </span>            :                         }
+<span class="lineNum">     930 </span>            :                     }
+<span class="lineNum">     931 </span>            :                 }
+<span class="lineNum">     932 </span>            :             }
+<span class="lineNum">     933 </span>            :         }
+<span class="lineNum">     934 </span>            :         return 1;
+<span class="lineNum">     935 </span>            :     }
+<span class="lineNum">     936 </span>            :     else return 0;
+<span class="lineNum">     937 </span>            : }
+<span class="lineNum">     938 </span>            : 
+<span class="lineNum">     939 </span>            : 
+<span class="lineNum">     940 </span>            : 
+<span class="lineNum">     941 </span>            : 
+<span class="lineNum">     942 </span>            : 
+<span class="lineNum">     943 </span>            : 
+<span class="lineNum">     944 </span>            :         ///override the default global value of a parameter (such as ERP or CFM), optionally provide the axis (0..5). 
+<span class="lineNum">     945 </span>            :         ///If no axis is provided, it uses the default axis for this constraint.
+<span class="lineNum">     946 </span><span class="lineCov">         24 : void btGeneric6DofConstraint::setParam(int num, btScalar value, int axis)</span>
+<span class="lineNum">     947 </span>            : {
+<span class="lineNum">     948 </span><span class="lineCov">         24 :         if((axis &gt;= 0) &amp;&amp; (axis &lt; 3))</span>
+<span class="lineNum">     949 </span>            :         {
+<span class="lineNum">     950 </span><span class="lineCov">         12 :                 switch(num)</span>
+<span class="lineNum">     951 </span>            :                 {
+<span class="lineNum">     952 </span><span class="lineCov">          6 :                         case BT_CONSTRAINT_STOP_ERP : </span>
+<span class="lineNum">     953 </span><span class="lineCov">         12 :                                 m_linearLimits.m_stopERP[axis] = value;</span>
+<span class="lineNum">     954 </span><span class="lineCov">          6 :                                 m_flags |= BT_6DOF_FLAGS_ERP_STOP &lt;&lt; (axis * BT_6DOF_FLAGS_AXIS_SHIFT);</span>
+<span class="lineNum">     955 </span><span class="lineCov">          6 :                                 break;</span>
+<span class="lineNum">     956 </span><span class="lineCov">          6 :                         case BT_CONSTRAINT_STOP_CFM : </span>
+<span class="lineNum">     957 </span><span class="lineCov">         12 :                                 m_linearLimits.m_stopCFM[axis] = value;</span>
+<span class="lineNum">     958 </span><span class="lineCov">          6 :                                 m_flags |= BT_6DOF_FLAGS_CFM_STOP &lt;&lt; (axis * BT_6DOF_FLAGS_AXIS_SHIFT);</span>
+<span class="lineNum">     959 </span><span class="lineCov">          6 :                                 break;</span>
+<span class="lineNum">     960 </span><span class="lineNoCov">          0 :                         case BT_CONSTRAINT_CFM : </span>
+<span class="lineNum">     961 </span><span class="lineNoCov">          0 :                                 m_linearLimits.m_normalCFM[axis] = value;</span>
+<span class="lineNum">     962 </span><span class="lineNoCov">          0 :                                 m_flags |= BT_6DOF_FLAGS_CFM_NORM &lt;&lt; (axis * BT_6DOF_FLAGS_AXIS_SHIFT);</span>
+<span class="lineNum">     963 </span><span class="lineNoCov">          0 :                                 break;</span>
+<span class="lineNum">     964 </span>            :                         default : 
+<span class="lineNum">     965 </span>            :                                 btAssertConstrParams(0);
+<span class="lineNum">     966 </span>            :                 }
+<span class="lineNum">     967 </span>            :         }
+<span class="lineNum">     968 </span><span class="lineCov">         12 :         else if((axis &gt;=3) &amp;&amp; (axis &lt; 6))</span>
+<span class="lineNum">     969 </span>            :         {
+<span class="lineNum">     970 </span><span class="lineCov">         12 :                 switch(num)</span>
+<span class="lineNum">     971 </span>            :                 {
+<span class="lineNum">     972 </span><span class="lineCov">          6 :                         case BT_CONSTRAINT_STOP_ERP : </span>
+<span class="lineNum">     973 </span><span class="lineCov">          6 :                                 m_angularLimits[axis - 3].m_stopERP = value;</span>
+<span class="lineNum">     974 </span><span class="lineCov">          6 :                                 m_flags |= BT_6DOF_FLAGS_ERP_STOP &lt;&lt; (axis * BT_6DOF_FLAGS_AXIS_SHIFT);</span>
+<span class="lineNum">     975 </span><span class="lineCov">          6 :                                 break;</span>
+<span class="lineNum">     976 </span><span class="lineCov">          6 :                         case BT_CONSTRAINT_STOP_CFM : </span>
+<span class="lineNum">     977 </span><span class="lineCov">          6 :                                 m_angularLimits[axis - 3].m_stopCFM = value;</span>
+<span class="lineNum">     978 </span><span class="lineCov">          6 :                                 m_flags |= BT_6DOF_FLAGS_CFM_STOP &lt;&lt; (axis * BT_6DOF_FLAGS_AXIS_SHIFT);</span>
+<span class="lineNum">     979 </span><span class="lineCov">          6 :                                 break;</span>
+<span class="lineNum">     980 </span><span class="lineNoCov">          0 :                         case BT_CONSTRAINT_CFM : </span>
+<span class="lineNum">     981 </span><span class="lineNoCov">          0 :                                 m_angularLimits[axis - 3].m_normalCFM = value;</span>
+<span class="lineNum">     982 </span><span class="lineNoCov">          0 :                                 m_flags |= BT_6DOF_FLAGS_CFM_NORM &lt;&lt; (axis * BT_6DOF_FLAGS_AXIS_SHIFT);</span>
+<span class="lineNum">     983 </span><span class="lineNoCov">          0 :                                 break;</span>
+<span class="lineNum">     984 </span>            :                         default : 
+<span class="lineNum">     985 </span>            :                                 btAssertConstrParams(0);
+<span class="lineNum">     986 </span>            :                 }
+<span class="lineNum">     987 </span>            :         }
+<span class="lineNum">     988 </span>            :         else
+<span class="lineNum">     989 </span>            :         {
+<span class="lineNum">     990 </span>            :                 btAssertConstrParams(0);
+<span class="lineNum">     991 </span>            :         }
+<span class="lineNum">     992 </span><span class="lineCov">         24 : }</span>
+<span class="lineNum">     993 </span>            : 
+<span class="lineNum">     994 </span>            :         ///return the local value of parameter
+<span class="lineNum">     995 </span><span class="lineNoCov">          0 : btScalar btGeneric6DofConstraint::getParam(int num, int axis) const </span>
+<span class="lineNum">     996 </span>            : {
+<span class="lineNum">     997 </span><span class="lineNoCov">          0 :         btScalar retVal = 0;</span>
+<span class="lineNum">     998 </span><span class="lineNoCov">          0 :         if((axis &gt;= 0) &amp;&amp; (axis &lt; 3))</span>
+<span class="lineNum">     999 </span>            :         {
+<span class="lineNum">    1000 </span><span class="lineNoCov">          0 :                 switch(num)</span>
+<span class="lineNum">    1001 </span>            :                 {
+<span class="lineNum">    1002 </span><span class="lineNoCov">          0 :                         case BT_CONSTRAINT_STOP_ERP : </span>
+<span class="lineNum">    1003 </span>            :                                 btAssertConstrParams(m_flags &amp; (BT_6DOF_FLAGS_ERP_STOP &lt;&lt; (axis * BT_6DOF_FLAGS_AXIS_SHIFT)));
+<span class="lineNum">    1004 </span><span class="lineNoCov">          0 :                                 retVal = m_linearLimits.m_stopERP[axis];</span>
+<span class="lineNum">    1005 </span><span class="lineNoCov">          0 :                                 break;</span>
+<span class="lineNum">    1006 </span><span class="lineNoCov">          0 :                         case BT_CONSTRAINT_STOP_CFM : </span>
+<span class="lineNum">    1007 </span>            :                                 btAssertConstrParams(m_flags &amp; (BT_6DOF_FLAGS_CFM_STOP &lt;&lt; (axis * BT_6DOF_FLAGS_AXIS_SHIFT)));
+<span class="lineNum">    1008 </span><span class="lineNoCov">          0 :                                 retVal = m_linearLimits.m_stopCFM[axis];</span>
+<span class="lineNum">    1009 </span><span class="lineNoCov">          0 :                                 break;</span>
+<span class="lineNum">    1010 </span><span class="lineNoCov">          0 :                         case BT_CONSTRAINT_CFM : </span>
+<span class="lineNum">    1011 </span>            :                                 btAssertConstrParams(m_flags &amp; (BT_6DOF_FLAGS_CFM_NORM &lt;&lt; (axis * BT_6DOF_FLAGS_AXIS_SHIFT)));
+<span class="lineNum">    1012 </span><span class="lineNoCov">          0 :                                 retVal = m_linearLimits.m_normalCFM[axis];</span>
+<span class="lineNum">    1013 </span><span class="lineNoCov">          0 :                                 break;</span>
+<span class="lineNum">    1014 </span>            :                         default : 
+<span class="lineNum">    1015 </span>            :                                 btAssertConstrParams(0);
+<span class="lineNum">    1016 </span>            :                 }
+<span class="lineNum">    1017 </span>            :         }
+<span class="lineNum">    1018 </span><span class="lineNoCov">          0 :         else if((axis &gt;=3) &amp;&amp; (axis &lt; 6))</span>
+<span class="lineNum">    1019 </span>            :         {
+<span class="lineNum">    1020 </span><span class="lineNoCov">          0 :                 switch(num)</span>
+<span class="lineNum">    1021 </span>            :                 {
+<span class="lineNum">    1022 </span><span class="lineNoCov">          0 :                         case BT_CONSTRAINT_STOP_ERP : </span>
+<span class="lineNum">    1023 </span>            :                                 btAssertConstrParams(m_flags &amp; (BT_6DOF_FLAGS_ERP_STOP &lt;&lt; (axis * BT_6DOF_FLAGS_AXIS_SHIFT)));
+<span class="lineNum">    1024 </span><span class="lineNoCov">          0 :                                 retVal = m_angularLimits[axis - 3].m_stopERP;</span>
+<span class="lineNum">    1025 </span><span class="lineNoCov">          0 :                                 break;</span>
+<span class="lineNum">    1026 </span><span class="lineNoCov">          0 :                         case BT_CONSTRAINT_STOP_CFM : </span>
+<span class="lineNum">    1027 </span>            :                                 btAssertConstrParams(m_flags &amp; (BT_6DOF_FLAGS_CFM_STOP &lt;&lt; (axis * BT_6DOF_FLAGS_AXIS_SHIFT)));
+<span class="lineNum">    1028 </span><span class="lineNoCov">          0 :                                 retVal = m_angularLimits[axis - 3].m_stopCFM;</span>
+<span class="lineNum">    1029 </span><span class="lineNoCov">          0 :                                 break;</span>
+<span class="lineNum">    1030 </span><span class="lineNoCov">          0 :                         case BT_CONSTRAINT_CFM : </span>
+<span class="lineNum">    1031 </span>            :                                 btAssertConstrParams(m_flags &amp; (BT_6DOF_FLAGS_CFM_NORM &lt;&lt; (axis * BT_6DOF_FLAGS_AXIS_SHIFT)));
+<span class="lineNum">    1032 </span><span class="lineNoCov">          0 :                                 retVal = m_angularLimits[axis - 3].m_normalCFM;</span>
+<span class="lineNum">    1033 </span><span class="lineNoCov">          0 :                                 break;</span>
+<span class="lineNum">    1034 </span>            :                         default : 
+<span class="lineNum">    1035 </span>            :                                 btAssertConstrParams(0);
+<span class="lineNum">    1036 </span>            :                 }
+<span class="lineNum">    1037 </span>            :         }
+<span class="lineNum">    1038 </span>            :         else
+<span class="lineNum">    1039 </span>            :         {
+<span class="lineNum">    1040 </span>            :                 btAssertConstrParams(0);
+<span class="lineNum">    1041 </span>            :         }
+<span class="lineNum">    1042 </span><span class="lineNoCov">          0 :         return retVal;</span>
+<span class="lineNum">    1043 </span>            : }
+<span class="lineNum">    1044 </span>            : 
+<span class="lineNum">    1045 </span>            :  
+<span class="lineNum">    1046 </span>            : 
+<span class="lineNum">    1047 </span><span class="lineNoCov">          0 : void btGeneric6DofConstraint::setAxis(const btVector3&amp; axis1,const btVector3&amp; axis2)</span>
+<span class="lineNum">    1048 </span>            : {
+<span class="lineNum">    1049 </span><span class="lineNoCov">          0 :         btVector3 zAxis = axis1.normalized();</span>
+<span class="lineNum">    1050 </span><span class="lineNoCov">          0 :         btVector3 yAxis = axis2.normalized();</span>
+<span class="lineNum">    1051 </span><span class="lineNoCov">          0 :         btVector3 xAxis = yAxis.cross(zAxis); // we want right coordinate system</span>
+<span class="lineNum">    1052 </span>            :         
+<span class="lineNum">    1053 </span><span class="lineNoCov">          0 :         btTransform frameInW;</span>
+<span class="lineNum">    1054 </span><span class="lineNoCov">          0 :         frameInW.setIdentity();</span>
+<span class="lineNum">    1055 </span><span class="lineNoCov">          0 :         frameInW.getBasis().setValue(   xAxis[0], yAxis[0], zAxis[0],   </span>
+<span class="lineNum">    1056 </span><span class="lineNoCov">          0 :                                         xAxis[1], yAxis[1], zAxis[1],</span>
+<span class="lineNum">    1057 </span><span class="lineNoCov">          0 :                                        xAxis[2], yAxis[2], zAxis[2]);</span>
+<span class="lineNum">    1058 </span>            :         
+<span class="lineNum">    1059 </span>            :         // now get constraint frame in local coordinate systems
+<span class="lineNum">    1060 </span><span class="lineNoCov">          0 :         m_frameInA = m_rbA.getCenterOfMassTransform().inverse() * frameInW;</span>
+<span class="lineNum">    1061 </span><span class="lineNoCov">          0 :         m_frameInB = m_rbB.getCenterOfMassTransform().inverse() * frameInW;</span>
+<span class="lineNum">    1062 </span>            :         
+<span class="lineNum">    1063 </span><span class="lineNoCov">          0 :         calculateTransforms();</span>
+<span class="lineNum">    1064 </span><span class="lineNoCov">          0 : }</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

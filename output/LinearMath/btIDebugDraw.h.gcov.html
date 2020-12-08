@@ -1,0 +1,503 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - LinearMath/btIDebugDraw.h</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">LinearMath</a> - btIDebugDraw.h<span style="font-size: 80%;"> (source / <a href="btIDebugDraw.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">241</td>
+            <td class="headerCovTableEntryLo">0.4 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">18</td>
+            <td class="headerCovTableEntryLo">5.6 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : #ifndef BT_IDEBUG_DRAW__H
+<span class="lineNum">      18 </span>            : #define BT_IDEBUG_DRAW__H
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : #include &quot;btVector3.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;btTransform.h&quot;
+<span class="lineNum">      22 </span>            : 
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : ///The btIDebugDraw interface class allows hooking up a debug renderer to visually debug simulations.
+<span class="lineNum">      25 </span>            : ///Typical use case: create a debug drawer object, and assign it to a btCollisionWorld or btDynamicsWorld using setDebugDrawer and call debugDrawWorld.
+<a name="26"><span class="lineNum">      26 </span>            : ///A class that implements the btIDebugDraw interface has to implement the drawLine method at a minimum.</a>
+<span class="lineNum">      27 </span>            : ///For color arguments the X,Y,Z components refer to Red, Green and Blue each in the range [0..1]
+<span class="lineNum">      28 </span><span class="lineCov">          1 : class   btIDebugDraw</span>
+<span class="lineNum">      29 </span>            : {
+<span class="lineNum">      30 </span>            :         public:
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span>            :         enum    DebugDrawModes
+<span class="lineNum">      33 </span>            :         {
+<span class="lineNum">      34 </span>            :                 DBG_NoDebug=0,
+<span class="lineNum">      35 </span>            :                 DBG_DrawWireframe = 1,
+<span class="lineNum">      36 </span>            :                 DBG_DrawAabb=2,
+<span class="lineNum">      37 </span>            :                 DBG_DrawFeaturesText=4,
+<span class="lineNum">      38 </span>            :                 DBG_DrawContactPoints=8,
+<span class="lineNum">      39 </span>            :                 DBG_NoDeactivation=16,
+<span class="lineNum">      40 </span>            :                 DBG_NoHelpText = 32,
+<span class="lineNum">      41 </span>            :                 DBG_DrawText=64,
+<span class="lineNum">      42 </span>            :                 DBG_ProfileTimings = 128,
+<span class="lineNum">      43 </span>            :                 DBG_EnableSatComparison = 256,
+<span class="lineNum">      44 </span>            :                 DBG_DisableBulletLCP = 512,
+<span class="lineNum">      45 </span>            :                 DBG_EnableCCD = 1024,
+<span class="lineNum">      46 </span>            :                 DBG_DrawConstraints = (1 &lt;&lt; 11),
+<span class="lineNum">      47 </span>            :                 DBG_DrawConstraintLimits = (1 &lt;&lt; 12),
+<span class="lineNum">      48 </span>            :                 DBG_FastWireframe = (1&lt;&lt;13),
+<span class="lineNum">      49 </span>            :         DBG_DrawNormals = (1&lt;&lt;14),
+<span class="lineNum">      50 </span>            :                 DBG_MAX_DEBUG_DRAW_MODE
+<a name="51"><span class="lineNum">      51 </span>            :         };</a>
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span><span class="lineNoCov">          0 :         virtual ~btIDebugDraw() {};</span>
+<span class="lineNum">      54 </span>            : 
+<a name="55"><span class="lineNum">      55 </span>            :         virtual void    drawLine(const btVector3&amp; from,const btVector3&amp; to,const btVector3&amp; color)=0;</a>
+<span class="lineNum">      56 </span>            :                 
+<span class="lineNum">      57 </span><span class="lineNoCov">          0 :         virtual void    drawLine(const btVector3&amp; from,const btVector3&amp; to, const btVector3&amp; fromColor, const btVector3&amp; toColor)</span>
+<span class="lineNum">      58 </span>            :         {
+<span class="lineNum">      59 </span>            :         (void) toColor;
+<span class="lineNum">      60 </span><span class="lineNoCov">          0 :                 drawLine (from, to, fromColor);</span>
+<a name="61"><span class="lineNum">      61 </span><span class="lineNoCov">          0 :         }</span></a>
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span><span class="lineNoCov">          0 :         virtual void    drawSphere(btScalar radius, const btTransform&amp; transform, const btVector3&amp; color)</span>
+<span class="lineNum">      64 </span>            :         {
+<span class="lineNum">      65 </span><span class="lineNoCov">          0 :                 btVector3 start = transform.getOrigin();</span>
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span><span class="lineNoCov">          0 :                 const btVector3 xoffs = transform.getBasis() * btVector3(radius,0,0);</span>
+<span class="lineNum">      68 </span><span class="lineNoCov">          0 :                 const btVector3 yoffs = transform.getBasis() * btVector3(0,radius,0);</span>
+<span class="lineNum">      69 </span><span class="lineNoCov">          0 :                 const btVector3 zoffs = transform.getBasis() * btVector3(0,0,radius);</span>
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span>            :                 // XY 
+<span class="lineNum">      72 </span><span class="lineNoCov">          0 :                 drawLine(start-xoffs, start+yoffs, color);</span>
+<span class="lineNum">      73 </span><span class="lineNoCov">          0 :                 drawLine(start+yoffs, start+xoffs, color);</span>
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 :                 drawLine(start+xoffs, start-yoffs, color);</span>
+<span class="lineNum">      75 </span><span class="lineNoCov">          0 :                 drawLine(start-yoffs, start-xoffs, color);</span>
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            :                 // XZ
+<span class="lineNum">      78 </span><span class="lineNoCov">          0 :                 drawLine(start-xoffs, start+zoffs, color);</span>
+<span class="lineNum">      79 </span><span class="lineNoCov">          0 :                 drawLine(start+zoffs, start+xoffs, color);</span>
+<span class="lineNum">      80 </span><span class="lineNoCov">          0 :                 drawLine(start+xoffs, start-zoffs, color);</span>
+<span class="lineNum">      81 </span><span class="lineNoCov">          0 :                 drawLine(start-zoffs, start-xoffs, color);</span>
+<span class="lineNum">      82 </span>            : 
+<span class="lineNum">      83 </span>            :                 // YZ
+<span class="lineNum">      84 </span><span class="lineNoCov">          0 :                 drawLine(start-yoffs, start+zoffs, color);</span>
+<span class="lineNum">      85 </span><span class="lineNoCov">          0 :                 drawLine(start+zoffs, start+yoffs, color);</span>
+<span class="lineNum">      86 </span><span class="lineNoCov">          0 :                 drawLine(start+yoffs, start-zoffs, color);</span>
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :                 drawLine(start-zoffs, start-yoffs, color);</span>
+<a name="88"><span class="lineNum">      88 </span><span class="lineNoCov">          0 :         }</span></a>
+<span class="lineNum">      89 </span>            :         
+<span class="lineNum">      90 </span><span class="lineNoCov">          0 :         virtual void    drawSphere (const btVector3&amp; p, btScalar radius, const btVector3&amp; color)</span>
+<span class="lineNum">      91 </span>            :         {
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :                 btTransform tr;</span>
+<span class="lineNum">      93 </span><span class="lineNoCov">          0 :                 tr.setIdentity();</span>
+<span class="lineNum">      94 </span><span class="lineNoCov">          0 :                 tr.setOrigin(p);</span>
+<span class="lineNum">      95 </span><span class="lineNoCov">          0 :                 drawSphere(radius,tr,color);</span>
+<a name="96"><span class="lineNum">      96 </span><span class="lineNoCov">          0 :         }</span></a>
+<span class="lineNum">      97 </span>            :         
+<span class="lineNum">      98 </span><span class="lineNoCov">          0 :         virtual void    drawTriangle(const btVector3&amp; v0,const btVector3&amp; v1,const btVector3&amp; v2,const btVector3&amp; /*n0*/,const btVector3&amp; /*n1*/,const btVector3&amp; /*n2*/,const btVector3&amp; color, btScalar alpha)</span>
+<span class="lineNum">      99 </span>            :         {
+<a name="100"><span class="lineNum">     100 </span><span class="lineNoCov">          0 :                 drawTriangle(v0,v1,v2,color,alpha);</span></a>
+<span class="lineNum">     101 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     102 </span><span class="lineNoCov">          0 :         virtual void    drawTriangle(const btVector3&amp; v0,const btVector3&amp; v1,const btVector3&amp; v2,const btVector3&amp; color, btScalar /*alpha*/)</span>
+<span class="lineNum">     103 </span>            :         {
+<span class="lineNum">     104 </span><span class="lineNoCov">          0 :                 drawLine(v0,v1,color);</span>
+<span class="lineNum">     105 </span><span class="lineNoCov">          0 :                 drawLine(v1,v2,color);</span>
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 :                 drawLine(v2,v0,color);</span>
+<span class="lineNum">     107 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            :         virtual void    drawContactPoint(const btVector3&amp; PointOnB,const btVector3&amp; normalOnB,btScalar distance,int lifeTime,const btVector3&amp; color)=0;
+<span class="lineNum">     110 </span>            : 
+<span class="lineNum">     111 </span>            :         virtual void    reportErrorWarning(const char* warningString) = 0;
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span>            :         virtual void    draw3dText(const btVector3&amp; location,const char* textString) = 0;
+<span class="lineNum">     114 </span>            :         
+<span class="lineNum">     115 </span>            :         virtual void    setDebugMode(int debugMode) =0;
+<span class="lineNum">     116 </span>            :         
+<a name="117"><span class="lineNum">     117 </span>            :         virtual int             getDebugMode() const = 0;</a>
+<span class="lineNum">     118 </span>            : 
+<span class="lineNum">     119 </span><span class="lineNoCov">          0 :         virtual void drawAabb(const btVector3&amp; from,const btVector3&amp; to,const btVector3&amp; color)</span>
+<span class="lineNum">     120 </span>            :         {
+<span class="lineNum">     121 </span>            : 
+<span class="lineNum">     122 </span><span class="lineNoCov">          0 :                 btVector3 halfExtents = (to-from)* 0.5f;</span>
+<span class="lineNum">     123 </span><span class="lineNoCov">          0 :                 btVector3 center = (to+from) *0.5f;</span>
+<span class="lineNum">     124 </span>            :                 int i,j;
+<span class="lineNum">     125 </span>            : 
+<span class="lineNum">     126 </span><span class="lineNoCov">          0 :                 btVector3 edgecoord(1.f,1.f,1.f),pa,pb;</span>
+<span class="lineNum">     127 </span><span class="lineNoCov">          0 :                 for (i=0;i&lt;4;i++)</span>
+<span class="lineNum">     128 </span>            :                 {
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :                         for (j=0;j&lt;3;j++)</span>
+<span class="lineNum">     130 </span>            :                         {
+<span class="lineNum">     131 </span><span class="lineNoCov">          0 :                                 pa = btVector3(edgecoord[0]*halfExtents[0], edgecoord[1]*halfExtents[1],                </span>
+<span class="lineNum">     132 </span><span class="lineNoCov">          0 :                                         edgecoord[2]*halfExtents[2]);</span>
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :                                 pa+=center;</span>
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span><span class="lineNoCov">          0 :                                 int othercoord = j%3;</span>
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 :                                 edgecoord[othercoord]*=-1.f;</span>
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 :                                 pb = btVector3(edgecoord[0]*halfExtents[0], edgecoord[1]*halfExtents[1],        </span>
+<span class="lineNum">     138 </span><span class="lineNoCov">          0 :                                         edgecoord[2]*halfExtents[2]);</span>
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :                                 pb+=center;</span>
+<span class="lineNum">     140 </span>            : 
+<span class="lineNum">     141 </span><span class="lineNoCov">          0 :                                 drawLine(pa,pb,color);</span>
+<span class="lineNum">     142 </span>            :                         }
+<span class="lineNum">     143 </span><span class="lineNoCov">          0 :                         edgecoord = btVector3(-1.f,-1.f,-1.f);</span>
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :                         if (i&lt;3)</span>
+<span class="lineNum">     145 </span><span class="lineNoCov">          0 :                                 edgecoord[i]*=-1.f;</span>
+<a name="146"><span class="lineNum">     146 </span>            :                 }</a>
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     148 </span><span class="lineNoCov">          0 :         virtual void drawTransform(const btTransform&amp; transform, btScalar orthoLen)</span>
+<span class="lineNum">     149 </span>            :         {
+<span class="lineNum">     150 </span><span class="lineNoCov">          0 :                 btVector3 start = transform.getOrigin();</span>
+<span class="lineNum">     151 </span><span class="lineNoCov">          0 :                 drawLine(start, start+transform.getBasis() * btVector3(orthoLen, 0, 0), btVector3(0.7f,0,0));</span>
+<span class="lineNum">     152 </span><span class="lineNoCov">          0 :                 drawLine(start, start+transform.getBasis() * btVector3(0, orthoLen, 0), btVector3(0,0.7f,0));</span>
+<span class="lineNum">     153 </span><span class="lineNoCov">          0 :                 drawLine(start, start+transform.getBasis() * btVector3(0, 0, orthoLen), btVector3(0,0,0.7f));</span>
+<a name="154"><span class="lineNum">     154 </span><span class="lineNoCov">          0 :         }</span></a>
+<span class="lineNum">     155 </span>            : 
+<span class="lineNum">     156 </span><span class="lineNoCov">          0 :         virtual void drawArc(const btVector3&amp; center, const btVector3&amp; normal, const btVector3&amp; axis, btScalar radiusA, btScalar radiusB, btScalar minAngle, btScalar maxAngle, </span>
+<span class="lineNum">     157 </span>            :                                 const btVector3&amp; color, bool drawSect, btScalar stepDegrees = btScalar(10.f))
+<span class="lineNum">     158 </span>            :         {
+<span class="lineNum">     159 </span><span class="lineNoCov">          0 :                 const btVector3&amp; vx = axis;</span>
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :                 btVector3 vy = normal.cross(axis);</span>
+<span class="lineNum">     161 </span><span class="lineNoCov">          0 :                 btScalar step = stepDegrees * SIMD_RADS_PER_DEG;</span>
+<span class="lineNum">     162 </span><span class="lineNoCov">          0 :                 int nSteps = (int)((maxAngle - minAngle) / step);</span>
+<span class="lineNum">     163 </span><span class="lineNoCov">          0 :                 if(!nSteps) nSteps = 1;</span>
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :                 btVector3 prev = center + radiusA * vx * btCos(minAngle) + radiusB * vy * btSin(minAngle);</span>
+<span class="lineNum">     165 </span><span class="lineNoCov">          0 :                 if(drawSect)</span>
+<span class="lineNum">     166 </span>            :                 {
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :                         drawLine(center, prev, color);</span>
+<span class="lineNum">     168 </span>            :                 }
+<span class="lineNum">     169 </span><span class="lineNoCov">          0 :                 for(int i = 1; i &lt;= nSteps; i++)</span>
+<span class="lineNum">     170 </span>            :                 {
+<span class="lineNum">     171 </span><span class="lineNoCov">          0 :                         btScalar angle = minAngle + (maxAngle - minAngle) * btScalar(i) / btScalar(nSteps);</span>
+<span class="lineNum">     172 </span><span class="lineNoCov">          0 :                         btVector3 next = center + radiusA * vx * btCos(angle) + radiusB * vy * btSin(angle);</span>
+<span class="lineNum">     173 </span><span class="lineNoCov">          0 :                         drawLine(prev, next, color);</span>
+<span class="lineNum">     174 </span><span class="lineNoCov">          0 :                         prev = next;</span>
+<span class="lineNum">     175 </span>            :                 }
+<span class="lineNum">     176 </span><span class="lineNoCov">          0 :                 if(drawSect)</span>
+<span class="lineNum">     177 </span>            :                 {
+<span class="lineNum">     178 </span><span class="lineNoCov">          0 :                         drawLine(center, prev, color);</span>
+<a name="179"><span class="lineNum">     179 </span>            :                 }</a>
+<span class="lineNum">     180 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     181 </span><span class="lineNoCov">          0 :         virtual void drawSpherePatch(const btVector3&amp; center, const btVector3&amp; up, const btVector3&amp; axis, btScalar radius, </span>
+<span class="lineNum">     182 </span>            :                 btScalar minTh, btScalar maxTh, btScalar minPs, btScalar maxPs, const btVector3&amp; color, btScalar stepDegrees = btScalar(10.f))
+<span class="lineNum">     183 </span>            :         {
+<span class="lineNum">     184 </span><span class="lineNoCov">          0 :                 btVector3 vA[74];</span>
+<span class="lineNum">     185 </span><span class="lineNoCov">          0 :                 btVector3 vB[74];</span>
+<span class="lineNum">     186 </span><span class="lineNoCov">          0 :                 btVector3 *pvA = vA, *pvB = vB, *pT;</span>
+<span class="lineNum">     187 </span><span class="lineNoCov">          0 :                 btVector3 npole = center + up * radius;</span>
+<span class="lineNum">     188 </span><span class="lineNoCov">          0 :                 btVector3 spole = center - up * radius;</span>
+<span class="lineNum">     189 </span><span class="lineNoCov">          0 :                 btVector3 arcStart;</span>
+<span class="lineNum">     190 </span><span class="lineNoCov">          0 :                 btScalar step = stepDegrees * SIMD_RADS_PER_DEG;</span>
+<span class="lineNum">     191 </span><span class="lineNoCov">          0 :                 const btVector3&amp; kv = up;</span>
+<span class="lineNum">     192 </span><span class="lineNoCov">          0 :                 const btVector3&amp; iv = axis;</span>
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 :                 btVector3 jv = kv.cross(iv);</span>
+<span class="lineNum">     194 </span><span class="lineNoCov">          0 :                 bool drawN = false;</span>
+<span class="lineNum">     195 </span><span class="lineNoCov">          0 :                 bool drawS = false;</span>
+<span class="lineNum">     196 </span><span class="lineNoCov">          0 :                 if(minTh &lt;= -SIMD_HALF_PI)</span>
+<span class="lineNum">     197 </span>            :                 {
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :                         minTh = -SIMD_HALF_PI + step;</span>
+<span class="lineNum">     199 </span><span class="lineNoCov">          0 :                         drawN = true;</span>
+<span class="lineNum">     200 </span>            :                 }
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 :                 if(maxTh &gt;= SIMD_HALF_PI)</span>
+<span class="lineNum">     202 </span>            :                 {
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :                         maxTh = SIMD_HALF_PI - step;</span>
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :                         drawS = true;</span>
+<span class="lineNum">     205 </span>            :                 }
+<span class="lineNum">     206 </span><span class="lineNoCov">          0 :                 if(minTh &gt; maxTh)</span>
+<span class="lineNum">     207 </span>            :                 {
+<span class="lineNum">     208 </span><span class="lineNoCov">          0 :                         minTh = -SIMD_HALF_PI + step;</span>
+<span class="lineNum">     209 </span><span class="lineNoCov">          0 :                         maxTh =  SIMD_HALF_PI - step;</span>
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 :                         drawN = drawS = true;</span>
+<span class="lineNum">     211 </span>            :                 }
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :                 int n_hor = (int)((maxTh - minTh) / step) + 1;</span>
+<span class="lineNum">     213 </span><span class="lineNoCov">          0 :                 if(n_hor &lt; 2) n_hor = 2;</span>
+<span class="lineNum">     214 </span><span class="lineNoCov">          0 :                 btScalar step_h = (maxTh - minTh) / btScalar(n_hor - 1);</span>
+<span class="lineNum">     215 </span><span class="lineNoCov">          0 :                 bool isClosed = false;</span>
+<span class="lineNum">     216 </span><span class="lineNoCov">          0 :                 if(minPs &gt; maxPs)</span>
+<span class="lineNum">     217 </span>            :                 {
+<span class="lineNum">     218 </span><span class="lineNoCov">          0 :                         minPs = -SIMD_PI + step;</span>
+<span class="lineNum">     219 </span><span class="lineNoCov">          0 :                         maxPs =  SIMD_PI;</span>
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :                         isClosed = true;</span>
+<span class="lineNum">     221 </span>            :                 }
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :                 else if((maxPs - minPs) &gt;= SIMD_PI * btScalar(2.f))</span>
+<span class="lineNum">     223 </span>            :                 {
+<span class="lineNum">     224 </span><span class="lineNoCov">          0 :                         isClosed = true;</span>
+<span class="lineNum">     225 </span>            :                 }
+<span class="lineNum">     226 </span>            :                 else
+<span class="lineNum">     227 </span>            :                 {
+<span class="lineNum">     228 </span><span class="lineNoCov">          0 :                         isClosed = false;</span>
+<span class="lineNum">     229 </span>            :                 }
+<span class="lineNum">     230 </span><span class="lineNoCov">          0 :                 int n_vert = (int)((maxPs - minPs) / step) + 1;</span>
+<span class="lineNum">     231 </span><span class="lineNoCov">          0 :                 if(n_vert &lt; 2) n_vert = 2;</span>
+<span class="lineNum">     232 </span><span class="lineNoCov">          0 :                 btScalar step_v = (maxPs - minPs) / btScalar(n_vert - 1);</span>
+<span class="lineNum">     233 </span><span class="lineNoCov">          0 :                 for(int i = 0; i &lt; n_hor; i++)</span>
+<span class="lineNum">     234 </span>            :                 {
+<span class="lineNum">     235 </span><span class="lineNoCov">          0 :                         btScalar th = minTh + btScalar(i) * step_h;</span>
+<span class="lineNum">     236 </span><span class="lineNoCov">          0 :                         btScalar sth = radius * btSin(th);</span>
+<span class="lineNum">     237 </span><span class="lineNoCov">          0 :                         btScalar cth = radius * btCos(th);</span>
+<span class="lineNum">     238 </span><span class="lineNoCov">          0 :                         for(int j = 0; j &lt; n_vert; j++)</span>
+<span class="lineNum">     239 </span>            :                         {
+<span class="lineNum">     240 </span><span class="lineNoCov">          0 :                                 btScalar psi = minPs + btScalar(j) * step_v;</span>
+<span class="lineNum">     241 </span><span class="lineNoCov">          0 :                                 btScalar sps = btSin(psi);</span>
+<span class="lineNum">     242 </span><span class="lineNoCov">          0 :                                 btScalar cps = btCos(psi);</span>
+<span class="lineNum">     243 </span><span class="lineNoCov">          0 :                                 pvB[j] = center + cth * cps * iv + cth * sps * jv + sth * kv;</span>
+<span class="lineNum">     244 </span><span class="lineNoCov">          0 :                                 if(i)</span>
+<span class="lineNum">     245 </span>            :                                 {
+<span class="lineNum">     246 </span><span class="lineNoCov">          0 :                                         drawLine(pvA[j], pvB[j], color);</span>
+<span class="lineNum">     247 </span>            :                                 }
+<span class="lineNum">     248 </span><span class="lineNoCov">          0 :                                 else if(drawS)</span>
+<span class="lineNum">     249 </span>            :                                 {
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :                                         drawLine(spole, pvB[j], color);</span>
+<span class="lineNum">     251 </span>            :                                 }
+<span class="lineNum">     252 </span><span class="lineNoCov">          0 :                                 if(j)</span>
+<span class="lineNum">     253 </span>            :                                 {
+<span class="lineNum">     254 </span><span class="lineNoCov">          0 :                                         drawLine(pvB[j-1], pvB[j], color);</span>
+<span class="lineNum">     255 </span>            :                                 }
+<span class="lineNum">     256 </span>            :                                 else
+<span class="lineNum">     257 </span>            :                                 {
+<span class="lineNum">     258 </span><span class="lineNoCov">          0 :                                         arcStart = pvB[j];</span>
+<span class="lineNum">     259 </span>            :                                 }
+<span class="lineNum">     260 </span><span class="lineNoCov">          0 :                                 if((i == (n_hor - 1)) &amp;&amp; drawN)</span>
+<span class="lineNum">     261 </span>            :                                 {
+<span class="lineNum">     262 </span><span class="lineNoCov">          0 :                                         drawLine(npole, pvB[j], color);</span>
+<span class="lineNum">     263 </span>            :                                 }
+<span class="lineNum">     264 </span><span class="lineNoCov">          0 :                                 if(isClosed)</span>
+<span class="lineNum">     265 </span>            :                                 {
+<span class="lineNum">     266 </span><span class="lineNoCov">          0 :                                         if(j == (n_vert-1))</span>
+<span class="lineNum">     267 </span>            :                                         {
+<span class="lineNum">     268 </span><span class="lineNoCov">          0 :                                                 drawLine(arcStart, pvB[j], color);</span>
+<span class="lineNum">     269 </span>            :                                         }
+<span class="lineNum">     270 </span>            :                                 }
+<span class="lineNum">     271 </span>            :                                 else
+<span class="lineNum">     272 </span>            :                                 {
+<span class="lineNum">     273 </span><span class="lineNoCov">          0 :                                         if(((!i) || (i == (n_hor-1))) &amp;&amp; ((!j) || (j == (n_vert-1))))</span>
+<span class="lineNum">     274 </span>            :                                         {
+<span class="lineNum">     275 </span><span class="lineNoCov">          0 :                                                 drawLine(center, pvB[j], color);</span>
+<span class="lineNum">     276 </span>            :                                         }
+<span class="lineNum">     277 </span>            :                                 }
+<span class="lineNum">     278 </span>            :                         }
+<span class="lineNum">     279 </span><span class="lineNoCov">          0 :                         pT = pvA; pvA = pvB; pvB = pT;</span>
+<span class="lineNum">     280 </span>            :                 }
+<span class="lineNum">     281 </span><span class="lineNoCov">          0 :         }</span>
+<a name="282"><span class="lineNum">     282 </span>            :         </a>
+<span class="lineNum">     283 </span>            :   
+<span class="lineNum">     284 </span><span class="lineNoCov">          0 :         virtual void drawBox(const btVector3&amp; bbMin, const btVector3&amp; bbMax, const btVector3&amp; color)</span>
+<span class="lineNum">     285 </span>            :         {
+<span class="lineNum">     286 </span><span class="lineNoCov">          0 :                 drawLine(btVector3(bbMin[0], bbMin[1], bbMin[2]), btVector3(bbMax[0], bbMin[1], bbMin[2]), color);</span>
+<span class="lineNum">     287 </span><span class="lineNoCov">          0 :                 drawLine(btVector3(bbMax[0], bbMin[1], bbMin[2]), btVector3(bbMax[0], bbMax[1], bbMin[2]), color);</span>
+<span class="lineNum">     288 </span><span class="lineNoCov">          0 :                 drawLine(btVector3(bbMax[0], bbMax[1], bbMin[2]), btVector3(bbMin[0], bbMax[1], bbMin[2]), color);</span>
+<span class="lineNum">     289 </span><span class="lineNoCov">          0 :                 drawLine(btVector3(bbMin[0], bbMax[1], bbMin[2]), btVector3(bbMin[0], bbMin[1], bbMin[2]), color);</span>
+<span class="lineNum">     290 </span><span class="lineNoCov">          0 :                 drawLine(btVector3(bbMin[0], bbMin[1], bbMin[2]), btVector3(bbMin[0], bbMin[1], bbMax[2]), color);</span>
+<span class="lineNum">     291 </span><span class="lineNoCov">          0 :                 drawLine(btVector3(bbMax[0], bbMin[1], bbMin[2]), btVector3(bbMax[0], bbMin[1], bbMax[2]), color);</span>
+<span class="lineNum">     292 </span><span class="lineNoCov">          0 :                 drawLine(btVector3(bbMax[0], bbMax[1], bbMin[2]), btVector3(bbMax[0], bbMax[1], bbMax[2]), color);</span>
+<span class="lineNum">     293 </span><span class="lineNoCov">          0 :                 drawLine(btVector3(bbMin[0], bbMax[1], bbMin[2]), btVector3(bbMin[0], bbMax[1], bbMax[2]), color);</span>
+<span class="lineNum">     294 </span><span class="lineNoCov">          0 :                 drawLine(btVector3(bbMin[0], bbMin[1], bbMax[2]), btVector3(bbMax[0], bbMin[1], bbMax[2]), color);</span>
+<span class="lineNum">     295 </span><span class="lineNoCov">          0 :                 drawLine(btVector3(bbMax[0], bbMin[1], bbMax[2]), btVector3(bbMax[0], bbMax[1], bbMax[2]), color);</span>
+<span class="lineNum">     296 </span><span class="lineNoCov">          0 :                 drawLine(btVector3(bbMax[0], bbMax[1], bbMax[2]), btVector3(bbMin[0], bbMax[1], bbMax[2]), color);</span>
+<a name="297"><span class="lineNum">     297 </span><span class="lineNoCov">          0 :                 drawLine(btVector3(bbMin[0], bbMax[1], bbMax[2]), btVector3(bbMin[0], bbMin[1], bbMax[2]), color);</span></a>
+<span class="lineNum">     298 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     299 </span><span class="lineNoCov">          0 :         virtual void drawBox(const btVector3&amp; bbMin, const btVector3&amp; bbMax, const btTransform&amp; trans, const btVector3&amp; color)</span>
+<span class="lineNum">     300 </span>            :         {
+<span class="lineNum">     301 </span><span class="lineNoCov">          0 :                 drawLine(trans * btVector3(bbMin[0], bbMin[1], bbMin[2]), trans * btVector3(bbMax[0], bbMin[1], bbMin[2]), color);</span>
+<span class="lineNum">     302 </span><span class="lineNoCov">          0 :                 drawLine(trans * btVector3(bbMax[0], bbMin[1], bbMin[2]), trans * btVector3(bbMax[0], bbMax[1], bbMin[2]), color);</span>
+<span class="lineNum">     303 </span><span class="lineNoCov">          0 :                 drawLine(trans * btVector3(bbMax[0], bbMax[1], bbMin[2]), trans * btVector3(bbMin[0], bbMax[1], bbMin[2]), color);</span>
+<span class="lineNum">     304 </span><span class="lineNoCov">          0 :                 drawLine(trans * btVector3(bbMin[0], bbMax[1], bbMin[2]), trans * btVector3(bbMin[0], bbMin[1], bbMin[2]), color);</span>
+<span class="lineNum">     305 </span><span class="lineNoCov">          0 :                 drawLine(trans * btVector3(bbMin[0], bbMin[1], bbMin[2]), trans * btVector3(bbMin[0], bbMin[1], bbMax[2]), color);</span>
+<span class="lineNum">     306 </span><span class="lineNoCov">          0 :                 drawLine(trans * btVector3(bbMax[0], bbMin[1], bbMin[2]), trans * btVector3(bbMax[0], bbMin[1], bbMax[2]), color);</span>
+<span class="lineNum">     307 </span><span class="lineNoCov">          0 :                 drawLine(trans * btVector3(bbMax[0], bbMax[1], bbMin[2]), trans * btVector3(bbMax[0], bbMax[1], bbMax[2]), color);</span>
+<span class="lineNum">     308 </span><span class="lineNoCov">          0 :                 drawLine(trans * btVector3(bbMin[0], bbMax[1], bbMin[2]), trans * btVector3(bbMin[0], bbMax[1], bbMax[2]), color);</span>
+<span class="lineNum">     309 </span><span class="lineNoCov">          0 :                 drawLine(trans * btVector3(bbMin[0], bbMin[1], bbMax[2]), trans * btVector3(bbMax[0], bbMin[1], bbMax[2]), color);</span>
+<span class="lineNum">     310 </span><span class="lineNoCov">          0 :                 drawLine(trans * btVector3(bbMax[0], bbMin[1], bbMax[2]), trans * btVector3(bbMax[0], bbMax[1], bbMax[2]), color);</span>
+<span class="lineNum">     311 </span><span class="lineNoCov">          0 :                 drawLine(trans * btVector3(bbMax[0], bbMax[1], bbMax[2]), trans * btVector3(bbMin[0], bbMax[1], bbMax[2]), color);</span>
+<span class="lineNum">     312 </span><span class="lineNoCov">          0 :                 drawLine(trans * btVector3(bbMin[0], bbMax[1], bbMax[2]), trans * btVector3(bbMin[0], bbMin[1], bbMax[2]), color);</span>
+<a name="313"><span class="lineNum">     313 </span><span class="lineNoCov">          0 :         }</span></a>
+<span class="lineNum">     314 </span>            : 
+<span class="lineNum">     315 </span><span class="lineNoCov">          0 :         virtual void drawCapsule(btScalar radius, btScalar halfHeight, int upAxis, const btTransform&amp; transform, const btVector3&amp; color)</span>
+<span class="lineNum">     316 </span>            :         {
+<span class="lineNum">     317 </span><span class="lineNoCov">          0 :                 btVector3 capStart(0.f,0.f,0.f);</span>
+<span class="lineNum">     318 </span><span class="lineNoCov">          0 :                 capStart[upAxis] = -halfHeight;</span>
+<span class="lineNum">     319 </span>            : 
+<span class="lineNum">     320 </span><span class="lineNoCov">          0 :                 btVector3 capEnd(0.f,0.f,0.f);</span>
+<span class="lineNum">     321 </span><span class="lineNoCov">          0 :                 capEnd[upAxis] = halfHeight;</span>
+<span class="lineNum">     322 </span>            : 
+<span class="lineNum">     323 </span>            :                 // Draw the ends
+<span class="lineNum">     324 </span>            :                 {
+<span class="lineNum">     325 </span>            : 
+<span class="lineNum">     326 </span><span class="lineNoCov">          0 :                         btTransform childTransform = transform;</span>
+<span class="lineNum">     327 </span><span class="lineNoCov">          0 :                         childTransform.getOrigin() = transform * capStart;</span>
+<span class="lineNum">     328 </span><span class="lineNoCov">          0 :                         drawSphere(radius, childTransform, color);</span>
+<span class="lineNum">     329 </span>            :                 }
+<span class="lineNum">     330 </span>            : 
+<span class="lineNum">     331 </span>            :                 {
+<span class="lineNum">     332 </span><span class="lineNoCov">          0 :                         btTransform childTransform = transform;</span>
+<span class="lineNum">     333 </span><span class="lineNoCov">          0 :                         childTransform.getOrigin() = transform * capEnd;</span>
+<span class="lineNum">     334 </span><span class="lineNoCov">          0 :                         drawSphere(radius, childTransform, color);</span>
+<span class="lineNum">     335 </span>            :                 }
+<span class="lineNum">     336 </span>            : 
+<span class="lineNum">     337 </span>            :                 // Draw some additional lines
+<span class="lineNum">     338 </span><span class="lineNoCov">          0 :                 btVector3 start = transform.getOrigin();</span>
+<span class="lineNum">     339 </span>            : 
+<span class="lineNum">     340 </span><span class="lineNoCov">          0 :                 capStart[(upAxis+1)%3] = radius;</span>
+<span class="lineNum">     341 </span><span class="lineNoCov">          0 :                 capEnd[(upAxis+1)%3] = radius;</span>
+<span class="lineNum">     342 </span><span class="lineNoCov">          0 :                 drawLine(start+transform.getBasis() * capStart,start+transform.getBasis() * capEnd, color);</span>
+<span class="lineNum">     343 </span><span class="lineNoCov">          0 :                 capStart[(upAxis+1)%3] = -radius;</span>
+<span class="lineNum">     344 </span><span class="lineNoCov">          0 :                 capEnd[(upAxis+1)%3] = -radius;</span>
+<span class="lineNum">     345 </span><span class="lineNoCov">          0 :                 drawLine(start+transform.getBasis() * capStart,start+transform.getBasis() * capEnd, color);</span>
+<span class="lineNum">     346 </span>            : 
+<span class="lineNum">     347 </span><span class="lineNoCov">          0 :                 capStart[(upAxis+1)%3] = 0.f;</span>
+<span class="lineNum">     348 </span><span class="lineNoCov">          0 :                 capEnd[(upAxis+1)%3] = 0.f;</span>
+<span class="lineNum">     349 </span>            : 
+<span class="lineNum">     350 </span><span class="lineNoCov">          0 :                 capStart[(upAxis+2)%3] = radius;</span>
+<span class="lineNum">     351 </span><span class="lineNoCov">          0 :                 capEnd[(upAxis+2)%3] = radius;</span>
+<span class="lineNum">     352 </span><span class="lineNoCov">          0 :                 drawLine(start+transform.getBasis() * capStart,start+transform.getBasis() * capEnd, color);</span>
+<span class="lineNum">     353 </span><span class="lineNoCov">          0 :                 capStart[(upAxis+2)%3] = -radius;</span>
+<span class="lineNum">     354 </span><span class="lineNoCov">          0 :                 capEnd[(upAxis+2)%3] = -radius;</span>
+<span class="lineNum">     355 </span><span class="lineNoCov">          0 :                 drawLine(start+transform.getBasis() * capStart,start+transform.getBasis() * capEnd, color);</span>
+<a name="356"><span class="lineNum">     356 </span><span class="lineNoCov">          0 :         }</span></a>
+<span class="lineNum">     357 </span>            : 
+<span class="lineNum">     358 </span><span class="lineNoCov">          0 :         virtual void drawCylinder(btScalar radius, btScalar halfHeight, int upAxis, const btTransform&amp; transform, const btVector3&amp; color)</span>
+<span class="lineNum">     359 </span>            :         {
+<span class="lineNum">     360 </span><span class="lineNoCov">          0 :                 btVector3 start = transform.getOrigin();</span>
+<span class="lineNum">     361 </span><span class="lineNoCov">          0 :                 btVector3       offsetHeight(0,0,0);</span>
+<span class="lineNum">     362 </span><span class="lineNoCov">          0 :                 offsetHeight[upAxis] = halfHeight;</span>
+<span class="lineNum">     363 </span><span class="lineNoCov">          0 :                 btVector3       offsetRadius(0,0,0);</span>
+<span class="lineNum">     364 </span><span class="lineNoCov">          0 :                 offsetRadius[(upAxis+1)%3] = radius;</span>
+<span class="lineNum">     365 </span><span class="lineNoCov">          0 :                 drawLine(start+transform.getBasis() * (offsetHeight+offsetRadius),start+transform.getBasis() * (-offsetHeight+offsetRadius),color);</span>
+<span class="lineNum">     366 </span><span class="lineNoCov">          0 :                 drawLine(start+transform.getBasis() * (offsetHeight-offsetRadius),start+transform.getBasis() * (-offsetHeight-offsetRadius),color);</span>
+<span class="lineNum">     367 </span>            : 
+<span class="lineNum">     368 </span>            :                 // Drawing top and bottom caps of the cylinder
+<span class="lineNum">     369 </span><span class="lineNoCov">          0 :                 btVector3 yaxis(0,0,0);</span>
+<span class="lineNum">     370 </span><span class="lineNoCov">          0 :                 yaxis[upAxis] = btScalar(1.0);</span>
+<span class="lineNum">     371 </span><span class="lineNoCov">          0 :                 btVector3 xaxis(0,0,0);</span>
+<span class="lineNum">     372 </span><span class="lineNoCov">          0 :                 xaxis[(upAxis+1)%3] = btScalar(1.0);</span>
+<span class="lineNum">     373 </span><span class="lineNoCov">          0 :                 drawArc(start-transform.getBasis()*(offsetHeight),transform.getBasis()*yaxis,transform.getBasis()*xaxis,radius,radius,0,SIMD_2_PI,color,false,btScalar(10.0));</span>
+<span class="lineNum">     374 </span><span class="lineNoCov">          0 :                 drawArc(start+transform.getBasis()*(offsetHeight),transform.getBasis()*yaxis,transform.getBasis()*xaxis,radius,radius,0,SIMD_2_PI,color,false,btScalar(10.0));</span>
+<a name="375"><span class="lineNum">     375 </span><span class="lineNoCov">          0 :         }</span></a>
+<span class="lineNum">     376 </span>            : 
+<span class="lineNum">     377 </span><span class="lineNoCov">          0 :         virtual void drawCone(btScalar radius, btScalar height, int upAxis, const btTransform&amp; transform, const btVector3&amp; color)</span>
+<span class="lineNum">     378 </span>            :         {
+<span class="lineNum">     379 </span>            : 
+<span class="lineNum">     380 </span><span class="lineNoCov">          0 :                 btVector3 start = transform.getOrigin();</span>
+<span class="lineNum">     381 </span>            : 
+<span class="lineNum">     382 </span><span class="lineNoCov">          0 :                 btVector3       offsetHeight(0,0,0);</span>
+<span class="lineNum">     383 </span><span class="lineNoCov">          0 :                 offsetHeight[upAxis] = height * btScalar(0.5);</span>
+<span class="lineNum">     384 </span><span class="lineNoCov">          0 :                 btVector3       offsetRadius(0,0,0);</span>
+<span class="lineNum">     385 </span><span class="lineNoCov">          0 :                 offsetRadius[(upAxis+1)%3] = radius;</span>
+<span class="lineNum">     386 </span><span class="lineNoCov">          0 :                 btVector3       offset2Radius(0,0,0);</span>
+<span class="lineNum">     387 </span><span class="lineNoCov">          0 :                 offset2Radius[(upAxis+2)%3] = radius;</span>
+<span class="lineNum">     388 </span>            : 
+<span class="lineNum">     389 </span><span class="lineNoCov">          0 :                 drawLine(start+transform.getBasis() * (offsetHeight),start+transform.getBasis() * (-offsetHeight+offsetRadius),color);</span>
+<span class="lineNum">     390 </span><span class="lineNoCov">          0 :                 drawLine(start+transform.getBasis() * (offsetHeight),start+transform.getBasis() * (-offsetHeight-offsetRadius),color);</span>
+<span class="lineNum">     391 </span><span class="lineNoCov">          0 :                 drawLine(start+transform.getBasis() * (offsetHeight),start+transform.getBasis() * (-offsetHeight+offset2Radius),color);</span>
+<span class="lineNum">     392 </span><span class="lineNoCov">          0 :                 drawLine(start+transform.getBasis() * (offsetHeight),start+transform.getBasis() * (-offsetHeight-offset2Radius),color);</span>
+<span class="lineNum">     393 </span>            : 
+<span class="lineNum">     394 </span>            :                 // Drawing the base of the cone
+<span class="lineNum">     395 </span><span class="lineNoCov">          0 :                 btVector3 yaxis(0,0,0);</span>
+<span class="lineNum">     396 </span><span class="lineNoCov">          0 :                 yaxis[upAxis] = btScalar(1.0);</span>
+<span class="lineNum">     397 </span><span class="lineNoCov">          0 :                 btVector3 xaxis(0,0,0);</span>
+<span class="lineNum">     398 </span><span class="lineNoCov">          0 :                 xaxis[(upAxis+1)%3] = btScalar(1.0);</span>
+<span class="lineNum">     399 </span><span class="lineNoCov">          0 :                 drawArc(start-transform.getBasis()*(offsetHeight),transform.getBasis()*yaxis,transform.getBasis()*xaxis,radius,radius,0,SIMD_2_PI,color,false,10.0);</span>
+<a name="400"><span class="lineNum">     400 </span><span class="lineNoCov">          0 :         }</span></a>
+<span class="lineNum">     401 </span>            : 
+<span class="lineNum">     402 </span><span class="lineNoCov">          0 :         virtual void drawPlane(const btVector3&amp; planeNormal, btScalar planeConst, const btTransform&amp; transform, const btVector3&amp; color)</span>
+<span class="lineNum">     403 </span>            :         {
+<span class="lineNum">     404 </span><span class="lineNoCov">          0 :                 btVector3 planeOrigin = planeNormal * planeConst;</span>
+<span class="lineNum">     405 </span><span class="lineNoCov">          0 :                 btVector3 vec0,vec1;</span>
+<span class="lineNum">     406 </span><span class="lineNoCov">          0 :                 btPlaneSpace1(planeNormal,vec0,vec1);</span>
+<span class="lineNum">     407 </span><span class="lineNoCov">          0 :                 btScalar vecLen = 100.f;</span>
+<span class="lineNum">     408 </span><span class="lineNoCov">          0 :                 btVector3 pt0 = planeOrigin + vec0*vecLen;</span>
+<span class="lineNum">     409 </span><span class="lineNoCov">          0 :                 btVector3 pt1 = planeOrigin - vec0*vecLen;</span>
+<span class="lineNum">     410 </span><span class="lineNoCov">          0 :                 btVector3 pt2 = planeOrigin + vec1*vecLen;</span>
+<span class="lineNum">     411 </span><span class="lineNoCov">          0 :                 btVector3 pt3 = planeOrigin - vec1*vecLen;</span>
+<span class="lineNum">     412 </span><span class="lineNoCov">          0 :                 drawLine(transform*pt0,transform*pt1,color);</span>
+<span class="lineNum">     413 </span><span class="lineNoCov">          0 :                 drawLine(transform*pt2,transform*pt3,color);</span>
+<span class="lineNum">     414 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     415 </span>            : };
+<span class="lineNum">     416 </span>            : 
+<span class="lineNum">     417 </span>            : 
+<span class="lineNum">     418 </span>            : #endif //BT_IDEBUG_DRAW__H
+<span class="lineNum">     419 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,1354 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/BroadphaseCollision/btDbvt.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/BroadphaseCollision</a> - btDbvt.h<span style="font-size: 80%;"> (source / <a href="btDbvt.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">98</td>
+            <td class="headerCovTableEntry">160</td>
+            <td class="headerCovTableEntryLo">61.2 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntry">15</td>
+            <td class="headerCovTableEntryLo">46.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2007 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : ///btDbvt implementation by Nathanael Presson
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : #ifndef BT_DYNAMIC_BOUNDING_VOLUME_TREE_H
+<span class="lineNum">      18 </span>            : #define BT_DYNAMIC_BOUNDING_VOLUME_TREE_H
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : #include &quot;LinearMath/btAlignedObjectArray.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;LinearMath/btVector3.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;LinearMath/btTransform.h&quot;
+<span class="lineNum">      23 </span>            : #include &quot;LinearMath/btAabbUtil2.h&quot;
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : //
+<span class="lineNum">      26 </span>            : // Compile time configuration
+<span class="lineNum">      27 </span>            : //
+<span class="lineNum">      28 </span>            : 
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span>            : // Implementation profiles
+<span class="lineNum">      31 </span>            : #define DBVT_IMPL_GENERIC               0       // Generic implementation       
+<span class="lineNum">      32 </span>            : #define DBVT_IMPL_SSE                   1       // SSE
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            : // Template implementation of ICollide
+<span class="lineNum">      35 </span>            : #ifdef _WIN32
+<span class="lineNum">      36 </span>            : #if (defined (_MSC_VER) &amp;&amp; _MSC_VER &gt;= 1400)
+<span class="lineNum">      37 </span>            : #define DBVT_USE_TEMPLATE               1
+<span class="lineNum">      38 </span>            : #else
+<span class="lineNum">      39 </span>            : #define DBVT_USE_TEMPLATE               0
+<span class="lineNum">      40 </span>            : #endif
+<span class="lineNum">      41 </span>            : #else
+<span class="lineNum">      42 </span>            : #define DBVT_USE_TEMPLATE               0
+<span class="lineNum">      43 </span>            : #endif
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            : // Use only intrinsics instead of inline asm
+<span class="lineNum">      46 </span>            : #define DBVT_USE_INTRINSIC_SSE  1
+<span class="lineNum">      47 </span>            : 
+<span class="lineNum">      48 </span>            : // Using memmov for collideOCL
+<span class="lineNum">      49 </span>            : #define DBVT_USE_MEMMOVE                1
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span>            : // Enable benchmarking code
+<span class="lineNum">      52 </span>            : #define DBVT_ENABLE_BENCHMARK   0
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span>            : // Inlining
+<span class="lineNum">      55 </span>            : #define DBVT_INLINE                             SIMD_FORCE_INLINE
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span>            : // Specific methods implementation
+<span class="lineNum">      58 </span>            : 
+<span class="lineNum">      59 </span>            : //SSE gives errors on a MSVC 7.1
+<span class="lineNum">      60 </span>            : #if defined (BT_USE_SSE) //&amp;&amp; defined (_WIN32)
+<span class="lineNum">      61 </span>            : #define DBVT_SELECT_IMPL                DBVT_IMPL_SSE
+<span class="lineNum">      62 </span>            : #define DBVT_MERGE_IMPL                 DBVT_IMPL_SSE
+<span class="lineNum">      63 </span>            : #define DBVT_INT0_IMPL                  DBVT_IMPL_SSE
+<span class="lineNum">      64 </span>            : #else
+<span class="lineNum">      65 </span>            : #define DBVT_SELECT_IMPL                DBVT_IMPL_GENERIC
+<span class="lineNum">      66 </span>            : #define DBVT_MERGE_IMPL                 DBVT_IMPL_GENERIC
+<span class="lineNum">      67 </span>            : #define DBVT_INT0_IMPL                  DBVT_IMPL_GENERIC
+<span class="lineNum">      68 </span>            : #endif
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span>            : #if     (DBVT_SELECT_IMPL==DBVT_IMPL_SSE)||     \
+<span class="lineNum">      71 </span>            :         (DBVT_MERGE_IMPL==DBVT_IMPL_SSE)||      \
+<span class="lineNum">      72 </span>            :         (DBVT_INT0_IMPL==DBVT_IMPL_SSE)
+<span class="lineNum">      73 </span>            : #include &lt;emmintrin.h&gt;
+<span class="lineNum">      74 </span>            : #endif
+<span class="lineNum">      75 </span>            : 
+<span class="lineNum">      76 </span>            : //
+<span class="lineNum">      77 </span>            : // Auto config and checks
+<span class="lineNum">      78 </span>            : //
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span>            : #if DBVT_USE_TEMPLATE
+<span class="lineNum">      81 </span>            : #define DBVT_VIRTUAL
+<span class="lineNum">      82 </span>            : #define DBVT_VIRTUAL_DTOR(a)
+<span class="lineNum">      83 </span>            : #define DBVT_PREFIX                                     template &lt;typename T&gt;
+<span class="lineNum">      84 </span>            : #define DBVT_IPOLICY                            T&amp; policy
+<span class="lineNum">      85 </span>            : #define DBVT_CHECKTYPE                          static const ICollide&amp;      typechecker=*(T*)1;(void)typechecker;
+<span class="lineNum">      86 </span>            : #else
+<span class="lineNum">      87 </span>            : #define DBVT_VIRTUAL_DTOR(a)            virtual ~a() {}
+<span class="lineNum">      88 </span>            : #define DBVT_VIRTUAL                            virtual
+<span class="lineNum">      89 </span>            : #define DBVT_PREFIX
+<span class="lineNum">      90 </span>            : #define DBVT_IPOLICY                            ICollide&amp; policy
+<span class="lineNum">      91 </span>            : #define DBVT_CHECKTYPE
+<span class="lineNum">      92 </span>            : #endif
+<span class="lineNum">      93 </span>            : 
+<span class="lineNum">      94 </span>            : #if DBVT_USE_MEMMOVE
+<span class="lineNum">      95 </span>            : #if !defined( __CELLOS_LV2__) &amp;&amp; !defined(__MWERKS__)
+<span class="lineNum">      96 </span>            : #include &lt;memory.h&gt;
+<span class="lineNum">      97 </span>            : #endif
+<span class="lineNum">      98 </span>            : #include &lt;string.h&gt;
+<span class="lineNum">      99 </span>            : #endif
+<span class="lineNum">     100 </span>            : 
+<span class="lineNum">     101 </span>            : #ifndef DBVT_USE_TEMPLATE
+<span class="lineNum">     102 </span>            : #error &quot;DBVT_USE_TEMPLATE undefined&quot;
+<span class="lineNum">     103 </span>            : #endif
+<span class="lineNum">     104 </span>            : 
+<span class="lineNum">     105 </span>            : #ifndef DBVT_USE_MEMMOVE
+<span class="lineNum">     106 </span>            : #error &quot;DBVT_USE_MEMMOVE undefined&quot;
+<span class="lineNum">     107 </span>            : #endif
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            : #ifndef DBVT_ENABLE_BENCHMARK
+<span class="lineNum">     110 </span>            : #error &quot;DBVT_ENABLE_BENCHMARK undefined&quot;
+<span class="lineNum">     111 </span>            : #endif
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span>            : #ifndef DBVT_SELECT_IMPL
+<span class="lineNum">     114 </span>            : #error &quot;DBVT_SELECT_IMPL undefined&quot;
+<span class="lineNum">     115 </span>            : #endif
+<span class="lineNum">     116 </span>            : 
+<span class="lineNum">     117 </span>            : #ifndef DBVT_MERGE_IMPL
+<span class="lineNum">     118 </span>            : #error &quot;DBVT_MERGE_IMPL undefined&quot;
+<span class="lineNum">     119 </span>            : #endif
+<span class="lineNum">     120 </span>            : 
+<span class="lineNum">     121 </span>            : #ifndef DBVT_INT0_IMPL
+<span class="lineNum">     122 </span>            : #error &quot;DBVT_INT0_IMPL undefined&quot;
+<span class="lineNum">     123 </span>            : #endif
+<span class="lineNum">     124 </span>            : 
+<span class="lineNum">     125 </span>            : //
+<span class="lineNum">     126 </span>            : // Defaults volumes
+<span class="lineNum">     127 </span>            : //
+<span class="lineNum">     128 </span>            : 
+<span class="lineNum">     129 </span>            : /* btDbvtAabbMm                 */ 
+<span class="lineNum">     130 </span><span class="lineCov">     362589 : struct  btDbvtAabbMm</span>
+<span class="lineNum">     131 </span>            : {
+<span class="lineNum">     132 </span><span class="lineNoCov">          0 :         DBVT_INLINE btVector3                   Center() const  { return((mi+mx)/2); }</span>
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :         DBVT_INLINE btVector3                   Lengths() const { return(mx-mi); }</span>
+<span class="lineNum">     134 </span>            :         DBVT_INLINE btVector3                   Extents() const { return((mx-mi)/2); }
+<span class="lineNum">     135 </span>            :         DBVT_INLINE const btVector3&amp;        Mins() const    { return(mi); }
+<span class="lineNum">     136 </span>            :         DBVT_INLINE const btVector3&amp;        Maxs() const    { return(mx); }
+<span class="lineNum">     137 </span>            :         static inline btDbvtAabbMm              FromCE(const btVector3&amp; c,const btVector3&amp; e);
+<span class="lineNum">     138 </span>            :         static inline btDbvtAabbMm              FromCR(const btVector3&amp; c,btScalar r);
+<span class="lineNum">     139 </span>            :         static inline btDbvtAabbMm              FromMM(const btVector3&amp; mi,const btVector3&amp; mx);
+<span class="lineNum">     140 </span>            :         static inline btDbvtAabbMm              FromPoints(const btVector3* pts,int n);
+<span class="lineNum">     141 </span>            :         static inline btDbvtAabbMm              FromPoints(const btVector3** ppts,int n);
+<span class="lineNum">     142 </span>            :         DBVT_INLINE void                                Expand(const btVector3&amp; e);
+<span class="lineNum">     143 </span>            :         DBVT_INLINE void                                SignedExpand(const btVector3&amp; e);
+<span class="lineNum">     144 </span>            :         DBVT_INLINE bool                                Contain(const btDbvtAabbMm&amp; a) const;
+<span class="lineNum">     145 </span>            :         DBVT_INLINE int                                 Classify(const btVector3&amp; n,btScalar o,int s) const;
+<span class="lineNum">     146 </span>            :         DBVT_INLINE btScalar                    ProjectMinimum(const btVector3&amp; v,unsigned signs) const;
+<span class="lineNum">     147 </span>            :         DBVT_INLINE friend bool                 Intersect(      const btDbvtAabbMm&amp; a,
+<span class="lineNum">     148 </span>            :                 const btDbvtAabbMm&amp; b);
+<span class="lineNum">     149 </span>            :         
+<span class="lineNum">     150 </span>            :         DBVT_INLINE friend bool                 Intersect(      const btDbvtAabbMm&amp; a,
+<span class="lineNum">     151 </span>            :                 const btVector3&amp; b);
+<span class="lineNum">     152 </span>            : 
+<span class="lineNum">     153 </span>            :         DBVT_INLINE friend btScalar             Proximity(      const btDbvtAabbMm&amp; a,
+<span class="lineNum">     154 </span>            :                 const btDbvtAabbMm&amp; b);
+<span class="lineNum">     155 </span>            :         DBVT_INLINE friend int                  Select(         const btDbvtAabbMm&amp; o,
+<span class="lineNum">     156 </span>            :                 const btDbvtAabbMm&amp; a,
+<span class="lineNum">     157 </span>            :                 const btDbvtAabbMm&amp; b);
+<span class="lineNum">     158 </span>            :         DBVT_INLINE friend void                 Merge(          const btDbvtAabbMm&amp; a,
+<span class="lineNum">     159 </span>            :                 const btDbvtAabbMm&amp; b,
+<span class="lineNum">     160 </span>            :                 btDbvtAabbMm&amp; r);
+<span class="lineNum">     161 </span>            :         DBVT_INLINE friend bool                 NotEqual(       const btDbvtAabbMm&amp; a,
+<span class="lineNum">     162 </span>            :                 const btDbvtAabbMm&amp; b);
+<span class="lineNum">     163 </span>            :     
+<span class="lineNum">     164 </span>            :     DBVT_INLINE btVector3&amp;  tMins() { return(mi); }
+<span class="lineNum">     165 </span>            :         DBVT_INLINE btVector3&amp;      tMaxs() { return(mx); }
+<span class="lineNum">     166 </span>            :     
+<span class="lineNum">     167 </span>            : private:
+<span class="lineNum">     168 </span>            :         DBVT_INLINE void                                AddSpan(const btVector3&amp; d,btScalar&amp; smi,btScalar&amp; smx) const;
+<span class="lineNum">     169 </span>            : private:
+<span class="lineNum">     170 </span>            :         btVector3       mi,mx;
+<span class="lineNum">     171 </span>            : };
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span>            : // Types        
+<span class="lineNum">     174 </span>            : typedef btDbvtAabbMm    btDbvtVolume;
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span>            : /* btDbvtNode                           */ 
+<span class="lineNum">     177 </span><span class="lineCov">        402 : struct  btDbvtNode</span>
+<span class="lineNum">     178 </span>            : {
+<span class="lineNum">     179 </span>            :         btDbvtVolume    volume;
+<span class="lineNum">     180 </span>            :         btDbvtNode*             parent;
+<span class="lineNum">     181 </span>            :         DBVT_INLINE bool        isleaf() const          { return(childs[1]==0); }
+<span class="lineNum">     182 </span><span class="lineCov">    1326414 :         DBVT_INLINE bool        isinternal() const      { return(!isleaf()); }</span>
+<span class="lineNum">     183 </span>            :         union
+<span class="lineNum">     184 </span>            :         {
+<span class="lineNum">     185 </span>            :                 btDbvtNode*     childs[2];
+<span class="lineNum">     186 </span>            :                 void*   data;
+<span class="lineNum">     187 </span>            :                 int             dataAsInt;
+<span class="lineNum">     188 </span>            :         };
+<span class="lineNum">     189 </span>            : };
+<span class="lineNum">     190 </span>            : 
+<span class="lineNum">     191 </span>            : ///The btDbvt class implements a fast dynamic bounding volume tree based on axis aligned bounding boxes (aabb tree).
+<span class="lineNum">     192 </span>            : ///This btDbvt is used for soft body collision detection and for the btDbvtBroadphase. It has a fast insert, remove and update of nodes.
+<span class="lineNum">     193 </span>            : ///Unlike the btQuantizedBvh, nodes can be dynamically moved around, which allows for change in topology of the underlying data structure.
+<span class="lineNum">     194 </span>            : struct  btDbvt
+<span class="lineNum">     195 </span>            : {
+<span class="lineNum">     196 </span>            :         /* Stack element        */ 
+<span class="lineNum">     197 </span>            :         struct  sStkNN
+<span class="lineNum">     198 </span>            :         {
+<span class="lineNum">     199 </span>            :                 const btDbvtNode*       a;
+<span class="lineNum">     200 </span>            :                 const btDbvtNode*       b;
+<span class="lineNum">     201 </span><span class="lineCov">      35484 :                 sStkNN() {}</span>
+<span class="lineNum">     202 </span>            :                 sStkNN(const btDbvtNode* na,const btDbvtNode* nb) : a(na),b(nb) {}
+<span class="lineNum">     203 </span>            :         };
+<span class="lineNum">     204 </span>            :         struct  sStkNP
+<span class="lineNum">     205 </span>            :         {
+<span class="lineNum">     206 </span>            :                 const btDbvtNode*       node;
+<span class="lineNum">     207 </span>            :                 int                     mask;
+<span class="lineNum">     208 </span>            :                 sStkNP(const btDbvtNode* n,unsigned m) : node(n),mask(m) {}
+<span class="lineNum">     209 </span>            :         };
+<span class="lineNum">     210 </span>            :         struct  sStkNPS
+<span class="lineNum">     211 </span>            :         {
+<span class="lineNum">     212 </span>            :                 const btDbvtNode*       node;
+<span class="lineNum">     213 </span>            :                 int                     mask;
+<span class="lineNum">     214 </span>            :                 btScalar        value;
+<span class="lineNum">     215 </span>            :                 sStkNPS() {}
+<span class="lineNum">     216 </span>            :                 sStkNPS(const btDbvtNode* n,unsigned m,btScalar v) : node(n),mask(m),value(v) {}
+<span class="lineNum">     217 </span>            :         };
+<span class="lineNum">     218 </span>            :         struct  sStkCLN
+<span class="lineNum">     219 </span>            :         {
+<span class="lineNum">     220 </span>            :                 const btDbvtNode*       node;
+<span class="lineNum">     221 </span>            :                 btDbvtNode*             parent;
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :                 sStkCLN(const btDbvtNode* n,btDbvtNode* p) : node(n),parent(p) {}</span>
+<span class="lineNum">     223 </span>            :         };
+<span class="lineNum">     224 </span>            :         // Policies/Interfaces
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span>            :         /* ICollide     */ 
+<span class="lineNum">     227 </span>            :         struct  ICollide
+<a name="228"><span class="lineNum">     228 </span>            :         {               </a>
+<a name="229"><span class="lineNum">     229 </span>            :                 DBVT_VIRTUAL_DTOR(ICollide)</a>
+<a name="230"><span class="lineNum">     230 </span><span class="lineNoCov">          0 :                         DBVT_VIRTUAL void       Process(const btDbvtNode*,const btDbvtNode*)            {}</span></a>
+<a name="231"><span class="lineNum">     231 </span><span class="lineNoCov">          0 :                 DBVT_VIRTUAL void       Process(const btDbvtNode*)                                      {}</span></a>
+<a name="232"><span class="lineNum">     232 </span><span class="lineNoCov">          0 :                 DBVT_VIRTUAL void       Process(const btDbvtNode* n,btScalar)                   { Process(n); }</span></a>
+<span class="lineNum">     233 </span><span class="lineNoCov">          0 :                 DBVT_VIRTUAL bool       Descent(const btDbvtNode*)                                      { return(true); }</span>
+<span class="lineNum">     234 </span><span class="lineNoCov">          0 :                 DBVT_VIRTUAL bool       AllLeaves(const btDbvtNode*)                                    { return(true); }</span>
+<span class="lineNum">     235 </span>            :         };
+<span class="lineNum">     236 </span>            :         /* IWriter      */ 
+<span class="lineNum">     237 </span>            :         struct  IWriter
+<span class="lineNum">     238 </span>            :         {
+<span class="lineNum">     239 </span>            :                 virtual ~IWriter() {}
+<span class="lineNum">     240 </span>            :                 virtual void            Prepare(const btDbvtNode* root,int numnodes)=0;
+<span class="lineNum">     241 </span>            :                 virtual void            WriteNode(const btDbvtNode*,int index,int parent,int child0,int child1)=0;
+<span class="lineNum">     242 </span>            :                 virtual void            WriteLeaf(const btDbvtNode*,int index,int parent)=0;
+<span class="lineNum">     243 </span>            :         };
+<span class="lineNum">     244 </span>            :         /* IClone       */ 
+<span class="lineNum">     245 </span>            :         struct  IClone
+<a name="246"><span class="lineNum">     246 </span>            :         {</a>
+<span class="lineNum">     247 </span>            :                 virtual ~IClone()       {}
+<span class="lineNum">     248 </span><span class="lineNoCov">          0 :                 virtual void            CloneLeaf(btDbvtNode*) {}</span>
+<span class="lineNum">     249 </span>            :         };
+<span class="lineNum">     250 </span>            : 
+<span class="lineNum">     251 </span>            :         // Constants
+<span class="lineNum">     252 </span>            :         enum    {
+<span class="lineNum">     253 </span>            :                 SIMPLE_STACKSIZE        =       64,
+<span class="lineNum">     254 </span>            :                 DOUBLE_STACKSIZE        =       SIMPLE_STACKSIZE*2
+<span class="lineNum">     255 </span>            :         };
+<span class="lineNum">     256 </span>            : 
+<span class="lineNum">     257 </span>            :         // Fields
+<span class="lineNum">     258 </span>            :         btDbvtNode*             m_root;
+<span class="lineNum">     259 </span>            :         btDbvtNode*             m_free;
+<span class="lineNum">     260 </span>            :         int                             m_lkhd;
+<span class="lineNum">     261 </span>            :         int                             m_leaves;
+<span class="lineNum">     262 </span>            :         unsigned                m_opath;
+<span class="lineNum">     263 </span>            : 
+<span class="lineNum">     264 </span>            :         
+<span class="lineNum">     265 </span>            :         btAlignedObjectArray&lt;sStkNN&gt;      m_stkStack;
+<span class="lineNum">     266 </span>            :         mutable btAlignedObjectArray&lt;const btDbvtNode*&gt;   m_rayTestStack;
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span>            : 
+<span class="lineNum">     269 </span>            :         // Methods
+<span class="lineNum">     270 </span>            :         btDbvt();
+<span class="lineNum">     271 </span>            :         ~btDbvt();
+<span class="lineNum">     272 </span>            :         void                    clear();
+<span class="lineNum">     273 </span>            :         bool                    empty() const { return(0==m_root); }
+<span class="lineNum">     274 </span>            :         void                    optimizeBottomUp();
+<span class="lineNum">     275 </span>            :         void                    optimizeTopDown(int bu_treshold=128);
+<span class="lineNum">     276 </span>            :         void                    optimizeIncremental(int passes);
+<span class="lineNum">     277 </span>            :         btDbvtNode*             insert(const btDbvtVolume&amp; box,void* data);
+<span class="lineNum">     278 </span>            :         void                    update(btDbvtNode* leaf,int lookahead=-1);
+<span class="lineNum">     279 </span>            :         void                    update(btDbvtNode* leaf,btDbvtVolume&amp; volume);
+<span class="lineNum">     280 </span>            :         bool                    update(btDbvtNode* leaf,btDbvtVolume&amp; volume,const btVector3&amp; velocity,btScalar margin);
+<span class="lineNum">     281 </span>            :         bool                    update(btDbvtNode* leaf,btDbvtVolume&amp; volume,const btVector3&amp; velocity);
+<span class="lineNum">     282 </span>            :         bool                    update(btDbvtNode* leaf,btDbvtVolume&amp; volume,btScalar margin);      
+<span class="lineNum">     283 </span>            :         void                    remove(btDbvtNode* leaf);
+<span class="lineNum">     284 </span>            :         void                    write(IWriter* iwriter) const;
+<span class="lineNum">     285 </span>            :         void                    clone(btDbvt&amp; dest,IClone* iclone=0) const;
+<span class="lineNum">     286 </span>            :         static int              maxdepth(const btDbvtNode* node);
+<span class="lineNum">     287 </span>            :         static int              countLeaves(const btDbvtNode* node);
+<span class="lineNum">     288 </span>            :         static void             extractLeaves(const btDbvtNode* node,btAlignedObjectArray&lt;const btDbvtNode*&gt;&amp; leaves);
+<span class="lineNum">     289 </span>            : #if DBVT_ENABLE_BENCHMARK
+<span class="lineNum">     290 </span>            :         static void             benchmark();
+<span class="lineNum">     291 </span>            : #else
+<span class="lineNum">     292 </span>            :         static void             benchmark(){}
+<span class="lineNum">     293 </span>            : #endif
+<span class="lineNum">     294 </span>            :         // DBVT_IPOLICY must support ICollide policy/interface
+<span class="lineNum">     295 </span>            :         DBVT_PREFIX
+<span class="lineNum">     296 </span>            :                 static void             enumNodes(      const btDbvtNode* root,
+<span class="lineNum">     297 </span>            :                 DBVT_IPOLICY);
+<span class="lineNum">     298 </span>            :         DBVT_PREFIX
+<span class="lineNum">     299 </span>            :                 static void             enumLeaves(     const btDbvtNode* root,
+<span class="lineNum">     300 </span>            :                 DBVT_IPOLICY);
+<span class="lineNum">     301 </span>            :         DBVT_PREFIX
+<span class="lineNum">     302 </span>            :                 void            collideTT(      const btDbvtNode* root0,
+<span class="lineNum">     303 </span>            :                 const btDbvtNode* root1,
+<span class="lineNum">     304 </span>            :                 DBVT_IPOLICY);
+<span class="lineNum">     305 </span>            : 
+<span class="lineNum">     306 </span>            :         DBVT_PREFIX
+<span class="lineNum">     307 </span>            :                 void            collideTTpersistentStack(       const btDbvtNode* root0,
+<span class="lineNum">     308 </span>            :                   const btDbvtNode* root1,
+<span class="lineNum">     309 </span>            :                   DBVT_IPOLICY);
+<span class="lineNum">     310 </span>            : #if 0
+<span class="lineNum">     311 </span>            :         DBVT_PREFIX
+<span class="lineNum">     312 </span>            :                 void            collideTT(      const btDbvtNode* root0,
+<span class="lineNum">     313 </span>            :                 const btDbvtNode* root1,
+<span class="lineNum">     314 </span>            :                 const btTransform&amp; xform,
+<span class="lineNum">     315 </span>            :                 DBVT_IPOLICY);
+<span class="lineNum">     316 </span>            :         DBVT_PREFIX
+<span class="lineNum">     317 </span>            :                 void            collideTT(      const btDbvtNode* root0,
+<span class="lineNum">     318 </span>            :                 const btTransform&amp; xform0,
+<span class="lineNum">     319 </span>            :                 const btDbvtNode* root1,
+<span class="lineNum">     320 </span>            :                 const btTransform&amp; xform1,
+<span class="lineNum">     321 </span>            :                 DBVT_IPOLICY);
+<span class="lineNum">     322 </span>            : #endif
+<span class="lineNum">     323 </span>            : 
+<span class="lineNum">     324 </span>            :         DBVT_PREFIX
+<span class="lineNum">     325 </span>            :                 void            collideTV(      const btDbvtNode* root,
+<span class="lineNum">     326 </span>            :                 const btDbvtVolume&amp; volume,
+<span class="lineNum">     327 </span>            :                 DBVT_IPOLICY) const;
+<span class="lineNum">     328 </span>            :         ///rayTest is a re-entrant ray test, and can be called in parallel as long as the btAlignedAlloc is thread-safe (uses locking etc)
+<span class="lineNum">     329 </span>            :         ///rayTest is slower than rayTestInternal, because it builds a local stack, using memory allocations, and it recomputes signs/rayDirectionInverses each time
+<span class="lineNum">     330 </span>            :         DBVT_PREFIX
+<span class="lineNum">     331 </span>            :                 static void             rayTest(        const btDbvtNode* root,
+<span class="lineNum">     332 </span>            :                 const btVector3&amp; rayFrom,
+<span class="lineNum">     333 </span>            :                 const btVector3&amp; rayTo,
+<span class="lineNum">     334 </span>            :                 DBVT_IPOLICY);
+<span class="lineNum">     335 </span>            :         ///rayTestInternal is faster than rayTest, because it uses a persistent stack (to reduce dynamic memory allocations to a minimum) and it uses precomputed signs/rayInverseDirections
+<span class="lineNum">     336 </span>            :         ///rayTestInternal is used by btDbvtBroadphase to accelerate world ray casts
+<span class="lineNum">     337 </span>            :         DBVT_PREFIX
+<span class="lineNum">     338 </span>            :                 void            rayTestInternal(        const btDbvtNode* root,
+<span class="lineNum">     339 </span>            :                                                                 const btVector3&amp; rayFrom,
+<span class="lineNum">     340 </span>            :                                                                 const btVector3&amp; rayTo,
+<span class="lineNum">     341 </span>            :                                                                 const btVector3&amp; rayDirectionInverse,
+<span class="lineNum">     342 </span>            :                                                                 unsigned int signs[3],
+<span class="lineNum">     343 </span>            :                                                                 btScalar lambda_max,
+<span class="lineNum">     344 </span>            :                                                                 const btVector3&amp; aabbMin,
+<span class="lineNum">     345 </span>            :                                                                 const btVector3&amp; aabbMax,
+<span class="lineNum">     346 </span>            :                                                                 DBVT_IPOLICY) const;
+<span class="lineNum">     347 </span>            : 
+<span class="lineNum">     348 </span>            :         DBVT_PREFIX
+<span class="lineNum">     349 </span>            :                 static void             collideKDOP(const btDbvtNode* root,
+<span class="lineNum">     350 </span>            :                 const btVector3* normals,
+<span class="lineNum">     351 </span>            :                 const btScalar* offsets,
+<span class="lineNum">     352 </span>            :                 int count,
+<span class="lineNum">     353 </span>            :                 DBVT_IPOLICY);
+<span class="lineNum">     354 </span>            :         DBVT_PREFIX
+<span class="lineNum">     355 </span>            :                 static void             collideOCL(     const btDbvtNode* root,
+<span class="lineNum">     356 </span>            :                 const btVector3* normals,
+<span class="lineNum">     357 </span>            :                 const btScalar* offsets,
+<span class="lineNum">     358 </span>            :                 const btVector3&amp; sortaxis,
+<span class="lineNum">     359 </span>            :                 int count,                                                              
+<span class="lineNum">     360 </span>            :                 DBVT_IPOLICY,
+<span class="lineNum">     361 </span>            :                 bool fullsort=true);
+<span class="lineNum">     362 </span>            :         DBVT_PREFIX
+<span class="lineNum">     363 </span>            :                 static void             collideTU(      const btDbvtNode* root,
+<span class="lineNum">     364 </span>            :                 DBVT_IPOLICY);
+<span class="lineNum">     365 </span>            :         // Helpers      
+<span class="lineNum">     366 </span>            :         static DBVT_INLINE int  nearest(const int* i,const btDbvt::sStkNPS* a,btScalar v,int l,int h)
+<span class="lineNum">     367 </span>            :         {
+<span class="lineNum">     368 </span>            :                 int     m=0;
+<span class="lineNum">     369 </span>            :                 while(l&lt;h)
+<span class="lineNum">     370 </span>            :                 {
+<span class="lineNum">     371 </span>            :                         m=(l+h)&gt;&gt;1;
+<span class="lineNum">     372 </span>            :                         if(a[i[m]].value&gt;=v) l=m+1; else h=m;
+<span class="lineNum">     373 </span>            :                 }
+<span class="lineNum">     374 </span>            :                 return(h);
+<span class="lineNum">     375 </span>            :         }
+<span class="lineNum">     376 </span>            :         static DBVT_INLINE int  allocate(       btAlignedObjectArray&lt;int&gt;&amp; ifree,
+<span class="lineNum">     377 </span>            :                 btAlignedObjectArray&lt;sStkNPS&gt;&amp; stock,
+<span class="lineNum">     378 </span>            :                 const sStkNPS&amp; value)
+<span class="lineNum">     379 </span>            :         {
+<span class="lineNum">     380 </span>            :                 int     i;
+<span class="lineNum">     381 </span>            :                 if(ifree.size()&gt;0)
+<span class="lineNum">     382 </span>            :                 { i=ifree[ifree.size()-1];ifree.pop_back();stock[i]=value; }
+<span class="lineNum">     383 </span>            :                 else
+<span class="lineNum">     384 </span>            :                 { i=stock.size();stock.push_back(value); }
+<span class="lineNum">     385 </span>            :                 return(i); 
+<span class="lineNum">     386 </span>            :         }
+<span class="lineNum">     387 </span>            :         //
+<span class="lineNum">     388 </span>            : private:
+<span class="lineNum">     389 </span>            :         btDbvt(const btDbvt&amp;)       {}      
+<span class="lineNum">     390 </span>            : };
+<span class="lineNum">     391 </span>            : 
+<span class="lineNum">     392 </span>            : //
+<span class="lineNum">     393 </span>            : // Inline's
+<span class="lineNum">     394 </span>            : //
+<span class="lineNum">     395 </span>            : 
+<span class="lineNum">     396 </span>            : //
+<span class="lineNum">     397 </span>            : inline btDbvtAabbMm                     btDbvtAabbMm::FromCE(const btVector3&amp; c,const btVector3&amp; e)
+<span class="lineNum">     398 </span>            : {
+<span class="lineNum">     399 </span><span class="lineNoCov">          0 :         btDbvtAabbMm box;</span>
+<span class="lineNum">     400 </span><span class="lineNoCov">          0 :         box.mi=c-e;box.mx=c+e;</span>
+<span class="lineNum">     401 </span>            :         return(box);
+<span class="lineNum">     402 </span>            : }
+<span class="lineNum">     403 </span>            : 
+<span class="lineNum">     404 </span>            : //
+<span class="lineNum">     405 </span>            : inline btDbvtAabbMm                     btDbvtAabbMm::FromCR(const btVector3&amp; c,btScalar r)
+<span class="lineNum">     406 </span>            : {
+<span class="lineNum">     407 </span><span class="lineNoCov">          0 :         return(FromCE(c,btVector3(r,r,r)));</span>
+<span class="lineNum">     408 </span>            : }
+<span class="lineNum">     409 </span>            : 
+<span class="lineNum">     410 </span>            : //
+<span class="lineNum">     411 </span>            : inline btDbvtAabbMm                     btDbvtAabbMm::FromMM(const btVector3&amp; mi,const btVector3&amp; mx)
+<span class="lineNum">     412 </span>            : {
+<span class="lineNum">     413 </span><span class="lineCov">     120662 :         btDbvtAabbMm box;</span>
+<span class="lineNum">     414 </span><span class="lineCov">     120662 :         box.mi=mi;box.mx=mx;</span>
+<span class="lineNum">     415 </span><span class="lineCov">     120662 :         return(box);</span>
+<span class="lineNum">     416 </span>            : }
+<span class="lineNum">     417 </span>            : 
+<span class="lineNum">     418 </span>            : //
+<span class="lineNum">     419 </span>            : inline btDbvtAabbMm                     btDbvtAabbMm::FromPoints(const btVector3* pts,int n)
+<span class="lineNum">     420 </span>            : {
+<span class="lineNum">     421 </span>            :         btDbvtAabbMm box;
+<span class="lineNum">     422 </span>            :         box.mi=box.mx=pts[0];
+<span class="lineNum">     423 </span>            :         for(int i=1;i&lt;n;++i)
+<span class="lineNum">     424 </span>            :         {
+<span class="lineNum">     425 </span>            :                 box.mi.setMin(pts[i]);
+<span class="lineNum">     426 </span>            :                 box.mx.setMax(pts[i]);
+<span class="lineNum">     427 </span>            :         }
+<span class="lineNum">     428 </span>            :         return(box);
+<span class="lineNum">     429 </span>            : }
+<span class="lineNum">     430 </span>            : 
+<span class="lineNum">     431 </span>            : //
+<span class="lineNum">     432 </span>            : inline btDbvtAabbMm                     btDbvtAabbMm::FromPoints(const btVector3** ppts,int n)
+<span class="lineNum">     433 </span>            : {
+<span class="lineNum">     434 </span>            :         btDbvtAabbMm box;
+<span class="lineNum">     435 </span>            :         box.mi=box.mx=*ppts[0];
+<span class="lineNum">     436 </span>            :         for(int i=1;i&lt;n;++i)
+<span class="lineNum">     437 </span>            :         {
+<span class="lineNum">     438 </span>            :                 box.mi.setMin(*ppts[i]);
+<span class="lineNum">     439 </span>            :                 box.mx.setMax(*ppts[i]);
+<span class="lineNum">     440 </span>            :         }
+<span class="lineNum">     441 </span>            :         return(box);
+<span class="lineNum">     442 </span>            : }
+<span class="lineNum">     443 </span>            : 
+<span class="lineNum">     444 </span>            : //
+<span class="lineNum">     445 </span>            : DBVT_INLINE void                btDbvtAabbMm::Expand(const btVector3&amp; e)
+<span class="lineNum">     446 </span>            : {
+<span class="lineNum">     447 </span><span class="lineCov">     106452 :         mi-=e;mx+=e;</span>
+<span class="lineNum">     448 </span>            : }
+<a name="449"><span class="lineNum">     449 </span>            : </a>
+<span class="lineNum">     450 </span>            : //
+<span class="lineNum">     451 </span><span class="lineCov">      35484 : DBVT_INLINE void                btDbvtAabbMm::SignedExpand(const btVector3&amp; e)</span>
+<span class="lineNum">     452 </span>            : {
+<span class="lineNum">     453 </span><span class="lineCov">      70968 :         if(e.x()&gt;0) mx.setX(mx.x()+e[0]); else mi.setX(mi.x()+e[0]);</span>
+<span class="lineNum">     454 </span><span class="lineCov">      70968 :         if(e.y()&gt;0) mx.setY(mx.y()+e[1]); else mi.setY(mi.y()+e[1]);</span>
+<span class="lineNum">     455 </span><span class="lineCov">      70968 :         if(e.z()&gt;0) mx.setZ(mx.z()+e[2]); else mi.setZ(mi.z()+e[2]);</span>
+<span class="lineNum">     456 </span><span class="lineCov">      35484 : }</span>
+<span class="lineNum">     457 </span>            : 
+<span class="lineNum">     458 </span>            : //
+<span class="lineNum">     459 </span>            : DBVT_INLINE bool                btDbvtAabbMm::Contain(const btDbvtAabbMm&amp; a) const
+<span class="lineNum">     460 </span>            : {
+<span class="lineNum">     461 </span><span class="lineCov">     443039 :         return( (mi.x()&lt;=a.mi.x())&amp;&amp;</span>
+<span class="lineNum">     462 </span><span class="lineCov">     368617 :                 (mi.y()&lt;=a.mi.y())&amp;&amp;</span>
+<span class="lineNum">     463 </span><span class="lineCov">     330493 :                 (mi.z()&lt;=a.mi.z())&amp;&amp;</span>
+<span class="lineNum">     464 </span><span class="lineCov">     299095 :                 (mx.x()&gt;=a.mx.x())&amp;&amp;</span>
+<span class="lineNum">     465 </span><span class="lineCov">     508594 :                 (mx.y()&gt;=a.mx.y())&amp;&amp;</span>
+<span class="lineNum">     466 </span><span class="lineCov">     123786 :                 (mx.z()&gt;=a.mx.z()));</span>
+<span class="lineNum">     467 </span>            : }
+<span class="lineNum">     468 </span>            : 
+<span class="lineNum">     469 </span>            : //
+<span class="lineNum">     470 </span>            : DBVT_INLINE int         btDbvtAabbMm::Classify(const btVector3&amp; n,btScalar o,int s) const
+<span class="lineNum">     471 </span>            : {
+<span class="lineNum">     472 </span>            :         btVector3                       pi,px;
+<span class="lineNum">     473 </span>            :         switch(s)
+<span class="lineNum">     474 </span>            :         {
+<span class="lineNum">     475 </span>            :         case    (0+0+0):        px=btVector3(mi.x(),mi.y(),mi.z());
+<span class="lineNum">     476 </span>            :                 pi=btVector3(mx.x(),mx.y(),mx.z());break;
+<span class="lineNum">     477 </span>            :         case    (1+0+0):        px=btVector3(mx.x(),mi.y(),mi.z());
+<span class="lineNum">     478 </span>            :                 pi=btVector3(mi.x(),mx.y(),mx.z());break;
+<span class="lineNum">     479 </span>            :         case    (0+2+0):        px=btVector3(mi.x(),mx.y(),mi.z());
+<span class="lineNum">     480 </span>            :                 pi=btVector3(mx.x(),mi.y(),mx.z());break;
+<span class="lineNum">     481 </span>            :         case    (1+2+0):        px=btVector3(mx.x(),mx.y(),mi.z());
+<span class="lineNum">     482 </span>            :                 pi=btVector3(mi.x(),mi.y(),mx.z());break;
+<span class="lineNum">     483 </span>            :         case    (0+0+4):        px=btVector3(mi.x(),mi.y(),mx.z());
+<span class="lineNum">     484 </span>            :                 pi=btVector3(mx.x(),mx.y(),mi.z());break;
+<span class="lineNum">     485 </span>            :         case    (1+0+4):        px=btVector3(mx.x(),mi.y(),mx.z());
+<span class="lineNum">     486 </span>            :                 pi=btVector3(mi.x(),mx.y(),mi.z());break;
+<span class="lineNum">     487 </span>            :         case    (0+2+4):        px=btVector3(mi.x(),mx.y(),mx.z());
+<span class="lineNum">     488 </span>            :                 pi=btVector3(mx.x(),mi.y(),mi.z());break;
+<span class="lineNum">     489 </span>            :         case    (1+2+4):        px=btVector3(mx.x(),mx.y(),mx.z());
+<span class="lineNum">     490 </span>            :                 pi=btVector3(mi.x(),mi.y(),mi.z());break;
+<span class="lineNum">     491 </span>            :         }
+<span class="lineNum">     492 </span>            :         if((btDot(n,px)+o)&lt;0)                return(-1);
+<span class="lineNum">     493 </span>            :         if((btDot(n,pi)+o)&gt;=0)       return(+1);
+<span class="lineNum">     494 </span>            :         return(0);
+<span class="lineNum">     495 </span>            : }
+<span class="lineNum">     496 </span>            : 
+<span class="lineNum">     497 </span>            : //
+<span class="lineNum">     498 </span>            : DBVT_INLINE btScalar    btDbvtAabbMm::ProjectMinimum(const btVector3&amp; v,unsigned signs) const
+<span class="lineNum">     499 </span>            : {
+<span class="lineNum">     500 </span>            :         const btVector3*        b[]={&amp;mx,&amp;mi};
+<span class="lineNum">     501 </span>            :         const btVector3         p(      b[(signs&gt;&gt;0)&amp;1]-&gt;x(),
+<span class="lineNum">     502 </span>            :                 b[(signs&gt;&gt;1)&amp;1]-&gt;y(),
+<span class="lineNum">     503 </span>            :                 b[(signs&gt;&gt;2)&amp;1]-&gt;z());
+<span class="lineNum">     504 </span>            :         return(btDot(p,v));
+<span class="lineNum">     505 </span>            : }
+<span class="lineNum">     506 </span>            : 
+<span class="lineNum">     507 </span>            : //
+<span class="lineNum">     508 </span>            : DBVT_INLINE void                btDbvtAabbMm::AddSpan(const btVector3&amp; d,btScalar&amp; smi,btScalar&amp; smx) const
+<span class="lineNum">     509 </span>            : {
+<span class="lineNum">     510 </span>            :         for(int i=0;i&lt;3;++i)
+<span class="lineNum">     511 </span>            :         {
+<span class="lineNum">     512 </span>            :                 if(d[i]&lt;0)
+<span class="lineNum">     513 </span>            :                 { smi+=mx[i]*d[i];smx+=mi[i]*d[i]; }
+<span class="lineNum">     514 </span>            :                 else
+<span class="lineNum">     515 </span>            :                 { smi+=mi[i]*d[i];smx+=mx[i]*d[i]; }
+<span class="lineNum">     516 </span>            :         }
+<span class="lineNum">     517 </span>            : }
+<span class="lineNum">     518 </span>            : 
+<span class="lineNum">     519 </span>            : //
+<span class="lineNum">     520 </span>            : DBVT_INLINE bool                Intersect(      const btDbvtAabbMm&amp; a,
+<span class="lineNum">     521 </span>            :                                                                   const btDbvtAabbMm&amp; b)
+<span class="lineNum">     522 </span>            : {
+<span class="lineNum">     523 </span>            : #if     DBVT_INT0_IMPL == DBVT_IMPL_SSE
+<span class="lineNum">     524 </span>            :         const __m128    rt(_mm_or_ps(   _mm_cmplt_ps(_mm_load_ps(b.mx),_mm_load_ps(a.mi)),
+<span class="lineNum">     525 </span>            :                 _mm_cmplt_ps(_mm_load_ps(a.mx),_mm_load_ps(b.mi))));
+<span class="lineNum">     526 </span>            : #if defined (_WIN32)
+<span class="lineNum">     527 </span>            :         const __int32*  pu((const __int32*)&amp;rt);
+<span class="lineNum">     528 </span>            : #else
+<span class="lineNum">     529 </span>            :     const int*  pu((const int*)&amp;rt);
+<span class="lineNum">     530 </span>            : #endif
+<span class="lineNum">     531 </span>            :         return((pu[0]|pu[1]|pu[2])==0);
+<span class="lineNum">     532 </span>            : #else
+<span class="lineNum">     533 </span><span class="lineCov">    2453735 :         return( (a.mi.x()&lt;=b.mx.x())&amp;&amp;</span>
+<span class="lineNum">     534 </span><span class="lineCov">    2107673 :                 (a.mx.x()&gt;=b.mi.x())&amp;&amp;</span>
+<span class="lineNum">     535 </span><span class="lineCov">    1932791 :                 (a.mi.y()&lt;=b.mx.y())&amp;&amp;</span>
+<span class="lineNum">     536 </span><span class="lineCov">    1881128 :                 (a.mx.y()&gt;=b.mi.y())&amp;&amp;</span>
+<span class="lineNum">     537 </span><span class="lineCov">    3124275 :                 (a.mi.z()&lt;=b.mx.z())&amp;&amp;               </span>
+<span class="lineNum">     538 </span><span class="lineCov">     886030 :                 (a.mx.z()&gt;=b.mi.z()));</span>
+<span class="lineNum">     539 </span>            : #endif
+<span class="lineNum">     540 </span>            : }
+<span class="lineNum">     541 </span>            : 
+<span class="lineNum">     542 </span>            : 
+<span class="lineNum">     543 </span>            : 
+<span class="lineNum">     544 </span>            : //
+<span class="lineNum">     545 </span>            : DBVT_INLINE bool                Intersect(      const btDbvtAabbMm&amp; a,
+<span class="lineNum">     546 </span>            :                                                                   const btVector3&amp; b)
+<span class="lineNum">     547 </span>            : {
+<span class="lineNum">     548 </span>            :         return( (b.x()&gt;=a.mi.x())&amp;&amp;
+<span class="lineNum">     549 </span>            :                 (b.y()&gt;=a.mi.y())&amp;&amp;
+<span class="lineNum">     550 </span>            :                 (b.z()&gt;=a.mi.z())&amp;&amp;
+<span class="lineNum">     551 </span>            :                 (b.x()&lt;=a.mx.x())&amp;&amp;
+<span class="lineNum">     552 </span>            :                 (b.y()&lt;=a.mx.y())&amp;&amp;
+<span class="lineNum">     553 </span>            :                 (b.z()&lt;=a.mx.z()));
+<span class="lineNum">     554 </span>            : }
+<span class="lineNum">     555 </span>            : 
+<span class="lineNum">     556 </span>            : 
+<span class="lineNum">     557 </span>            : 
+<span class="lineNum">     558 </span>            : 
+<span class="lineNum">     559 </span>            : 
+<span class="lineNum">     560 </span>            : //////////////////////////////////////
+<span class="lineNum">     561 </span>            : 
+<a name="562"><span class="lineNum">     562 </span>            : </a>
+<span class="lineNum">     563 </span>            : //
+<span class="lineNum">     564 </span><span class="lineCov">     499824 : DBVT_INLINE btScalar    Proximity(      const btDbvtAabbMm&amp; a,</span>
+<span class="lineNum">     565 </span>            :                                                                   const btDbvtAabbMm&amp; b)
+<span class="lineNum">     566 </span>            : {
+<span class="lineNum">     567 </span><span class="lineCov">    1999296 :         const btVector3 d=(a.mi+a.mx)-(b.mi+b.mx);</span>
+<span class="lineNum">     568 </span><span class="lineCov">    1999296 :         return(btFabs(d.x())+btFabs(d.y())+btFabs(d.z()));</span>
+<span class="lineNum">     569 </span>            : }
+<span class="lineNum">     570 </span>            : 
+<span class="lineNum">     571 </span>            : 
+<a name="572"><span class="lineNum">     572 </span>            : </a>
+<span class="lineNum">     573 </span>            : //
+<span class="lineNum">     574 </span><span class="lineCov">     249912 : DBVT_INLINE int                 Select( const btDbvtAabbMm&amp; o,</span>
+<span class="lineNum">     575 </span>            :                                                            const btDbvtAabbMm&amp; a,
+<span class="lineNum">     576 </span>            :                                                            const btDbvtAabbMm&amp; b)
+<span class="lineNum">     577 </span>            : {
+<span class="lineNum">     578 </span>            : #if     DBVT_SELECT_IMPL == DBVT_IMPL_SSE
+<span class="lineNum">     579 </span>            :     
+<span class="lineNum">     580 </span>            : #if defined (_WIN32)
+<span class="lineNum">     581 </span>            :         static ATTRIBUTE_ALIGNED16(const unsigned __int32)      mask[]={0x7fffffff,0x7fffffff,0x7fffffff,0x7fffffff};
+<span class="lineNum">     582 </span>            : #else
+<span class="lineNum">     583 </span>            :     static ATTRIBUTE_ALIGNED16(const unsigned int)      mask[]={0x7fffffff,0x7fffffff,0x7fffffff,0x00000000 /*0x7fffffff*/};
+<span class="lineNum">     584 </span>            : #endif
+<span class="lineNum">     585 </span>            :         ///@todo: the intrinsic version is 11% slower
+<span class="lineNum">     586 </span>            : #if DBVT_USE_INTRINSIC_SSE
+<span class="lineNum">     587 </span>            : 
+<span class="lineNum">     588 </span>            :         union btSSEUnion ///NOTE: if we use more intrinsics, move btSSEUnion into the LinearMath directory
+<span class="lineNum">     589 </span>            :         {
+<span class="lineNum">     590 </span>            :            __m128               ssereg;
+<span class="lineNum">     591 </span>            :            float                floats[4];
+<span class="lineNum">     592 </span>            :            int                  ints[4];
+<span class="lineNum">     593 </span>            :         };
+<span class="lineNum">     594 </span>            : 
+<span class="lineNum">     595 </span>            :         __m128  omi(_mm_load_ps(o.mi));
+<span class="lineNum">     596 </span>            :         omi=_mm_add_ps(omi,_mm_load_ps(o.mx));
+<span class="lineNum">     597 </span>            :         __m128  ami(_mm_load_ps(a.mi));
+<span class="lineNum">     598 </span>            :         ami=_mm_add_ps(ami,_mm_load_ps(a.mx));
+<span class="lineNum">     599 </span>            :         ami=_mm_sub_ps(ami,omi);
+<span class="lineNum">     600 </span>            :         ami=_mm_and_ps(ami,_mm_load_ps((const float*)mask));
+<span class="lineNum">     601 </span>            :         __m128  bmi(_mm_load_ps(b.mi));
+<span class="lineNum">     602 </span>            :         bmi=_mm_add_ps(bmi,_mm_load_ps(b.mx));
+<span class="lineNum">     603 </span>            :         bmi=_mm_sub_ps(bmi,omi);
+<span class="lineNum">     604 </span>            :         bmi=_mm_and_ps(bmi,_mm_load_ps((const float*)mask));
+<span class="lineNum">     605 </span>            :         __m128  t0(_mm_movehl_ps(ami,ami));
+<span class="lineNum">     606 </span>            :         ami=_mm_add_ps(ami,t0);
+<span class="lineNum">     607 </span>            :         ami=_mm_add_ss(ami,_mm_shuffle_ps(ami,ami,1));
+<span class="lineNum">     608 </span>            :         __m128 t1(_mm_movehl_ps(bmi,bmi));
+<span class="lineNum">     609 </span>            :         bmi=_mm_add_ps(bmi,t1);
+<span class="lineNum">     610 </span>            :         bmi=_mm_add_ss(bmi,_mm_shuffle_ps(bmi,bmi,1));
+<span class="lineNum">     611 </span>            :         
+<span class="lineNum">     612 </span>            :         btSSEUnion tmp;
+<span class="lineNum">     613 </span>            :         tmp.ssereg = _mm_cmple_ss(bmi,ami);
+<span class="lineNum">     614 </span>            :         return tmp.ints[0]&amp;1;
+<span class="lineNum">     615 </span>            : 
+<span class="lineNum">     616 </span>            : #else
+<span class="lineNum">     617 </span>            :         ATTRIBUTE_ALIGNED16(__int32     r[1]);
+<span class="lineNum">     618 </span>            :         __asm
+<span class="lineNum">     619 </span>            :         {
+<span class="lineNum">     620 </span>            :                 mov             eax,o
+<span class="lineNum">     621 </span>            :                         mov             ecx,a
+<span class="lineNum">     622 </span>            :                         mov             edx,b
+<span class="lineNum">     623 </span>            :                         movaps  xmm0,[eax]
+<span class="lineNum">     624 </span>            :                 movaps  xmm5,mask
+<span class="lineNum">     625 </span>            :                         addps   xmm0,[eax+16]   
+<span class="lineNum">     626 </span>            :                 movaps  xmm1,[ecx]
+<span class="lineNum">     627 </span>            :                 movaps  xmm2,[edx]
+<span class="lineNum">     628 </span>            :                 addps   xmm1,[ecx+16]
+<span class="lineNum">     629 </span>            :                 addps   xmm2,[edx+16]
+<span class="lineNum">     630 </span>            :                 subps   xmm1,xmm0
+<span class="lineNum">     631 </span>            :                         subps   xmm2,xmm0
+<span class="lineNum">     632 </span>            :                         andps   xmm1,xmm5
+<span class="lineNum">     633 </span>            :                         andps   xmm2,xmm5
+<span class="lineNum">     634 </span>            :                         movhlps xmm3,xmm1
+<span class="lineNum">     635 </span>            :                         movhlps xmm4,xmm2
+<span class="lineNum">     636 </span>            :                         addps   xmm1,xmm3
+<span class="lineNum">     637 </span>            :                         addps   xmm2,xmm4
+<span class="lineNum">     638 </span>            :                         pshufd  xmm3,xmm1,1
+<span class="lineNum">     639 </span>            :                         pshufd  xmm4,xmm2,1
+<span class="lineNum">     640 </span>            :                         addss   xmm1,xmm3
+<span class="lineNum">     641 </span>            :                         addss   xmm2,xmm4
+<span class="lineNum">     642 </span>            :                         cmpless xmm2,xmm1
+<span class="lineNum">     643 </span>            :                         movss   r,xmm2
+<span class="lineNum">     644 </span>            :         }
+<span class="lineNum">     645 </span>            :         return(r[0]&amp;1);
+<span class="lineNum">     646 </span>            : #endif
+<span class="lineNum">     647 </span>            : #else
+<span class="lineNum">     648 </span><span class="lineCov">     249912 :         return(Proximity(o,a)&lt;Proximity(o,b)?0:1);</span>
+<span class="lineNum">     649 </span>            : #endif
+<span class="lineNum">     650 </span>            : }
+<a name="651"><span class="lineNum">     651 </span>            : </a>
+<span class="lineNum">     652 </span>            : //
+<span class="lineNum">     653 </span><span class="lineCov">     235334 : DBVT_INLINE void                Merge(  const btDbvtAabbMm&amp; a,</span>
+<span class="lineNum">     654 </span>            :                                                           const btDbvtAabbMm&amp; b,
+<span class="lineNum">     655 </span>            :                                                           btDbvtAabbMm&amp; r)
+<span class="lineNum">     656 </span>            : {
+<span class="lineNum">     657 </span>            : #if DBVT_MERGE_IMPL==DBVT_IMPL_SSE
+<span class="lineNum">     658 </span>            :         __m128  ami(_mm_load_ps(a.mi));
+<span class="lineNum">     659 </span>            :         __m128  amx(_mm_load_ps(a.mx));
+<span class="lineNum">     660 </span>            :         __m128  bmi(_mm_load_ps(b.mi));
+<span class="lineNum">     661 </span>            :         __m128  bmx(_mm_load_ps(b.mx));
+<span class="lineNum">     662 </span>            :         ami=_mm_min_ps(ami,bmi);
+<span class="lineNum">     663 </span>            :         amx=_mm_max_ps(amx,bmx);
+<span class="lineNum">     664 </span>            :         _mm_store_ps(r.mi,ami);
+<span class="lineNum">     665 </span>            :         _mm_store_ps(r.mx,amx);
+<span class="lineNum">     666 </span>            : #else
+<span class="lineNum">     667 </span><span class="lineCov">     941336 :         for(int i=0;i&lt;3;++i)</span>
+<span class="lineNum">     668 </span>            :         {
+<span class="lineNum">     669 </span><span class="lineCov">    2824008 :                 if(a.mi[i]&lt;b.mi[i]) r.mi[i]=a.mi[i]; else r.mi[i]=b.mi[i];</span>
+<span class="lineNum">     670 </span><span class="lineCov">    2824008 :                 if(a.mx[i]&gt;b.mx[i]) r.mx[i]=a.mx[i]; else r.mx[i]=b.mx[i];</span>
+<span class="lineNum">     671 </span>            :         }
+<span class="lineNum">     672 </span>            : #endif
+<span class="lineNum">     673 </span><span class="lineCov">     235334 : }</span>
+<span class="lineNum">     674 </span>            : 
+<span class="lineNum">     675 </span>            : //
+<span class="lineNum">     676 </span>            : DBVT_INLINE bool                NotEqual(       const btDbvtAabbMm&amp; a,
+<span class="lineNum">     677 </span>            :                                                                  const btDbvtAabbMm&amp; b)
+<span class="lineNum">     678 </span>            : {
+<span class="lineNum">     679 </span><span class="lineCov">     191645 :         return( (a.mi.x()!=b.mi.x())||</span>
+<span class="lineNum">     680 </span><span class="lineCov">     155376 :                 (a.mi.y()!=b.mi.y())||</span>
+<span class="lineNum">     681 </span><span class="lineCov">     133887 :                 (a.mi.z()!=b.mi.z())||</span>
+<span class="lineNum">     682 </span><span class="lineCov">     114308 :                 (a.mx.x()!=b.mx.x())||</span>
+<span class="lineNum">     683 </span><span class="lineCov">     194598 :                 (a.mx.y()!=b.mx.y())||</span>
+<span class="lineNum">     684 </span><span class="lineCov">      36832 :                 (a.mx.z()!=b.mx.z()));</span>
+<span class="lineNum">     685 </span>            : }
+<span class="lineNum">     686 </span>            : 
+<span class="lineNum">     687 </span>            : //
+<span class="lineNum">     688 </span>            : // Inline's
+<span class="lineNum">     689 </span>            : //
+<span class="lineNum">     690 </span>            : 
+<a name="691"><span class="lineNum">     691 </span>            : //</a>
+<span class="lineNum">     692 </span>            : DBVT_PREFIX
+<span class="lineNum">     693 </span><span class="lineNoCov">          0 : inline void             btDbvt::enumNodes(      const btDbvtNode* root,</span>
+<span class="lineNum">     694 </span>            :                                                                   DBVT_IPOLICY)
+<span class="lineNum">     695 </span>            : {
+<span class="lineNum">     696 </span>            :         DBVT_CHECKTYPE
+<span class="lineNum">     697 </span><span class="lineNoCov">          0 :                 policy.Process(root);</span>
+<span class="lineNum">     698 </span><span class="lineNoCov">          0 :         if(root-&gt;isinternal())</span>
+<span class="lineNum">     699 </span>            :         {
+<span class="lineNum">     700 </span><span class="lineNoCov">          0 :                 enumNodes(root-&gt;childs[0],policy);</span>
+<span class="lineNum">     701 </span><span class="lineNoCov">          0 :                 enumNodes(root-&gt;childs[1],policy);</span>
+<span class="lineNum">     702 </span>            :         }
+<span class="lineNum">     703 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     704 </span>            : 
+<span class="lineNum">     705 </span>            : //
+<span class="lineNum">     706 </span>            : DBVT_PREFIX
+<span class="lineNum">     707 </span>            : inline void             btDbvt::enumLeaves(     const btDbvtNode* root,
+<span class="lineNum">     708 </span>            :                                                                    DBVT_IPOLICY)
+<span class="lineNum">     709 </span>            : {
+<span class="lineNum">     710 </span>            :         DBVT_CHECKTYPE
+<span class="lineNum">     711 </span>            :                 if(root-&gt;isinternal())
+<span class="lineNum">     712 </span>            :                 {
+<span class="lineNum">     713 </span>            :                         enumLeaves(root-&gt;childs[0],policy);
+<span class="lineNum">     714 </span>            :                         enumLeaves(root-&gt;childs[1],policy);
+<span class="lineNum">     715 </span>            :                 }
+<span class="lineNum">     716 </span>            :                 else
+<span class="lineNum">     717 </span>            :                 {
+<span class="lineNum">     718 </span>            :                         policy.Process(root);
+<span class="lineNum">     719 </span>            :                 }
+<span class="lineNum">     720 </span>            : }
+<span class="lineNum">     721 </span>            : 
+<span class="lineNum">     722 </span>            : //
+<span class="lineNum">     723 </span>            : DBVT_PREFIX
+<span class="lineNum">     724 </span>            : inline void             btDbvt::collideTT(      const btDbvtNode* root0,
+<span class="lineNum">     725 </span>            :                                                                   const btDbvtNode* root1,
+<span class="lineNum">     726 </span>            :                                                                   DBVT_IPOLICY)
+<span class="lineNum">     727 </span>            : {
+<span class="lineNum">     728 </span>            :         DBVT_CHECKTYPE
+<span class="lineNum">     729 </span>            :                 if(root0&amp;&amp;root1)
+<span class="lineNum">     730 </span>            :                 {
+<span class="lineNum">     731 </span>            :                         int                                                             depth=1;
+<span class="lineNum">     732 </span>            :                         int                                                             treshold=DOUBLE_STACKSIZE-4;
+<span class="lineNum">     733 </span>            :                         btAlignedObjectArray&lt;sStkNN&gt;      stkStack;
+<span class="lineNum">     734 </span>            :                         stkStack.resize(DOUBLE_STACKSIZE);
+<span class="lineNum">     735 </span>            :                         stkStack[0]=sStkNN(root0,root1);
+<span class="lineNum">     736 </span>            :                         do      {               
+<span class="lineNum">     737 </span>            :                                 sStkNN  p=stkStack[--depth];
+<span class="lineNum">     738 </span>            :                                 if(depth&gt;treshold)
+<span class="lineNum">     739 </span>            :                                 {
+<span class="lineNum">     740 </span>            :                                         stkStack.resize(stkStack.size()*2);
+<span class="lineNum">     741 </span>            :                                         treshold=stkStack.size()-4;
+<span class="lineNum">     742 </span>            :                                 }
+<span class="lineNum">     743 </span>            :                                 if(p.a==p.b)
+<span class="lineNum">     744 </span>            :                                 {
+<span class="lineNum">     745 </span>            :                                         if(p.a-&gt;isinternal())
+<span class="lineNum">     746 </span>            :                                         {
+<span class="lineNum">     747 </span>            :                                                 stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.a-&gt;childs[0]);
+<span class="lineNum">     748 </span>            :                                                 stkStack[depth++]=sStkNN(p.a-&gt;childs[1],p.a-&gt;childs[1]);
+<span class="lineNum">     749 </span>            :                                                 stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.a-&gt;childs[1]);
+<span class="lineNum">     750 </span>            :                                         }
+<span class="lineNum">     751 </span>            :                                 }
+<span class="lineNum">     752 </span>            :                                 else if(Intersect(p.a-&gt;volume,p.b-&gt;volume))
+<span class="lineNum">     753 </span>            :                                 {
+<span class="lineNum">     754 </span>            :                                         if(p.a-&gt;isinternal())
+<span class="lineNum">     755 </span>            :                                         {
+<span class="lineNum">     756 </span>            :                                                 if(p.b-&gt;isinternal())
+<span class="lineNum">     757 </span>            :                                                 {
+<span class="lineNum">     758 </span>            :                                                         stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.b-&gt;childs[0]);
+<span class="lineNum">     759 </span>            :                                                         stkStack[depth++]=sStkNN(p.a-&gt;childs[1],p.b-&gt;childs[0]);
+<span class="lineNum">     760 </span>            :                                                         stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.b-&gt;childs[1]);
+<span class="lineNum">     761 </span>            :                                                         stkStack[depth++]=sStkNN(p.a-&gt;childs[1],p.b-&gt;childs[1]);
+<span class="lineNum">     762 </span>            :                                                 }
+<span class="lineNum">     763 </span>            :                                                 else
+<span class="lineNum">     764 </span>            :                                                 {
+<span class="lineNum">     765 </span>            :                                                         stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.b);
+<span class="lineNum">     766 </span>            :                                                         stkStack[depth++]=sStkNN(p.a-&gt;childs[1],p.b);
+<span class="lineNum">     767 </span>            :                                                 }
+<span class="lineNum">     768 </span>            :                                         }
+<span class="lineNum">     769 </span>            :                                         else
+<span class="lineNum">     770 </span>            :                                         {
+<span class="lineNum">     771 </span>            :                                                 if(p.b-&gt;isinternal())
+<span class="lineNum">     772 </span>            :                                                 {
+<span class="lineNum">     773 </span>            :                                                         stkStack[depth++]=sStkNN(p.a,p.b-&gt;childs[0]);
+<span class="lineNum">     774 </span>            :                                                         stkStack[depth++]=sStkNN(p.a,p.b-&gt;childs[1]);
+<span class="lineNum">     775 </span>            :                                                 }
+<span class="lineNum">     776 </span>            :                                                 else
+<span class="lineNum">     777 </span>            :                                                 {
+<span class="lineNum">     778 </span>            :                                                         policy.Process(p.a,p.b);
+<span class="lineNum">     779 </span>            :                                                 }
+<span class="lineNum">     780 </span>            :                                         }
+<span class="lineNum">     781 </span>            :                                 }
+<span class="lineNum">     782 </span>            :                         } while(depth);
+<span class="lineNum">     783 </span>            :                 }
+<span class="lineNum">     784 </span>            : }
+<span class="lineNum">     785 </span>            : 
+<span class="lineNum">     786 </span>            : 
+<a name="787"><span class="lineNum">     787 </span>            : </a>
+<span class="lineNum">     788 </span>            : DBVT_PREFIX
+<span class="lineNum">     789 </span><span class="lineCov">      70968 : inline void             btDbvt::collideTTpersistentStack(       const btDbvtNode* root0,</span>
+<span class="lineNum">     790 </span>            :                                                                   const btDbvtNode* root1,
+<span class="lineNum">     791 </span>            :                                                                   DBVT_IPOLICY)
+<span class="lineNum">     792 </span>            : {
+<span class="lineNum">     793 </span>            :         DBVT_CHECKTYPE
+<span class="lineNum">     794 </span><span class="lineCov">      70968 :                 if(root0&amp;&amp;root1)</span>
+<span class="lineNum">     795 </span>            :                 {
+<span class="lineNum">     796 </span><span class="lineCov">      35484 :                         int                                                             depth=1;</span>
+<span class="lineNum">     797 </span><span class="lineCov">      35484 :                         int                                                             treshold=DOUBLE_STACKSIZE-4;</span>
+<span class="lineNum">     798 </span>            :                         
+<span class="lineNum">     799 </span><span class="lineCov">      70968 :                         m_stkStack.resize(DOUBLE_STACKSIZE);</span>
+<span class="lineNum">     800 </span><span class="lineCov">      35484 :                         m_stkStack[0]=sStkNN(root0,root1);</span>
+<span class="lineNum">     801 </span>            :                         do      {               
+<span class="lineNum">     802 </span><span class="lineCov">    2278136 :                                 sStkNN  p=m_stkStack[--depth];</span>
+<span class="lineNum">     803 </span><span class="lineCov">    1139068 :                                 if(depth&gt;treshold)</span>
+<span class="lineNum">     804 </span>            :                                 {
+<span class="lineNum">     805 </span><span class="lineNoCov">          0 :                                         m_stkStack.resize(m_stkStack.size()*2);</span>
+<span class="lineNum">     806 </span><span class="lineNoCov">          0 :                                         treshold=m_stkStack.size()-4;</span>
+<span class="lineNum">     807 </span>            :                                 }
+<span class="lineNum">     808 </span><span class="lineCov">    1139068 :                                 if(p.a==p.b)</span>
+<span class="lineNum">     809 </span>            :                                 {
+<span class="lineNum">     810 </span><span class="lineCov">      70968 :                                         if(p.a-&gt;isinternal())</span>
+<span class="lineNum">     811 </span>            :                                         {
+<span class="lineNum">     812 </span><span class="lineNoCov">          0 :                                                 m_stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.a-&gt;childs[0]);</span>
+<span class="lineNum">     813 </span><span class="lineNoCov">          0 :                                                 m_stkStack[depth++]=sStkNN(p.a-&gt;childs[1],p.a-&gt;childs[1]);</span>
+<span class="lineNum">     814 </span><span class="lineNoCov">          0 :                                                 m_stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.a-&gt;childs[1]);</span>
+<span class="lineNum">     815 </span>            :                                         }
+<span class="lineNum">     816 </span>            :                                 }
+<span class="lineNum">     817 </span><span class="lineCov">    1743852 :                                 else if(Intersect(p.a-&gt;volume,p.b-&gt;volume))</span>
+<span class="lineNum">     818 </span>            :                                 {
+<span class="lineNum">     819 </span><span class="lineCov">    1280536 :                                         if(p.a-&gt;isinternal())</span>
+<span class="lineNum">     820 </span>            :                                         {
+<span class="lineNum">     821 </span><span class="lineCov">    1103584 :                                                 if(p.b-&gt;isinternal())</span>
+<span class="lineNum">     822 </span>            :                                                 {
+<span class="lineNum">     823 </span><span class="lineNoCov">          0 :                                                         m_stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.b-&gt;childs[0]);</span>
+<span class="lineNum">     824 </span><span class="lineNoCov">          0 :                                                         m_stkStack[depth++]=sStkNN(p.a-&gt;childs[1],p.b-&gt;childs[0]);</span>
+<span class="lineNum">     825 </span><span class="lineNoCov">          0 :                                                         m_stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.b-&gt;childs[1]);</span>
+<span class="lineNum">     826 </span><span class="lineNoCov">          0 :                                                         m_stkStack[depth++]=sStkNN(p.a-&gt;childs[1],p.b-&gt;childs[1]);</span>
+<span class="lineNum">     827 </span>            :                                                 }
+<span class="lineNum">     828 </span>            :                                                 else
+<span class="lineNum">     829 </span>            :                                                 {
+<span class="lineNum">     830 </span><span class="lineCov">    1103584 :                                                         m_stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.b);</span>
+<span class="lineNum">     831 </span><span class="lineCov">    1103584 :                                                         m_stkStack[depth++]=sStkNN(p.a-&gt;childs[1],p.b);</span>
+<span class="lineNum">     832 </span>            :                                                 }
+<span class="lineNum">     833 </span>            :                                         }
+<span class="lineNum">     834 </span>            :                                         else
+<span class="lineNum">     835 </span>            :                                         {
+<span class="lineNum">     836 </span><span class="lineCov">     176952 :                                                 if(p.b-&gt;isinternal())</span>
+<span class="lineNum">     837 </span>            :                                                 {
+<span class="lineNum">     838 </span><span class="lineNoCov">          0 :                                                         m_stkStack[depth++]=sStkNN(p.a,p.b-&gt;childs[0]);</span>
+<span class="lineNum">     839 </span><span class="lineNoCov">          0 :                                                         m_stkStack[depth++]=sStkNN(p.a,p.b-&gt;childs[1]);</span>
+<span class="lineNum">     840 </span>            :                                                 }
+<span class="lineNum">     841 </span>            :                                                 else
+<span class="lineNum">     842 </span>            :                                                 {
+<span class="lineNum">     843 </span><span class="lineCov">      88476 :                                                         policy.Process(p.a,p.b);</span>
+<span class="lineNum">     844 </span>            :                                                 }
+<span class="lineNum">     845 </span>            :                                         }
+<span class="lineNum">     846 </span>            :                                 }
+<span class="lineNum">     847 </span><span class="lineCov">    1139068 :                         } while(depth);</span>
+<span class="lineNum">     848 </span>            :                 }
+<span class="lineNum">     849 </span><span class="lineCov">      70968 : }</span>
+<span class="lineNum">     850 </span>            : 
+<span class="lineNum">     851 </span>            : #if 0
+<span class="lineNum">     852 </span>            : //
+<span class="lineNum">     853 </span>            : DBVT_PREFIX
+<span class="lineNum">     854 </span>            : inline void             btDbvt::collideTT(      const btDbvtNode* root0,
+<span class="lineNum">     855 </span>            :                                                                   const btDbvtNode* root1,
+<span class="lineNum">     856 </span>            :                                                                   const btTransform&amp; xform,
+<span class="lineNum">     857 </span>            :                                                                   DBVT_IPOLICY)
+<span class="lineNum">     858 </span>            : {
+<span class="lineNum">     859 </span>            :         DBVT_CHECKTYPE
+<span class="lineNum">     860 </span>            :                 if(root0&amp;&amp;root1)
+<span class="lineNum">     861 </span>            :                 {
+<span class="lineNum">     862 </span>            :                         int                                                             depth=1;
+<span class="lineNum">     863 </span>            :                         int                                                             treshold=DOUBLE_STACKSIZE-4;
+<span class="lineNum">     864 </span>            :                         btAlignedObjectArray&lt;sStkNN&gt;      stkStack;
+<span class="lineNum">     865 </span>            :                         stkStack.resize(DOUBLE_STACKSIZE);
+<span class="lineNum">     866 </span>            :                         stkStack[0]=sStkNN(root0,root1);
+<span class="lineNum">     867 </span>            :                         do      {
+<span class="lineNum">     868 </span>            :                                 sStkNN  p=stkStack[--depth];
+<span class="lineNum">     869 </span>            :                                 if(Intersect(p.a-&gt;volume,p.b-&gt;volume,xform))
+<span class="lineNum">     870 </span>            :                                 {
+<span class="lineNum">     871 </span>            :                                         if(depth&gt;treshold)
+<span class="lineNum">     872 </span>            :                                         {
+<span class="lineNum">     873 </span>            :                                                 stkStack.resize(stkStack.size()*2);
+<span class="lineNum">     874 </span>            :                                                 treshold=stkStack.size()-4;
+<span class="lineNum">     875 </span>            :                                         }
+<span class="lineNum">     876 </span>            :                                         if(p.a-&gt;isinternal())
+<span class="lineNum">     877 </span>            :                                         {
+<span class="lineNum">     878 </span>            :                                                 if(p.b-&gt;isinternal())
+<span class="lineNum">     879 </span>            :                                                 {                                       
+<span class="lineNum">     880 </span>            :                                                         stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.b-&gt;childs[0]);
+<span class="lineNum">     881 </span>            :                                                         stkStack[depth++]=sStkNN(p.a-&gt;childs[1],p.b-&gt;childs[0]);
+<span class="lineNum">     882 </span>            :                                                         stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.b-&gt;childs[1]);
+<span class="lineNum">     883 </span>            :                                                         stkStack[depth++]=sStkNN(p.a-&gt;childs[1],p.b-&gt;childs[1]);
+<span class="lineNum">     884 </span>            :                                                 }
+<span class="lineNum">     885 </span>            :                                                 else
+<span class="lineNum">     886 </span>            :                                                 {
+<span class="lineNum">     887 </span>            :                                                         stkStack[depth++]=sStkNN(p.a-&gt;childs[0],p.b);
+<span class="lineNum">     888 </span>            :                                                         stkStack[depth++]=sStkNN(p.a-&gt;childs[1],p.b);
+<span class="lineNum">     889 </span>            :                                                 }
+<span class="lineNum">     890 </span>            :                                         }
+<span class="lineNum">     891 </span>            :                                         else
+<span class="lineNum">     892 </span>            :                                         {
+<span class="lineNum">     893 </span>            :                                                 if(p.b-&gt;isinternal())
+<span class="lineNum">     894 </span>            :                                                 {
+<span class="lineNum">     895 </span>            :                                                         stkStack[depth++]=sStkNN(p.a,p.b-&gt;childs[0]);
+<span class="lineNum">     896 </span>            :                                                         stkStack[depth++]=sStkNN(p.a,p.b-&gt;childs[1]);
+<span class="lineNum">     897 </span>            :                                                 }
+<span class="lineNum">     898 </span>            :                                                 else
+<span class="lineNum">     899 </span>            :                                                 {
+<span class="lineNum">     900 </span>            :                                                         policy.Process(p.a,p.b);
+<span class="lineNum">     901 </span>            :                                                 }
+<span class="lineNum">     902 </span>            :                                         }
+<span class="lineNum">     903 </span>            :                                 }
+<span class="lineNum">     904 </span>            :                         } while(depth);
+<span class="lineNum">     905 </span>            :                 }
+<span class="lineNum">     906 </span>            : }
+<span class="lineNum">     907 </span>            : //
+<span class="lineNum">     908 </span>            : DBVT_PREFIX
+<span class="lineNum">     909 </span>            : inline void             btDbvt::collideTT(      const btDbvtNode* root0,
+<span class="lineNum">     910 </span>            :                                                                   const btTransform&amp; xform0,
+<span class="lineNum">     911 </span>            :                                                                   const btDbvtNode* root1,
+<span class="lineNum">     912 </span>            :                                                                   const btTransform&amp; xform1,
+<span class="lineNum">     913 </span>            :                                                                   DBVT_IPOLICY)
+<span class="lineNum">     914 </span>            : {
+<span class="lineNum">     915 </span>            :         const btTransform       xform=xform0.inverse()*xform1;
+<span class="lineNum">     916 </span>            :         collideTT(root0,root1,xform,policy);
+<span class="lineNum">     917 </span>            : }
+<span class="lineNum">     918 </span>            : #endif 
+<span class="lineNum">     919 </span>            : 
+<a name="920"><span class="lineNum">     920 </span>            : //</a>
+<span class="lineNum">     921 </span>            : DBVT_PREFIX
+<span class="lineNum">     922 </span><span class="lineCov">        202 : inline void             btDbvt::collideTV(      const btDbvtNode* root,</span>
+<span class="lineNum">     923 </span>            :                                                                   const btDbvtVolume&amp; vol,
+<span class="lineNum">     924 </span>            :                                                                   DBVT_IPOLICY) const
+<span class="lineNum">     925 </span>            : {
+<span class="lineNum">     926 </span>            :         DBVT_CHECKTYPE
+<span class="lineNum">     927 </span><span class="lineCov">        202 :                 if(root)</span>
+<span class="lineNum">     928 </span>            :                 {
+<span class="lineNum">     929 </span><span class="lineCov">        101 :                         ATTRIBUTE_ALIGNED16(btDbvtVolume)               volume(vol);</span>
+<span class="lineNum">     930 </span><span class="lineCov">        202 :                         btAlignedObjectArray&lt;const btDbvtNode*&gt;   stack;</span>
+<span class="lineNum">     931 </span><span class="lineCov">        101 :                         stack.resize(0);</span>
+<span class="lineNum">     932 </span><span class="lineCov">        101 :                         stack.reserve(SIMPLE_STACKSIZE);</span>
+<span class="lineNum">     933 </span><span class="lineCov">        101 :                         stack.push_back(root);</span>
+<span class="lineNum">     934 </span>            :                         do      {
+<span class="lineNum">     935 </span><span class="lineCov">       5774 :                                 const btDbvtNode*       n=stack[stack.size()-1];</span>
+<span class="lineNum">     936 </span><span class="lineCov">       2887 :                                 stack.pop_back();</span>
+<span class="lineNum">     937 </span><span class="lineCov">       4731 :                                 if(Intersect(n-&gt;volume,volume))</span>
+<span class="lineNum">     938 </span>            :                                 {
+<span class="lineNum">     939 </span><span class="lineCov">       1844 :                                         if(n-&gt;isinternal())</span>
+<span class="lineNum">     940 </span>            :                                         {
+<span class="lineNum">     941 </span><span class="lineCov">       1393 :                                                 stack.push_back(n-&gt;childs[0]);</span>
+<span class="lineNum">     942 </span><span class="lineCov">       1393 :                                                 stack.push_back(n-&gt;childs[1]);</span>
+<span class="lineNum">     943 </span>            :                                         }
+<span class="lineNum">     944 </span>            :                                         else
+<span class="lineNum">     945 </span>            :                                         {
+<span class="lineNum">     946 </span><span class="lineCov">        451 :                                                 policy.Process(n);</span>
+<span class="lineNum">     947 </span>            :                                         }
+<span class="lineNum">     948 </span>            :                                 }
+<span class="lineNum">     949 </span><span class="lineCov">       2887 :                         } while(stack.size()&gt;0);</span>
+<span class="lineNum">     950 </span>            :                 }
+<span class="lineNum">     951 </span><span class="lineCov">        202 : }</span>
+<a name="952"><span class="lineNum">     952 </span>            : </a>
+<span class="lineNum">     953 </span>            : DBVT_PREFIX
+<span class="lineNum">     954 </span><span class="lineCov">          6 : inline void             btDbvt::rayTestInternal(        const btDbvtNode* root,</span>
+<span class="lineNum">     955 </span>            :                                                                 const btVector3&amp; rayFrom,
+<span class="lineNum">     956 </span>            :                                                                 const btVector3&amp; rayTo,
+<span class="lineNum">     957 </span>            :                                                                 const btVector3&amp; rayDirectionInverse,
+<span class="lineNum">     958 </span>            :                                                                 unsigned int signs[3],
+<span class="lineNum">     959 </span>            :                                                                 btScalar lambda_max,
+<span class="lineNum">     960 </span>            :                                                                 const btVector3&amp; aabbMin,
+<span class="lineNum">     961 </span>            :                                                                 const btVector3&amp; aabbMax,
+<span class="lineNum">     962 </span>            :                                                                 DBVT_IPOLICY) const
+<span class="lineNum">     963 </span>            : {
+<span class="lineNum">     964 </span>            :         (void) rayTo;
+<span class="lineNum">     965 </span>            :         DBVT_CHECKTYPE
+<span class="lineNum">     966 </span><span class="lineCov">          6 :         if(root)</span>
+<span class="lineNum">     967 </span>            :         {
+<span class="lineNum">     968 </span><span class="lineCov">          3 :                 btVector3 resultNormal;</span>
+<span class="lineNum">     969 </span>            : 
+<span class="lineNum">     970 </span><span class="lineCov">          3 :                 int                                                             depth=1;</span>
+<span class="lineNum">     971 </span><span class="lineCov">          3 :                 int                                                             treshold=DOUBLE_STACKSIZE-2;</span>
+<span class="lineNum">     972 </span><span class="lineCov">          3 :                 btAlignedObjectArray&lt;const btDbvtNode*&gt;&amp;      stack = m_rayTestStack;</span>
+<span class="lineNum">     973 </span><span class="lineCov">          3 :                 stack.resize(DOUBLE_STACKSIZE);</span>
+<span class="lineNum">     974 </span><span class="lineCov">          3 :                 stack[0]=root;</span>
+<span class="lineNum">     975 </span>            :                 btVector3 bounds[2];
+<span class="lineNum">     976 </span>            :                 do      
+<span class="lineNum">     977 </span>            :                 {
+<span class="lineNum">     978 </span><span class="lineCov">        102 :                         const btDbvtNode*       node=stack[--depth];</span>
+<span class="lineNum">     979 </span><span class="lineCov">        102 :                         bounds[0] = node-&gt;volume.Mins()-aabbMax;</span>
+<span class="lineNum">     980 </span><span class="lineCov">        102 :                         bounds[1] = node-&gt;volume.Maxs()-aabbMin;</span>
+<span class="lineNum">     981 </span><span class="lineCov">         51 :                         btScalar tmin=1.f,lambda_min=0.f;</span>
+<span class="lineNum">     982 </span><span class="lineCov">         51 :                         unsigned int result1=false;</span>
+<span class="lineNum">     983 </span><span class="lineCov">         51 :                         result1 = btRayAabb2(rayFrom,rayDirectionInverse,signs,bounds,tmin,lambda_min,lambda_max);</span>
+<span class="lineNum">     984 </span><span class="lineCov">         51 :                         if(result1)</span>
+<span class="lineNum">     985 </span>            :                         {
+<span class="lineNum">     986 </span><span class="lineCov">         30 :                                 if(node-&gt;isinternal())</span>
+<span class="lineNum">     987 </span>            :                                 {
+<span class="lineNum">     988 </span><span class="lineCov">         24 :                                         if(depth&gt;treshold)</span>
+<span class="lineNum">     989 </span>            :                                         {
+<span class="lineNum">     990 </span><span class="lineNoCov">          0 :                                                 stack.resize(stack.size()*2);</span>
+<span class="lineNum">     991 </span><span class="lineNoCov">          0 :                                                 treshold=stack.size()-2;</span>
+<span class="lineNum">     992 </span>            :                                         }
+<span class="lineNum">     993 </span><span class="lineCov">         48 :                                         stack[depth++]=node-&gt;childs[0];</span>
+<span class="lineNum">     994 </span><span class="lineCov">         48 :                                         stack[depth++]=node-&gt;childs[1];</span>
+<span class="lineNum">     995 </span>            :                                 }
+<span class="lineNum">     996 </span>            :                                 else
+<span class="lineNum">     997 </span>            :                                 {
+<span class="lineNum">     998 </span><span class="lineCov">          6 :                                         policy.Process(node);</span>
+<span class="lineNum">     999 </span>            :                                 }
+<span class="lineNum">    1000 </span>            :                         }
+<span class="lineNum">    1001 </span><span class="lineCov">         51 :                 } while(depth);</span>
+<span class="lineNum">    1002 </span>            :         }
+<span class="lineNum">    1003 </span><span class="lineCov">          6 : }</span>
+<span class="lineNum">    1004 </span>            : 
+<a name="1005"><span class="lineNum">    1005 </span>            : //</a>
+<span class="lineNum">    1006 </span>            : DBVT_PREFIX
+<span class="lineNum">    1007 </span><span class="lineNoCov">          0 : inline void             btDbvt::rayTest(        const btDbvtNode* root,</span>
+<span class="lineNum">    1008 </span>            :                                                                 const btVector3&amp; rayFrom,
+<span class="lineNum">    1009 </span>            :                                                                 const btVector3&amp; rayTo,
+<span class="lineNum">    1010 </span>            :                                                                 DBVT_IPOLICY)
+<span class="lineNum">    1011 </span>            : {
+<span class="lineNum">    1012 </span>            :         DBVT_CHECKTYPE
+<span class="lineNum">    1013 </span><span class="lineNoCov">          0 :                 if(root)</span>
+<span class="lineNum">    1014 </span>            :                 {
+<span class="lineNum">    1015 </span><span class="lineNoCov">          0 :                         btVector3 rayDir = (rayTo-rayFrom);</span>
+<span class="lineNum">    1016 </span><span class="lineNoCov">          0 :                         rayDir.normalize ();</span>
+<span class="lineNum">    1017 </span>            : 
+<span class="lineNum">    1018 </span>            :                         ///what about division by zero? --&gt; just set rayDirection[i] to INF/BT_LARGE_FLOAT
+<span class="lineNum">    1019 </span><span class="lineNoCov">          0 :                         btVector3 rayDirectionInverse;</span>
+<span class="lineNum">    1020 </span><span class="lineNoCov">          0 :                         rayDirectionInverse[0] = rayDir[0] == btScalar(0.0) ? btScalar(BT_LARGE_FLOAT) : btScalar(1.0) / rayDir[0];</span>
+<span class="lineNum">    1021 </span><span class="lineNoCov">          0 :                         rayDirectionInverse[1] = rayDir[1] == btScalar(0.0) ? btScalar(BT_LARGE_FLOAT) : btScalar(1.0) / rayDir[1];</span>
+<span class="lineNum">    1022 </span><span class="lineNoCov">          0 :                         rayDirectionInverse[2] = rayDir[2] == btScalar(0.0) ? btScalar(BT_LARGE_FLOAT) : btScalar(1.0) / rayDir[2];</span>
+<span class="lineNum">    1023 </span><span class="lineNoCov">          0 :                         unsigned int signs[3] = { rayDirectionInverse[0] &lt; 0.0, rayDirectionInverse[1] &lt; 0.0, rayDirectionInverse[2] &lt; 0.0};</span>
+<span class="lineNum">    1024 </span>            : 
+<span class="lineNum">    1025 </span><span class="lineNoCov">          0 :                         btScalar lambda_max = rayDir.dot(rayTo-rayFrom);</span>
+<span class="lineNum">    1026 </span>            : 
+<span class="lineNum">    1027 </span><span class="lineNoCov">          0 :                         btVector3 resultNormal;</span>
+<span class="lineNum">    1028 </span>            : 
+<span class="lineNum">    1029 </span><span class="lineNoCov">          0 :                         btAlignedObjectArray&lt;const btDbvtNode*&gt;   stack;</span>
+<span class="lineNum">    1030 </span>            : 
+<span class="lineNum">    1031 </span><span class="lineNoCov">          0 :                         int                                                             depth=1;</span>
+<span class="lineNum">    1032 </span><span class="lineNoCov">          0 :                         int                                                             treshold=DOUBLE_STACKSIZE-2;</span>
+<span class="lineNum">    1033 </span>            : 
+<span class="lineNum">    1034 </span><span class="lineNoCov">          0 :                         stack.resize(DOUBLE_STACKSIZE);</span>
+<span class="lineNum">    1035 </span><span class="lineNoCov">          0 :                         stack[0]=root;</span>
+<span class="lineNum">    1036 </span>            :                         btVector3 bounds[2];
+<span class="lineNum">    1037 </span>            :                         do      {
+<span class="lineNum">    1038 </span><span class="lineNoCov">          0 :                                 const btDbvtNode*       node=stack[--depth];</span>
+<span class="lineNum">    1039 </span>            : 
+<span class="lineNum">    1040 </span><span class="lineNoCov">          0 :                                 bounds[0] = node-&gt;volume.Mins();</span>
+<span class="lineNum">    1041 </span><span class="lineNoCov">          0 :                                 bounds[1] = node-&gt;volume.Maxs();</span>
+<span class="lineNum">    1042 </span>            :                                 
+<span class="lineNum">    1043 </span><span class="lineNoCov">          0 :                                 btScalar tmin=1.f,lambda_min=0.f;</span>
+<span class="lineNum">    1044 </span><span class="lineNoCov">          0 :                                 unsigned int result1 = btRayAabb2(rayFrom,rayDirectionInverse,signs,bounds,tmin,lambda_min,lambda_max);</span>
+<span class="lineNum">    1045 </span>            : 
+<span class="lineNum">    1046 </span>            : #ifdef COMPARE_BTRAY_AABB2
+<span class="lineNum">    1047 </span>            :                                 btScalar param=1.f;
+<span class="lineNum">    1048 </span>            :                                 bool result2 = btRayAabb(rayFrom,rayTo,node-&gt;volume.Mins(),node-&gt;volume.Maxs(),param,resultNormal);
+<span class="lineNum">    1049 </span>            :                                 btAssert(result1 == result2);
+<span class="lineNum">    1050 </span>            : #endif //TEST_BTRAY_AABB2
+<span class="lineNum">    1051 </span>            : 
+<span class="lineNum">    1052 </span><span class="lineNoCov">          0 :                                 if(result1)</span>
+<span class="lineNum">    1053 </span>            :                                 {
+<span class="lineNum">    1054 </span><span class="lineNoCov">          0 :                                         if(node-&gt;isinternal())</span>
+<span class="lineNum">    1055 </span>            :                                         {
+<span class="lineNum">    1056 </span><span class="lineNoCov">          0 :                                                 if(depth&gt;treshold)</span>
+<span class="lineNum">    1057 </span>            :                                                 {
+<span class="lineNum">    1058 </span><span class="lineNoCov">          0 :                                                         stack.resize(stack.size()*2);</span>
+<span class="lineNum">    1059 </span><span class="lineNoCov">          0 :                                                         treshold=stack.size()-2;</span>
+<span class="lineNum">    1060 </span>            :                                                 }
+<span class="lineNum">    1061 </span><span class="lineNoCov">          0 :                                                 stack[depth++]=node-&gt;childs[0];</span>
+<span class="lineNum">    1062 </span><span class="lineNoCov">          0 :                                                 stack[depth++]=node-&gt;childs[1];</span>
+<span class="lineNum">    1063 </span>            :                                         }
+<span class="lineNum">    1064 </span>            :                                         else
+<span class="lineNum">    1065 </span>            :                                         {
+<span class="lineNum">    1066 </span><span class="lineNoCov">          0 :                                                 policy.Process(node);</span>
+<span class="lineNum">    1067 </span>            :                                         }
+<span class="lineNum">    1068 </span>            :                                 }
+<span class="lineNum">    1069 </span><span class="lineNoCov">          0 :                         } while(depth);</span>
+<span class="lineNum">    1070 </span>            : 
+<span class="lineNum">    1071 </span>            :                 }
+<span class="lineNum">    1072 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">    1073 </span>            : 
+<span class="lineNum">    1074 </span>            : //
+<span class="lineNum">    1075 </span>            : DBVT_PREFIX
+<span class="lineNum">    1076 </span>            : inline void             btDbvt::collideKDOP(const btDbvtNode* root,
+<span class="lineNum">    1077 </span>            :                                                                         const btVector3* normals,
+<span class="lineNum">    1078 </span>            :                                                                         const btScalar* offsets,
+<span class="lineNum">    1079 </span>            :                                                                         int count,
+<span class="lineNum">    1080 </span>            :                                                                         DBVT_IPOLICY)
+<span class="lineNum">    1081 </span>            : {
+<span class="lineNum">    1082 </span>            :         DBVT_CHECKTYPE
+<span class="lineNum">    1083 </span>            :                 if(root)
+<span class="lineNum">    1084 </span>            :                 {
+<span class="lineNum">    1085 </span>            :                         const int                                               inside=(1&lt;&lt;count)-1;
+<span class="lineNum">    1086 </span>            :                         btAlignedObjectArray&lt;sStkNP&gt;      stack;
+<span class="lineNum">    1087 </span>            :                         int                                                             signs[sizeof(unsigned)*8];
+<span class="lineNum">    1088 </span>            :                         btAssert(count&lt;int (sizeof(signs)/sizeof(signs[0])));
+<span class="lineNum">    1089 </span>            :                         for(int i=0;i&lt;count;++i)
+<span class="lineNum">    1090 </span>            :                         {
+<span class="lineNum">    1091 </span>            :                                 signs[i]=       ((normals[i].x()&gt;=0)?1:0)+
+<span class="lineNum">    1092 </span>            :                                         ((normals[i].y()&gt;=0)?2:0)+
+<span class="lineNum">    1093 </span>            :                                         ((normals[i].z()&gt;=0)?4:0);
+<span class="lineNum">    1094 </span>            :                         }
+<span class="lineNum">    1095 </span>            :                         stack.reserve(SIMPLE_STACKSIZE);
+<span class="lineNum">    1096 </span>            :                         stack.push_back(sStkNP(root,0));
+<span class="lineNum">    1097 </span>            :                         do      {
+<span class="lineNum">    1098 </span>            :                                 sStkNP  se=stack[stack.size()-1];
+<span class="lineNum">    1099 </span>            :                                 bool    out=false;
+<span class="lineNum">    1100 </span>            :                                 stack.pop_back();
+<span class="lineNum">    1101 </span>            :                                 for(int i=0,j=1;(!out)&amp;&amp;(i&lt;count);++i,j&lt;&lt;=1)
+<span class="lineNum">    1102 </span>            :                                 {
+<span class="lineNum">    1103 </span>            :                                         if(0==(se.mask&amp;j))
+<span class="lineNum">    1104 </span>            :                                         {
+<span class="lineNum">    1105 </span>            :                                                 const int       side=se.node-&gt;volume.Classify(normals[i],offsets[i],signs[i]);
+<span class="lineNum">    1106 </span>            :                                                 switch(side)
+<span class="lineNum">    1107 </span>            :                                                 {
+<span class="lineNum">    1108 </span>            :                                                 case    -1:     out=true;break;
+<span class="lineNum">    1109 </span>            :                                                 case    +1:     se.mask|=j;break;
+<span class="lineNum">    1110 </span>            :                                                 }
+<span class="lineNum">    1111 </span>            :                                         }
+<span class="lineNum">    1112 </span>            :                                 }
+<span class="lineNum">    1113 </span>            :                                 if(!out)
+<span class="lineNum">    1114 </span>            :                                 {
+<span class="lineNum">    1115 </span>            :                                         if((se.mask!=inside)&amp;&amp;(se.node-&gt;isinternal()))
+<span class="lineNum">    1116 </span>            :                                         {
+<span class="lineNum">    1117 </span>            :                                                 stack.push_back(sStkNP(se.node-&gt;childs[0],se.mask));
+<span class="lineNum">    1118 </span>            :                                                 stack.push_back(sStkNP(se.node-&gt;childs[1],se.mask));
+<span class="lineNum">    1119 </span>            :                                         }
+<span class="lineNum">    1120 </span>            :                                         else
+<span class="lineNum">    1121 </span>            :                                         {
+<span class="lineNum">    1122 </span>            :                                                 if(policy.AllLeaves(se.node)) enumLeaves(se.node,policy);
+<span class="lineNum">    1123 </span>            :                                         }
+<span class="lineNum">    1124 </span>            :                                 }
+<span class="lineNum">    1125 </span>            :                         } while(stack.size());
+<span class="lineNum">    1126 </span>            :                 }
+<span class="lineNum">    1127 </span>            : }
+<span class="lineNum">    1128 </span>            : 
+<span class="lineNum">    1129 </span>            : //
+<span class="lineNum">    1130 </span>            : DBVT_PREFIX
+<span class="lineNum">    1131 </span>            : inline void             btDbvt::collideOCL(     const btDbvtNode* root,
+<span class="lineNum">    1132 </span>            :                                                                    const btVector3* normals,
+<span class="lineNum">    1133 </span>            :                                                                    const btScalar* offsets,
+<span class="lineNum">    1134 </span>            :                                                                    const btVector3&amp; sortaxis,
+<span class="lineNum">    1135 </span>            :                                                                    int count,
+<span class="lineNum">    1136 </span>            :                                                                    DBVT_IPOLICY,
+<span class="lineNum">    1137 </span>            :                                                                    bool fsort)
+<span class="lineNum">    1138 </span>            : {
+<span class="lineNum">    1139 </span>            :         DBVT_CHECKTYPE
+<span class="lineNum">    1140 </span>            :                 if(root)
+<span class="lineNum">    1141 </span>            :                 {
+<span class="lineNum">    1142 </span>            :                         const unsigned                                  srtsgns=(sortaxis[0]&gt;=0?1:0)+
+<span class="lineNum">    1143 </span>            :                                 (sortaxis[1]&gt;=0?2:0)+
+<span class="lineNum">    1144 </span>            :                                 (sortaxis[2]&gt;=0?4:0);
+<span class="lineNum">    1145 </span>            :                         const int                                               inside=(1&lt;&lt;count)-1;
+<span class="lineNum">    1146 </span>            :                         btAlignedObjectArray&lt;sStkNPS&gt;     stock;
+<span class="lineNum">    1147 </span>            :                         btAlignedObjectArray&lt;int&gt;         ifree;
+<span class="lineNum">    1148 </span>            :                         btAlignedObjectArray&lt;int&gt;         stack;
+<span class="lineNum">    1149 </span>            :                         int                                                             signs[sizeof(unsigned)*8];
+<span class="lineNum">    1150 </span>            :                         btAssert(count&lt;int (sizeof(signs)/sizeof(signs[0])));
+<span class="lineNum">    1151 </span>            :                         for(int i=0;i&lt;count;++i)
+<span class="lineNum">    1152 </span>            :                         {
+<span class="lineNum">    1153 </span>            :                                 signs[i]=       ((normals[i].x()&gt;=0)?1:0)+
+<span class="lineNum">    1154 </span>            :                                         ((normals[i].y()&gt;=0)?2:0)+
+<span class="lineNum">    1155 </span>            :                                         ((normals[i].z()&gt;=0)?4:0);
+<span class="lineNum">    1156 </span>            :                         }
+<span class="lineNum">    1157 </span>            :                         stock.reserve(SIMPLE_STACKSIZE);
+<span class="lineNum">    1158 </span>            :                         stack.reserve(SIMPLE_STACKSIZE);
+<span class="lineNum">    1159 </span>            :                         ifree.reserve(SIMPLE_STACKSIZE);
+<span class="lineNum">    1160 </span>            :                         stack.push_back(allocate(ifree,stock,sStkNPS(root,0,root-&gt;volume.ProjectMinimum(sortaxis,srtsgns))));
+<span class="lineNum">    1161 </span>            :                         do      {
+<span class="lineNum">    1162 </span>            :                                 const int       id=stack[stack.size()-1];
+<span class="lineNum">    1163 </span>            :                                 sStkNPS         se=stock[id];
+<span class="lineNum">    1164 </span>            :                                 stack.pop_back();ifree.push_back(id);
+<span class="lineNum">    1165 </span>            :                                 if(se.mask!=inside)
+<span class="lineNum">    1166 </span>            :                                 {
+<span class="lineNum">    1167 </span>            :                                         bool    out=false;
+<span class="lineNum">    1168 </span>            :                                         for(int i=0,j=1;(!out)&amp;&amp;(i&lt;count);++i,j&lt;&lt;=1)
+<span class="lineNum">    1169 </span>            :                                         {
+<span class="lineNum">    1170 </span>            :                                                 if(0==(se.mask&amp;j))
+<span class="lineNum">    1171 </span>            :                                                 {
+<span class="lineNum">    1172 </span>            :                                                         const int       side=se.node-&gt;volume.Classify(normals[i],offsets[i],signs[i]);
+<span class="lineNum">    1173 </span>            :                                                         switch(side)
+<span class="lineNum">    1174 </span>            :                                                         {
+<span class="lineNum">    1175 </span>            :                                                         case    -1:     out=true;break;
+<span class="lineNum">    1176 </span>            :                                                         case    +1:     se.mask|=j;break;
+<span class="lineNum">    1177 </span>            :                                                         }
+<span class="lineNum">    1178 </span>            :                                                 }
+<span class="lineNum">    1179 </span>            :                                         }
+<span class="lineNum">    1180 </span>            :                                         if(out) continue;
+<span class="lineNum">    1181 </span>            :                                 }
+<span class="lineNum">    1182 </span>            :                                 if(policy.Descent(se.node))
+<span class="lineNum">    1183 </span>            :                                 {
+<span class="lineNum">    1184 </span>            :                                         if(se.node-&gt;isinternal())
+<span class="lineNum">    1185 </span>            :                                         {
+<span class="lineNum">    1186 </span>            :                                                 const btDbvtNode* pns[]={       se.node-&gt;childs[0],se.node-&gt;childs[1]};
+<span class="lineNum">    1187 </span>            :                                                 sStkNPS         nes[]={ sStkNPS(pns[0],se.mask,pns[0]-&gt;volume.ProjectMinimum(sortaxis,srtsgns)),
+<span class="lineNum">    1188 </span>            :                                                         sStkNPS(pns[1],se.mask,pns[1]-&gt;volume.ProjectMinimum(sortaxis,srtsgns))};
+<span class="lineNum">    1189 </span>            :                                                 const int       q=nes[0].value&lt;nes[1].value?1:0;                             
+<span class="lineNum">    1190 </span>            :                                                 int                     j=stack.size();
+<span class="lineNum">    1191 </span>            :                                                 if(fsort&amp;&amp;(j&gt;0))
+<span class="lineNum">    1192 </span>            :                                                 {
+<span class="lineNum">    1193 </span>            :                                                         /* Insert 0     */ 
+<span class="lineNum">    1194 </span>            :                                                         j=nearest(&amp;stack[0],&amp;stock[0],nes[q].value,0,stack.size());
+<span class="lineNum">    1195 </span>            :                                                         stack.push_back(0);
+<span class="lineNum">    1196 </span>            : #if DBVT_USE_MEMMOVE
+<span class="lineNum">    1197 </span>            :                                                         memmove(&amp;stack[j+1],&amp;stack[j],sizeof(int)*(stack.size()-j-1));
+<span class="lineNum">    1198 </span>            : #else
+<span class="lineNum">    1199 </span>            :                                                         for(int k=stack.size()-1;k&gt;j;--k) stack[k]=stack[k-1];
+<span class="lineNum">    1200 </span>            : #endif
+<span class="lineNum">    1201 </span>            :                                                         stack[j]=allocate(ifree,stock,nes[q]);
+<span class="lineNum">    1202 </span>            :                                                         /* Insert 1     */ 
+<span class="lineNum">    1203 </span>            :                                                         j=nearest(&amp;stack[0],&amp;stock[0],nes[1-q].value,j,stack.size());
+<span class="lineNum">    1204 </span>            :                                                         stack.push_back(0);
+<span class="lineNum">    1205 </span>            : #if DBVT_USE_MEMMOVE
+<span class="lineNum">    1206 </span>            :                                                         memmove(&amp;stack[j+1],&amp;stack[j],sizeof(int)*(stack.size()-j-1));
+<span class="lineNum">    1207 </span>            : #else
+<span class="lineNum">    1208 </span>            :                                                         for(int k=stack.size()-1;k&gt;j;--k) stack[k]=stack[k-1];
+<span class="lineNum">    1209 </span>            : #endif
+<span class="lineNum">    1210 </span>            :                                                         stack[j]=allocate(ifree,stock,nes[1-q]);
+<span class="lineNum">    1211 </span>            :                                                 }
+<span class="lineNum">    1212 </span>            :                                                 else
+<span class="lineNum">    1213 </span>            :                                                 {
+<span class="lineNum">    1214 </span>            :                                                         stack.push_back(allocate(ifree,stock,nes[q]));
+<span class="lineNum">    1215 </span>            :                                                         stack.push_back(allocate(ifree,stock,nes[1-q]));
+<span class="lineNum">    1216 </span>            :                                                 }
+<span class="lineNum">    1217 </span>            :                                         }
+<span class="lineNum">    1218 </span>            :                                         else
+<span class="lineNum">    1219 </span>            :                                         {
+<span class="lineNum">    1220 </span>            :                                                 policy.Process(se.node,se.value);
+<span class="lineNum">    1221 </span>            :                                         }
+<span class="lineNum">    1222 </span>            :                                 }
+<span class="lineNum">    1223 </span>            :                         } while(stack.size());
+<span class="lineNum">    1224 </span>            :                 }
+<span class="lineNum">    1225 </span>            : }
+<span class="lineNum">    1226 </span>            : 
+<span class="lineNum">    1227 </span>            : //
+<span class="lineNum">    1228 </span>            : DBVT_PREFIX
+<span class="lineNum">    1229 </span>            : inline void             btDbvt::collideTU(      const btDbvtNode* root,
+<span class="lineNum">    1230 </span>            :                                                                   DBVT_IPOLICY)
+<span class="lineNum">    1231 </span>            : {
+<span class="lineNum">    1232 </span>            :         DBVT_CHECKTYPE
+<span class="lineNum">    1233 </span>            :                 if(root)
+<span class="lineNum">    1234 </span>            :                 {
+<span class="lineNum">    1235 </span>            :                         btAlignedObjectArray&lt;const btDbvtNode*&gt;   stack;
+<span class="lineNum">    1236 </span>            :                         stack.reserve(SIMPLE_STACKSIZE);
+<span class="lineNum">    1237 </span>            :                         stack.push_back(root);
+<span class="lineNum">    1238 </span>            :                         do      {
+<span class="lineNum">    1239 </span>            :                                 const btDbvtNode*       n=stack[stack.size()-1];
+<span class="lineNum">    1240 </span>            :                                 stack.pop_back();
+<span class="lineNum">    1241 </span>            :                                 if(policy.Descent(n))
+<span class="lineNum">    1242 </span>            :                                 {
+<span class="lineNum">    1243 </span>            :                                         if(n-&gt;isinternal())
+<span class="lineNum">    1244 </span>            :                                         { stack.push_back(n-&gt;childs[0]);stack.push_back(n-&gt;childs[1]); }
+<span class="lineNum">    1245 </span>            :                                         else
+<span class="lineNum">    1246 </span>            :                                         { policy.Process(n); }
+<span class="lineNum">    1247 </span>            :                                 }
+<span class="lineNum">    1248 </span>            :                         } while(stack.size()&gt;0);
+<span class="lineNum">    1249 </span>            :                 }
+<span class="lineNum">    1250 </span>            : }
+<span class="lineNum">    1251 </span>            : 
+<span class="lineNum">    1252 </span>            : //
+<span class="lineNum">    1253 </span>            : // PP Cleanup
+<span class="lineNum">    1254 </span>            : //
+<span class="lineNum">    1255 </span>            : 
+<span class="lineNum">    1256 </span>            : #undef DBVT_USE_MEMMOVE
+<span class="lineNum">    1257 </span>            : #undef DBVT_USE_TEMPLATE
+<span class="lineNum">    1258 </span>            : #undef DBVT_VIRTUAL_DTOR
+<span class="lineNum">    1259 </span>            : #undef DBVT_VIRTUAL
+<span class="lineNum">    1260 </span>            : #undef DBVT_PREFIX
+<span class="lineNum">    1261 </span>            : #undef DBVT_IPOLICY
+<span class="lineNum">    1262 </span>            : #undef DBVT_CHECKTYPE
+<span class="lineNum">    1263 </span>            : #undef DBVT_IMPL_GENERIC
+<span class="lineNum">    1264 </span>            : #undef DBVT_IMPL_SSE
+<span class="lineNum">    1265 </span>            : #undef DBVT_USE_INTRINSIC_SSE
+<span class="lineNum">    1266 </span>            : #undef DBVT_SELECT_IMPL
+<span class="lineNum">    1267 </span>            : #undef DBVT_MERGE_IMPL
+<span class="lineNum">    1268 </span>            : #undef DBVT_INT0_IMPL
+<span class="lineNum">    1269 </span>            : 
+<span class="lineNum">    1270 </span>            : #endif
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

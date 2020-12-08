@@ -1,0 +1,239 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletDynamics/ConstraintSolver/btJacobianEntry.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletDynamics/ConstraintSolver</a> - btJacobianEntry.h<span style="font-size: 80%;"> (source / <a href="btJacobianEntry.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">16</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : #ifndef BT_JACOBIAN_ENTRY_H
+<span class="lineNum">      17 </span>            : #define BT_JACOBIAN_ENTRY_H
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : #include &quot;LinearMath/btMatrix3x3.h&quot;
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span>            : 
+<span class="lineNum">      22 </span>            : //notes:
+<span class="lineNum">      23 </span>            : // Another memory optimization would be to store m_1MinvJt in the remaining 3 w components
+<span class="lineNum">      24 </span>            : // which makes the btJacobianEntry memory layout 16 bytes
+<span class="lineNum">      25 </span>            : // if you only are interested in angular part, just feed massInvA and massInvB zero
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span>            : /// Jacobian entry is an abstraction that allows to describe constraints
+<span class="lineNum">      28 </span>            : /// it can be used in combination with a constraint solver
+<span class="lineNum">      29 </span>            : /// Can be used to relate the effect of an impulse to the constraint error
+<span class="lineNum">      30 </span>            : ATTRIBUTE_ALIGNED16(class) btJacobianEntry
+<span class="lineNum">      31 </span>            : {
+<span class="lineNum">      32 </span>            : public:
+<span class="lineNum">      33 </span>            :         btJacobianEntry() {};
+<span class="lineNum">      34 </span>            :         //constraint between two different rigidbodies
+<span class="lineNum">      35 </span><span class="lineNoCov">          0 :         btJacobianEntry(</span>
+<span class="lineNum">      36 </span>            :                 const btMatrix3x3&amp; world2A,
+<span class="lineNum">      37 </span>            :                 const btMatrix3x3&amp; world2B,
+<span class="lineNum">      38 </span>            :                 const btVector3&amp; rel_pos1,const btVector3&amp; rel_pos2,
+<span class="lineNum">      39 </span>            :                 const btVector3&amp; jointAxis,
+<span class="lineNum">      40 </span>            :                 const btVector3&amp; inertiaInvA, 
+<span class="lineNum">      41 </span>            :                 const btScalar massInvA,
+<span class="lineNum">      42 </span>            :                 const btVector3&amp; inertiaInvB,
+<span class="lineNum">      43 </span>            :                 const btScalar massInvB)
+<span class="lineNum">      44 </span><span class="lineNoCov">          0 :                 :m_linearJointAxis(jointAxis)</span>
+<span class="lineNum">      45 </span>            :         {
+<span class="lineNum">      46 </span><span class="lineNoCov">          0 :                 m_aJ = world2A*(rel_pos1.cross(m_linearJointAxis));</span>
+<span class="lineNum">      47 </span><span class="lineNoCov">          0 :                 m_bJ = world2B*(rel_pos2.cross(-m_linearJointAxis));</span>
+<span class="lineNum">      48 </span><span class="lineNoCov">          0 :                 m_0MinvJt       = inertiaInvA * m_aJ;</span>
+<span class="lineNum">      49 </span><span class="lineNoCov">          0 :                 m_1MinvJt = inertiaInvB * m_bJ;</span>
+<span class="lineNum">      50 </span><span class="lineNoCov">          0 :                 m_Adiag = massInvA + m_0MinvJt.dot(m_aJ) + massInvB + m_1MinvJt.dot(m_bJ);</span>
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span>            :                 btAssert(m_Adiag &gt; btScalar(0.0));
+<span class="lineNum">      53 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            :         //angular constraint between two different rigidbodies
+<span class="lineNum">      56 </span><span class="lineNoCov">          0 :         btJacobianEntry(const btVector3&amp; jointAxis,</span>
+<span class="lineNum">      57 </span>            :                 const btMatrix3x3&amp; world2A,
+<span class="lineNum">      58 </span>            :                 const btMatrix3x3&amp; world2B,
+<span class="lineNum">      59 </span>            :                 const btVector3&amp; inertiaInvA,
+<span class="lineNum">      60 </span>            :                 const btVector3&amp; inertiaInvB)
+<span class="lineNum">      61 </span><span class="lineNoCov">          0 :                 :m_linearJointAxis(btVector3(btScalar(0.),btScalar(0.),btScalar(0.)))</span>
+<span class="lineNum">      62 </span>            :         {
+<span class="lineNum">      63 </span><span class="lineNoCov">          0 :                 m_aJ= world2A*jointAxis;</span>
+<span class="lineNum">      64 </span><span class="lineNoCov">          0 :                 m_bJ = world2B*-jointAxis;</span>
+<span class="lineNum">      65 </span><span class="lineNoCov">          0 :                 m_0MinvJt       = inertiaInvA * m_aJ;</span>
+<span class="lineNum">      66 </span><span class="lineNoCov">          0 :                 m_1MinvJt = inertiaInvB * m_bJ;</span>
+<span class="lineNum">      67 </span><span class="lineNoCov">          0 :                 m_Adiag =  m_0MinvJt.dot(m_aJ) + m_1MinvJt.dot(m_bJ);</span>
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span>            :                 btAssert(m_Adiag &gt; btScalar(0.0));
+<span class="lineNum">      70 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            :         //angular constraint between two different rigidbodies
+<span class="lineNum">      73 </span>            :         btJacobianEntry(const btVector3&amp; axisInA,
+<span class="lineNum">      74 </span>            :                 const btVector3&amp; axisInB,
+<span class="lineNum">      75 </span>            :                 const btVector3&amp; inertiaInvA,
+<span class="lineNum">      76 </span>            :                 const btVector3&amp; inertiaInvB)
+<span class="lineNum">      77 </span>            :                 : m_linearJointAxis(btVector3(btScalar(0.),btScalar(0.),btScalar(0.)))
+<span class="lineNum">      78 </span>            :                 , m_aJ(axisInA)
+<span class="lineNum">      79 </span>            :                 , m_bJ(-axisInB)
+<span class="lineNum">      80 </span>            :         {
+<span class="lineNum">      81 </span>            :                 m_0MinvJt       = inertiaInvA * m_aJ;
+<span class="lineNum">      82 </span>            :                 m_1MinvJt = inertiaInvB * m_bJ;
+<span class="lineNum">      83 </span>            :                 m_Adiag =  m_0MinvJt.dot(m_aJ) + m_1MinvJt.dot(m_bJ);
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span>            :                 btAssert(m_Adiag &gt; btScalar(0.0));
+<span class="lineNum">      86 </span>            :         }
+<span class="lineNum">      87 </span>            : 
+<span class="lineNum">      88 </span>            :         //constraint on one rigidbody
+<span class="lineNum">      89 </span>            :         btJacobianEntry(
+<span class="lineNum">      90 </span>            :                 const btMatrix3x3&amp; world2A,
+<span class="lineNum">      91 </span>            :                 const btVector3&amp; rel_pos1,const btVector3&amp; rel_pos2,
+<span class="lineNum">      92 </span>            :                 const btVector3&amp; jointAxis,
+<span class="lineNum">      93 </span>            :                 const btVector3&amp; inertiaInvA, 
+<span class="lineNum">      94 </span>            :                 const btScalar massInvA)
+<span class="lineNum">      95 </span>            :                 :m_linearJointAxis(jointAxis)
+<span class="lineNum">      96 </span>            :         {
+<span class="lineNum">      97 </span>            :                 m_aJ= world2A*(rel_pos1.cross(jointAxis));
+<span class="lineNum">      98 </span>            :                 m_bJ = world2A*(rel_pos2.cross(-jointAxis));
+<span class="lineNum">      99 </span>            :                 m_0MinvJt       = inertiaInvA * m_aJ;
+<span class="lineNum">     100 </span>            :                 m_1MinvJt = btVector3(btScalar(0.),btScalar(0.),btScalar(0.));
+<span class="lineNum">     101 </span>            :                 m_Adiag = massInvA + m_0MinvJt.dot(m_aJ);
+<span class="lineNum">     102 </span>            : 
+<span class="lineNum">     103 </span>            :                 btAssert(m_Adiag &gt; btScalar(0.0));
+<span class="lineNum">     104 </span>            :         }
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span>            :         btScalar        getDiagonal() const { return m_Adiag; }
+<span class="lineNum">     107 </span>            : 
+<span class="lineNum">     108 </span>            :         // for two constraints on the same rigidbody (for example vehicle friction)
+<span class="lineNum">     109 </span>            :         btScalar        getNonDiagonal(const btJacobianEntry&amp; jacB, const btScalar massInvA) const
+<span class="lineNum">     110 </span>            :         {
+<span class="lineNum">     111 </span>            :                 const btJacobianEntry&amp; jacA = *this;
+<span class="lineNum">     112 </span>            :                 btScalar lin = massInvA * jacA.m_linearJointAxis.dot(jacB.m_linearJointAxis);
+<span class="lineNum">     113 </span>            :                 btScalar ang = jacA.m_0MinvJt.dot(jacB.m_aJ);
+<span class="lineNum">     114 </span>            :                 return lin + ang;
+<span class="lineNum">     115 </span>            :         }
+<span class="lineNum">     116 </span>            : 
+<span class="lineNum">     117 </span>            :         
+<span class="lineNum">     118 </span>            : 
+<span class="lineNum">     119 </span>            :         // for two constraints on sharing two same rigidbodies (for example two contact points between two rigidbodies)
+<span class="lineNum">     120 </span>            :         btScalar        getNonDiagonal(const btJacobianEntry&amp; jacB,const btScalar massInvA,const btScalar massInvB) const
+<span class="lineNum">     121 </span>            :         {
+<span class="lineNum">     122 </span>            :                 const btJacobianEntry&amp; jacA = *this;
+<span class="lineNum">     123 </span>            :                 btVector3 lin = jacA.m_linearJointAxis * jacB.m_linearJointAxis;
+<span class="lineNum">     124 </span>            :                 btVector3 ang0 = jacA.m_0MinvJt * jacB.m_aJ;
+<span class="lineNum">     125 </span>            :                 btVector3 ang1 = jacA.m_1MinvJt * jacB.m_bJ;
+<span class="lineNum">     126 </span>            :                 btVector3 lin0 = massInvA * lin ;
+<span class="lineNum">     127 </span>            :                 btVector3 lin1 = massInvB * lin;
+<span class="lineNum">     128 </span>            :                 btVector3 sum = ang0+ang1+lin0+lin1;
+<span class="lineNum">     129 </span>            :                 return sum[0]+sum[1]+sum[2];
+<span class="lineNum">     130 </span>            :         }
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            :         btScalar getRelativeVelocity(const btVector3&amp; linvelA,const btVector3&amp; angvelA,const btVector3&amp; linvelB,const btVector3&amp; angvelB)
+<span class="lineNum">     133 </span>            :         {
+<span class="lineNum">     134 </span>            :                 btVector3 linrel = linvelA - linvelB;
+<span class="lineNum">     135 </span>            :                 btVector3 angvela  = angvelA * m_aJ;
+<span class="lineNum">     136 </span>            :                 btVector3 angvelb  = angvelB * m_bJ;
+<span class="lineNum">     137 </span>            :                 linrel *= m_linearJointAxis;
+<span class="lineNum">     138 </span>            :                 angvela += angvelb;
+<span class="lineNum">     139 </span>            :                 angvela += linrel;
+<span class="lineNum">     140 </span>            :                 btScalar rel_vel2 = angvela[0]+angvela[1]+angvela[2];
+<span class="lineNum">     141 </span>            :                 return rel_vel2 + SIMD_EPSILON;
+<span class="lineNum">     142 </span>            :         }
+<span class="lineNum">     143 </span>            : //private:
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span>            :         btVector3       m_linearJointAxis;
+<span class="lineNum">     146 </span>            :         btVector3       m_aJ;
+<span class="lineNum">     147 </span>            :         btVector3       m_bJ;
+<span class="lineNum">     148 </span>            :         btVector3       m_0MinvJt;
+<span class="lineNum">     149 </span>            :         btVector3       m_1MinvJt;
+<span class="lineNum">     150 </span>            :         //Optimization: can be stored in the w/last component of one of the vectors
+<span class="lineNum">     151 </span>            :         btScalar        m_Adiag;
+<span class="lineNum">     152 </span>            : 
+<span class="lineNum">     153 </span>            : };
+<span class="lineNum">     154 </span>            : 
+<span class="lineNum">     155 </span>            : #endif //BT_JACOBIAN_ENTRY_H
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

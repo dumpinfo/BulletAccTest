@@ -1,0 +1,1 @@
+/usr/bin/c++  -O3 -DNDEBUG  -rdynamic CMakeFiles/AppBenchmarks.dir/main.o CMakeFiles/AppBenchmarks.dir/BenchmarkDemo.o  -o AppBenchmarks ../OpenGL/libOpenGLSupport.a ../../src/BulletDynamics/libBulletDynamics.a ../../src/BulletCollision/libBulletCollision.a ../../src/LinearMath/libLinearMath.a -lglut -lGL -lGLU 

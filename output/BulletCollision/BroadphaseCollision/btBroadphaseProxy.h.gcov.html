@@ -1,0 +1,354 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/BroadphaseCollision/btBroadphaseProxy.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/BroadphaseCollision</a> - btBroadphaseProxy.h<span style="font-size: 80%;"> (source / <a href="btBroadphaseProxy.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">15</td>
+            <td class="headerCovTableEntry">30</td>
+            <td class="headerCovTableEntryLo">50.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : #ifndef BT_BROADPHASE_PROXY_H
+<span class="lineNum">      17 </span>            : #define BT_BROADPHASE_PROXY_H
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : #include &quot;LinearMath/btScalar.h&quot; //for SIMD_FORCE_INLINE
+<span class="lineNum">      20 </span>            : #include &quot;LinearMath/btVector3.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;LinearMath/btAlignedAllocator.h&quot;
+<span class="lineNum">      22 </span>            : 
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : /// btDispatcher uses these types
+<span class="lineNum">      25 </span>            : /// IMPORTANT NOTE:The types are ordered polyhedral, implicit convex and concave
+<span class="lineNum">      26 </span>            : /// to facilitate type checking
+<span class="lineNum">      27 </span>            : /// CUSTOM_POLYHEDRAL_SHAPE_TYPE,CUSTOM_CONVEX_SHAPE_TYPE and CUSTOM_CONCAVE_SHAPE_TYPE can be used to extend Bullet without modifying source code
+<span class="lineNum">      28 </span>            : enum BroadphaseNativeTypes
+<span class="lineNum">      29 </span>            : {
+<span class="lineNum">      30 </span>            :         // polyhedral convex shapes
+<span class="lineNum">      31 </span>            :         BOX_SHAPE_PROXYTYPE,
+<span class="lineNum">      32 </span>            :         TRIANGLE_SHAPE_PROXYTYPE,
+<span class="lineNum">      33 </span>            :         TETRAHEDRAL_SHAPE_PROXYTYPE,
+<span class="lineNum">      34 </span>            :         CONVEX_TRIANGLEMESH_SHAPE_PROXYTYPE,
+<span class="lineNum">      35 </span>            :         CONVEX_HULL_SHAPE_PROXYTYPE,
+<span class="lineNum">      36 </span>            :         CONVEX_POINT_CLOUD_SHAPE_PROXYTYPE,
+<span class="lineNum">      37 </span>            :         CUSTOM_POLYHEDRAL_SHAPE_TYPE,
+<span class="lineNum">      38 </span>            : //implicit convex shapes
+<span class="lineNum">      39 </span>            : IMPLICIT_CONVEX_SHAPES_START_HERE,
+<span class="lineNum">      40 </span>            :         SPHERE_SHAPE_PROXYTYPE,
+<span class="lineNum">      41 </span>            :         MULTI_SPHERE_SHAPE_PROXYTYPE,
+<span class="lineNum">      42 </span>            :         CAPSULE_SHAPE_PROXYTYPE,
+<span class="lineNum">      43 </span>            :         CONE_SHAPE_PROXYTYPE,
+<span class="lineNum">      44 </span>            :         CONVEX_SHAPE_PROXYTYPE,
+<span class="lineNum">      45 </span>            :         CYLINDER_SHAPE_PROXYTYPE,
+<span class="lineNum">      46 </span>            :         UNIFORM_SCALING_SHAPE_PROXYTYPE,
+<span class="lineNum">      47 </span>            :         MINKOWSKI_SUM_SHAPE_PROXYTYPE,
+<span class="lineNum">      48 </span>            :         MINKOWSKI_DIFFERENCE_SHAPE_PROXYTYPE,
+<span class="lineNum">      49 </span>            :         BOX_2D_SHAPE_PROXYTYPE,
+<span class="lineNum">      50 </span>            :         CONVEX_2D_SHAPE_PROXYTYPE,
+<span class="lineNum">      51 </span>            :         CUSTOM_CONVEX_SHAPE_TYPE,
+<span class="lineNum">      52 </span>            : //concave shapes
+<span class="lineNum">      53 </span>            : CONCAVE_SHAPES_START_HERE,
+<span class="lineNum">      54 </span>            :         //keep all the convex shapetype below here, for the check IsConvexShape in broadphase proxy!
+<span class="lineNum">      55 </span>            :         TRIANGLE_MESH_SHAPE_PROXYTYPE,
+<span class="lineNum">      56 </span>            :         SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE,
+<span class="lineNum">      57 </span>            :         ///used for demo integration FAST/Swift collision library and Bullet
+<span class="lineNum">      58 </span>            :         FAST_CONCAVE_MESH_PROXYTYPE,
+<span class="lineNum">      59 </span>            :         //terrain
+<span class="lineNum">      60 </span>            :         TERRAIN_SHAPE_PROXYTYPE,
+<span class="lineNum">      61 </span>            : ///Used for GIMPACT Trimesh integration
+<span class="lineNum">      62 </span>            :         GIMPACT_SHAPE_PROXYTYPE,
+<span class="lineNum">      63 </span>            : ///Multimaterial mesh
+<span class="lineNum">      64 </span>            :     MULTIMATERIAL_TRIANGLE_MESH_PROXYTYPE,
+<span class="lineNum">      65 </span>            :         
+<span class="lineNum">      66 </span>            :         EMPTY_SHAPE_PROXYTYPE,
+<span class="lineNum">      67 </span>            :         STATIC_PLANE_PROXYTYPE,
+<span class="lineNum">      68 </span>            :         CUSTOM_CONCAVE_SHAPE_TYPE,
+<span class="lineNum">      69 </span>            : CONCAVE_SHAPES_END_HERE,
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span>            :         COMPOUND_SHAPE_PROXYTYPE,
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span>            :         SOFTBODY_SHAPE_PROXYTYPE,
+<span class="lineNum">      74 </span>            :         HFFLUID_SHAPE_PROXYTYPE,
+<span class="lineNum">      75 </span>            :         HFFLUID_BUOYANT_CONVEX_SHAPE_PROXYTYPE,
+<span class="lineNum">      76 </span>            :         INVALID_SHAPE_PROXYTYPE,
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            :         MAX_BROADPHASE_COLLISION_TYPES
+<span class="lineNum">      79 </span>            :         
+<span class="lineNum">      80 </span>            : };
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span>            : 
+<span class="lineNum">      83 </span>            : ///The btBroadphaseProxy is the main class that can be used with the Bullet broadphases. 
+<span class="lineNum">      84 </span>            : ///It stores collision shape type information, collision filter information and a client object, typically a btCollisionObject or btRigidBody.
+<span class="lineNum">      85 </span>            : ATTRIBUTE_ALIGNED16(struct) btBroadphaseProxy
+<span class="lineNum">      86 </span>            : {
+<span class="lineNum">      87 </span>            : 
+<span class="lineNum">      88 </span>            : BT_DECLARE_ALIGNED_ALLOCATOR();
+<span class="lineNum">      89 </span>            :         
+<span class="lineNum">      90 </span>            :         ///optional filtering to cull potential collisions
+<span class="lineNum">      91 </span>            :         enum CollisionFilterGroups
+<span class="lineNum">      92 </span>            :         {
+<span class="lineNum">      93 </span>            :                 DefaultFilter = 1,
+<span class="lineNum">      94 </span>            :                 StaticFilter = 2,
+<span class="lineNum">      95 </span>            :                 KinematicFilter = 4,
+<span class="lineNum">      96 </span>            :                 DebrisFilter = 8,
+<span class="lineNum">      97 </span>            :                         SensorTrigger = 16,
+<span class="lineNum">      98 </span>            :                         CharacterFilter = 32,
+<span class="lineNum">      99 </span>            :                 AllFilter = -1 //all bits sets: DefaultFilter | StaticFilter | KinematicFilter | DebrisFilter | SensorTrigger
+<span class="lineNum">     100 </span>            :         };
+<span class="lineNum">     101 </span>            : 
+<span class="lineNum">     102 </span>            :         //Usually the client btCollisionObject or Rigidbody class
+<span class="lineNum">     103 </span>            :         void*   m_clientObject;
+<span class="lineNum">     104 </span>            :         short int m_collisionFilterGroup;
+<span class="lineNum">     105 </span>            :         short int m_collisionFilterMask;
+<span class="lineNum">     106 </span>            :         void*   m_multiSapParentProxy;          
+<span class="lineNum">     107 </span>            :         int                     m_uniqueId;//m_uniqueId is introduced for paircache. could get rid of this, by calculating the address offset etc.
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            :         btVector3       m_aabbMin;
+<span class="lineNum">     110 </span>            :         btVector3       m_aabbMax;
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span>            :         SIMD_FORCE_INLINE int getUid() const
+<span class="lineNum">     113 </span>            :         {
+<span class="lineNum">     114 </span>            :                 return m_uniqueId;
+<span class="lineNum">     115 </span>            :         }
+<span class="lineNum">     116 </span>            : 
+<span class="lineNum">     117 </span>            :         //used for memory pools
+<span class="lineNum">     118 </span>            :         btBroadphaseProxy() :m_clientObject(0),m_multiSapParentProxy(0)
+<span class="lineNum">     119 </span>            :         {
+<span class="lineNum">     120 </span>            :         }
+<span class="lineNum">     121 </span>            : 
+<span class="lineNum">     122 </span>            :         btBroadphaseProxy(const btVector3&amp; aabbMin,const btVector3&amp; aabbMax,void* userPtr,short int collisionFilterGroup, short int collisionFilterMask,void* multiSapParentProxy=0)
+<span class="lineNum">     123 </span><span class="lineCov">        101 :                 :m_clientObject(userPtr),</span>
+<span class="lineNum">     124 </span>            :                 m_collisionFilterGroup(collisionFilterGroup),
+<span class="lineNum">     125 </span>            :                 m_collisionFilterMask(collisionFilterMask),
+<span class="lineNum">     126 </span>            :                 m_aabbMin(aabbMin),
+<span class="lineNum">     127 </span><span class="lineCov">        101 :                 m_aabbMax(aabbMax)</span>
+<span class="lineNum">     128 </span>            :         {
+<span class="lineNum">     129 </span><span class="lineCov">        101 :                 m_multiSapParentProxy = multiSapParentProxy;</span>
+<span class="lineNum">     130 </span>            :         }
+<span class="lineNum">     131 </span>            : 
+<a name="132"><span class="lineNum">     132 </span>            :         </a>
+<span class="lineNum">     133 </span>            : 
+<span class="lineNum">     134 </span><span class="lineNoCov">          0 :         static SIMD_FORCE_INLINE bool isPolyhedral(int proxyType)</span>
+<span class="lineNum">     135 </span>            :         {
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 :                 return (proxyType  &lt; IMPLICIT_CONVEX_SHAPES_START_HERE);</span>
+<span class="lineNum">     137 </span>            :         }
+<span class="lineNum">     138 </span>            : 
+<span class="lineNum">     139 </span>            :         static SIMD_FORCE_INLINE bool   isConvex(int proxyType)
+<span class="lineNum">     140 </span>            :         {
+<span class="lineNum">     141 </span>            :                 return (proxyType &lt; CONCAVE_SHAPES_START_HERE);
+<span class="lineNum">     142 </span>            :         }
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span>            :         static SIMD_FORCE_INLINE bool   isNonMoving(int proxyType)
+<span class="lineNum">     145 </span>            :         {
+<span class="lineNum">     146 </span>            :                 return (isConcave(proxyType) &amp;&amp; !(proxyType==GIMPACT_SHAPE_PROXYTYPE));
+<span class="lineNum">     147 </span>            :         }
+<span class="lineNum">     148 </span>            : 
+<span class="lineNum">     149 </span>            :         static SIMD_FORCE_INLINE bool   isConcave(int proxyType)
+<span class="lineNum">     150 </span>            :         {
+<span class="lineNum">     151 </span><span class="lineCov">        600 :                 return ((proxyType &gt; CONCAVE_SHAPES_START_HERE) &amp;&amp;</span>
+<span class="lineNum">     152 </span>            :                         (proxyType &lt; CONCAVE_SHAPES_END_HERE));
+<span class="lineNum">     153 </span>            :         }
+<span class="lineNum">     154 </span>            :         static SIMD_FORCE_INLINE bool   isCompound(int proxyType)
+<span class="lineNum">     155 </span>            :         {
+<span class="lineNum">     156 </span>            :                 return (proxyType == COMPOUND_SHAPE_PROXYTYPE);
+<span class="lineNum">     157 </span>            :         }
+<span class="lineNum">     158 </span>            : 
+<span class="lineNum">     159 </span>            :         static SIMD_FORCE_INLINE bool   isSoftBody(int proxyType)
+<span class="lineNum">     160 </span>            :         {
+<span class="lineNum">     161 </span>            :                 return (proxyType == SOFTBODY_SHAPE_PROXYTYPE);
+<span class="lineNum">     162 </span>            :         }
+<span class="lineNum">     163 </span>            : 
+<span class="lineNum">     164 </span>            :         static SIMD_FORCE_INLINE bool isInfinite(int proxyType)
+<span class="lineNum">     165 </span>            :         {
+<span class="lineNum">     166 </span>            :                 return (proxyType == STATIC_PLANE_PROXYTYPE);
+<span class="lineNum">     167 </span>            :         }
+<span class="lineNum">     168 </span>            : 
+<span class="lineNum">     169 </span>            :         static SIMD_FORCE_INLINE bool isConvex2d(int proxyType)
+<span class="lineNum">     170 </span>            :         {
+<span class="lineNum">     171 </span><span class="lineCov">      35127 :                 return (proxyType == BOX_2D_SHAPE_PROXYTYPE) || (proxyType == CONVEX_2D_SHAPE_PROXYTYPE);</span>
+<span class="lineNum">     172 </span>            :         }
+<span class="lineNum">     173 </span>            : 
+<span class="lineNum">     174 </span>            :         
+<span class="lineNum">     175 </span>            : }
+<span class="lineNum">     176 </span>            : ;
+<span class="lineNum">     177 </span>            : 
+<span class="lineNum">     178 </span>            : class btCollisionAlgorithm;
+<span class="lineNum">     179 </span>            : 
+<span class="lineNum">     180 </span>            : struct btBroadphaseProxy;
+<span class="lineNum">     181 </span>            : 
+<span class="lineNum">     182 </span>            : 
+<span class="lineNum">     183 </span>            : 
+<span class="lineNum">     184 </span>            : ///The btBroadphasePair class contains a pair of aabb-overlapping objects.
+<span class="lineNum">     185 </span>            : ///A btDispatcher can search a btCollisionAlgorithm that performs exact/narrowphase collision detection on the actual collision shapes.
+<span class="lineNum">     186 </span>            : ATTRIBUTE_ALIGNED16(struct) btBroadphasePair
+<span class="lineNum">     187 </span>            : {
+<span class="lineNum">     188 </span>            :         btBroadphasePair ()
+<span class="lineNum">     189 </span><span class="lineNoCov">          0 :                 :</span>
+<span class="lineNum">     190 </span>            :         m_pProxy0(0),
+<span class="lineNum">     191 </span>            :                 m_pProxy1(0),
+<span class="lineNum">     192 </span>            :                 m_algorithm(0),
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 :                 m_internalInfo1(0)</span>
+<span class="lineNum">     194 </span>            :         {
+<span class="lineNum">     195 </span>            :         }
+<span class="lineNum">     196 </span>            : 
+<span class="lineNum">     197 </span>            : BT_DECLARE_ALIGNED_ALLOCATOR();
+<span class="lineNum">     198 </span>            : 
+<span class="lineNum">     199 </span>            :         btBroadphasePair(const btBroadphasePair&amp; other)
+<span class="lineNum">     200 </span><span class="lineCov">        254 :                 :               m_pProxy0(other.m_pProxy0),</span>
+<span class="lineNum">     201 </span><span class="lineCov">        254 :                                 m_pProxy1(other.m_pProxy1),</span>
+<span class="lineNum">     202 </span><span class="lineCov">        254 :                                 m_algorithm(other.m_algorithm),</span>
+<span class="lineNum">     203 </span><span class="lineCov">        762 :                                 m_internalInfo1(other.m_internalInfo1)</span>
+<span class="lineNum">     204 </span>            :         {
+<span class="lineNum">     205 </span>            :         }
+<span class="lineNum">     206 </span>            :         btBroadphasePair(btBroadphaseProxy&amp; proxy0,btBroadphaseProxy&amp; proxy1)
+<span class="lineNum">     207 </span><span class="lineCov">       1273 :         {</span>
+<span class="lineNum">     208 </span>            : 
+<span class="lineNum">     209 </span>            :                 //keep them sorted, so the std::set operations work
+<span class="lineNum">     210 </span><span class="lineCov">       1273 :                 if (proxy0.m_uniqueId &lt; proxy1.m_uniqueId)</span>
+<span class="lineNum">     211 </span>            :         { 
+<span class="lineNum">     212 </span><span class="lineCov">       1273 :             m_pProxy0 = &amp;proxy0; </span>
+<span class="lineNum">     213 </span><span class="lineCov">       1273 :             m_pProxy1 = &amp;proxy1; </span>
+<span class="lineNum">     214 </span>            :         }
+<span class="lineNum">     215 </span>            :         else 
+<span class="lineNum">     216 </span>            :         { 
+<span class="lineNum">     217 </span><span class="lineNoCov">          0 :                         m_pProxy0 = &amp;proxy1; </span>
+<span class="lineNum">     218 </span><span class="lineNoCov">          0 :             m_pProxy1 = &amp;proxy0; </span>
+<span class="lineNum">     219 </span>            :         }
+<span class="lineNum">     220 </span>            : 
+<span class="lineNum">     221 </span><span class="lineCov">       1273 :                 m_algorithm = 0;</span>
+<span class="lineNum">     222 </span><span class="lineCov">       1273 :                 m_internalInfo1 = 0;</span>
+<span class="lineNum">     223 </span>            : 
+<span class="lineNum">     224 </span>            :         }
+<span class="lineNum">     225 </span>            :         
+<span class="lineNum">     226 </span>            :         btBroadphaseProxy* m_pProxy0;
+<span class="lineNum">     227 </span>            :         btBroadphaseProxy* m_pProxy1;
+<span class="lineNum">     228 </span>            :         
+<span class="lineNum">     229 </span>            :         mutable btCollisionAlgorithm* m_algorithm;
+<span class="lineNum">     230 </span>            :         union { void* m_internalInfo1; int m_internalTmpValue;};//don't use this data, it will be removed in future version.
+<span class="lineNum">     231 </span>            : 
+<span class="lineNum">     232 </span>            : };
+<span class="lineNum">     233 </span>            : 
+<span class="lineNum">     234 </span>            : /*
+<span class="lineNum">     235 </span>            : //comparison for set operation, see Solid DT_Encounter
+<span class="lineNum">     236 </span>            : SIMD_FORCE_INLINE bool operator&lt;(const btBroadphasePair&amp; a, const btBroadphasePair&amp; b) 
+<span class="lineNum">     237 </span>            : { 
+<span class="lineNum">     238 </span>            :     return a.m_pProxy0 &lt; b.m_pProxy0 || 
+<span class="lineNum">     239 </span>            :         (a.m_pProxy0 == b.m_pProxy0 &amp;&amp; a.m_pProxy1 &lt; b.m_pProxy1); 
+<span class="lineNum">     240 </span>            : }
+<span class="lineNum">     241 </span>            : */
+<span class="lineNum">     242 </span>            : 
+<span class="lineNum">     243 </span>            : 
+<span class="lineNum">     244 </span>            : 
+<span class="lineNum">     245 </span>            : class btBroadphasePairSortPredicate
+<span class="lineNum">     246 </span>            : {
+<a name="247"><span class="lineNum">     247 </span>            :         public:</a>
+<span class="lineNum">     248 </span>            : 
+<span class="lineNum">     249 </span><span class="lineNoCov">          0 :                 bool operator() ( const btBroadphasePair&amp; a, const btBroadphasePair&amp; b ) const</span>
+<span class="lineNum">     250 </span>            :                 {
+<span class="lineNum">     251 </span><span class="lineNoCov">          0 :                         const int uidA0 = a.m_pProxy0 ? a.m_pProxy0-&gt;m_uniqueId : -1;</span>
+<span class="lineNum">     252 </span><span class="lineNoCov">          0 :                         const int uidB0 = b.m_pProxy0 ? b.m_pProxy0-&gt;m_uniqueId : -1;</span>
+<span class="lineNum">     253 </span><span class="lineNoCov">          0 :                         const int uidA1 = a.m_pProxy1 ? a.m_pProxy1-&gt;m_uniqueId : -1;</span>
+<span class="lineNum">     254 </span><span class="lineNoCov">          0 :                         const int uidB1 = b.m_pProxy1 ? b.m_pProxy1-&gt;m_uniqueId : -1;</span>
+<span class="lineNum">     255 </span>            : 
+<span class="lineNum">     256 </span><span class="lineNoCov">          0 :                          return uidA0 &gt; uidB0 || </span>
+<span class="lineNum">     257 </span><span class="lineNoCov">          0 :                                 (a.m_pProxy0 == b.m_pProxy0 &amp;&amp; uidA1 &gt; uidB1) ||</span>
+<span class="lineNum">     258 </span><span class="lineNoCov">          0 :                                 (a.m_pProxy0 == b.m_pProxy0 &amp;&amp; a.m_pProxy1 == b.m_pProxy1 &amp;&amp; a.m_algorithm &gt; b.m_algorithm); </span>
+<span class="lineNum">     259 </span>            :                 }
+<span class="lineNum">     260 </span>            : };
+<span class="lineNum">     261 </span>            : 
+<span class="lineNum">     262 </span>            : 
+<span class="lineNum">     263 </span>            : SIMD_FORCE_INLINE bool operator==(const btBroadphasePair&amp; a, const btBroadphasePair&amp; b) 
+<span class="lineNum">     264 </span>            : {
+<span class="lineNum">     265 </span><span class="lineNoCov">          0 :          return (a.m_pProxy0 == b.m_pProxy0) &amp;&amp; (a.m_pProxy1 == b.m_pProxy1);</span>
+<span class="lineNum">     266 </span>            : }
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span>            : 
+<span class="lineNum">     269 </span>            : #endif //BT_BROADPHASE_PROXY_H
+<span class="lineNum">     270 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

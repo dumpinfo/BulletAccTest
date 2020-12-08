@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/NarrowPhaseCollision/btConvexCast.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/NarrowPhaseCollision</a> - btConvexCast.h<span style="font-size: 80%;"> (source / <a href="btConvexCast.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryLo">33.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : #ifndef BT_CONVEX_CAST_H
+<span class="lineNum">      18 </span>            : #define BT_CONVEX_CAST_H
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : #include &quot;LinearMath/btTransform.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;LinearMath/btVector3.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;LinearMath/btScalar.h&quot;
+<span class="lineNum">      23 </span>            : class btMinkowskiSumShape;
+<span class="lineNum">      24 </span>            : #include &quot;LinearMath/btIDebugDraw.h&quot;
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span>            : /// btConvexCast is an interface for Casting
+<span class="lineNum">      27 </span>            : class btConvexCast
+<span class="lineNum">      28 </span>            : {
+<span class="lineNum">      29 </span>            : public:
+<span class="lineNum">      30 </span>            : 
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span>            :         virtual ~btConvexCast();
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            :         ///RayResult stores the closest result
+<span class="lineNum">      35 </span>            :         /// alternatively, add a callback method to decide about closest/all results
+<span class="lineNum">      36 </span>            :         struct  CastResult
+<span class="lineNum">      37 </span>            :         {
+<a name="38"><span class="lineNum">      38 </span>            :                 //virtual bool  addRayResult(const btVector3&amp; normal,btScalar       fraction) = 0;</a>
+<a name="39"><span class="lineNum">      39 </span>            :                                 </a>
+<a name="40"><span class="lineNum">      40 </span><span class="lineNoCov">          0 :                 virtual void    DebugDraw(btScalar      fraction) {(void)fraction;}</span></a>
+<span class="lineNum">      41 </span><span class="lineNoCov">          0 :                 virtual void    drawCoordSystem(const btTransform&amp; trans) {(void)trans;}</span>
+<span class="lineNum">      42 </span><span class="lineNoCov">          0 :                 virtual void    reportFailure(int errNo, int numIterations) {(void)errNo;(void)numIterations;}</span>
+<span class="lineNum">      43 </span>            :                 CastResult()
+<span class="lineNum">      44 </span><span class="lineCov">          3 :                         :m_fraction(btScalar(BT_LARGE_FLOAT)),</span>
+<span class="lineNum">      45 </span>            :                         m_debugDrawer(0),
+<span class="lineNum">      46 </span><span class="lineCov">         15 :                         m_allowedPenetration(btScalar(0))</span>
+<span class="lineNum">      47 </span>            :                 {
+<span class="lineNum">      48 </span>            :                 }
+<a name="49"><span class="lineNum">      49 </span>            : </a>
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span><span class="lineNoCov">          0 :                 virtual ~CastResult() {};</span>
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span>            :                 btTransform     m_hitTransformA;
+<span class="lineNum">      54 </span>            :                 btTransform     m_hitTransformB;
+<span class="lineNum">      55 </span>            :                 btVector3       m_normal;
+<span class="lineNum">      56 </span>            :                 btVector3   m_hitPoint;
+<span class="lineNum">      57 </span>            :                 btScalar        m_fraction; //input and output
+<span class="lineNum">      58 </span>            :                 btIDebugDraw* m_debugDrawer;
+<span class="lineNum">      59 </span>            :                 btScalar        m_allowedPenetration;
+<span class="lineNum">      60 </span>            : 
+<span class="lineNum">      61 </span>            :         };
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span>            :         /// cast a convex against another convex object
+<span class="lineNum">      65 </span>            :         virtual bool    calcTimeOfImpact(
+<span class="lineNum">      66 </span>            :                                         const btTransform&amp; fromA,
+<span class="lineNum">      67 </span>            :                                         const btTransform&amp; toA,
+<span class="lineNum">      68 </span>            :                                         const btTransform&amp; fromB,
+<span class="lineNum">      69 </span>            :                                         const btTransform&amp; toB,
+<span class="lineNum">      70 </span>            :                                         CastResult&amp; result) = 0;
+<span class="lineNum">      71 </span>            : };
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span>            : #endif //BT_CONVEX_CAST_H
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

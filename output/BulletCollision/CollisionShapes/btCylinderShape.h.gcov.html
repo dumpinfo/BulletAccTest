@@ -1,0 +1,297 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/CollisionShapes/btCylinderShape.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/CollisionShapes</a> - btCylinderShape.h<span style="font-size: 80%;"> (source / <a href="btCylinderShape.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">60</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : #ifndef BT_CYLINDER_MINKOWSKI_H
+<span class="lineNum">      17 </span>            : #define BT_CYLINDER_MINKOWSKI_H
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : #include &quot;btBoxShape.h&quot;
+<span class="lineNum">      20 </span>            : #include &quot;BulletCollision/BroadphaseCollision/btBroadphaseProxy.h&quot; // for the types
+<span class="lineNum">      21 </span>            : #include &quot;LinearMath/btVector3.h&quot;
+<a name="22"><span class="lineNum">      22 </span>            : </a>
+<span class="lineNum">      23 </span>            : /// The btCylinderShape class implements a cylinder shape primitive, centered around the origin. Its central axis aligned with the Y axis. btCylinderShapeX is aligned with the X axis and btCylinderShapeZ around the Z axis.
+<span class="lineNum">      24 </span><span class="lineNoCov">          0 : ATTRIBUTE_ALIGNED16(class) btCylinderShape : public btConvexInternalShape</span>
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span>            : {
+<span class="lineNum">      27 </span>            : 
+<span class="lineNum">      28 </span>            : protected:
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span>            :         int     m_upAxis;
+<span class="lineNum">      31 </span>            : 
+<a name="32"><span class="lineNum">      32 </span>            : public:</a>
+<span class="lineNum">      33 </span>            : 
+<a name="34"><span class="lineNum">      34 </span><span class="lineNoCov">          0 : BT_DECLARE_ALIGNED_ALLOCATOR();</span></a>
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span><span class="lineNoCov">          0 :         btVector3 getHalfExtentsWithMargin() const</span>
+<span class="lineNum">      37 </span>            :         {
+<span class="lineNum">      38 </span><span class="lineNoCov">          0 :                 btVector3 halfExtents = getHalfExtentsWithoutMargin();</span>
+<span class="lineNum">      39 </span><span class="lineNoCov">          0 :                 btVector3 margin(getMargin(),getMargin(),getMargin());</span>
+<span class="lineNum">      40 </span><span class="lineNoCov">          0 :                 halfExtents += margin;</span>
+<span class="lineNum">      41 </span><span class="lineNoCov">          0 :                 return halfExtents;</span>
+<a name="42"><span class="lineNum">      42 </span>            :         }</a>
+<span class="lineNum">      43 </span>            :         
+<span class="lineNum">      44 </span><span class="lineNoCov">          0 :         const btVector3&amp; getHalfExtentsWithoutMargin() const</span>
+<span class="lineNum">      45 </span>            :         {
+<span class="lineNum">      46 </span><span class="lineNoCov">          0 :                 return m_implicitShapeDimensions;//changed in Bullet 2.63: assume the scaling and margin are included</span>
+<span class="lineNum">      47 </span>            :         }
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            :         btCylinderShape (const btVector3&amp; halfExtents);
+<span class="lineNum">      50 </span>            :         
+<span class="lineNum">      51 </span>            :         void getAabb(const btTransform&amp; t,btVector3&amp; aabbMin,btVector3&amp; aabbMax) const;
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span>            :         virtual void    calculateLocalInertia(btScalar mass,btVector3&amp; inertia) const;
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            :         virtual btVector3       localGetSupportingVertexWithoutMargin(const btVector3&amp; vec)const;
+<span class="lineNum">      56 </span>            : 
+<a name="57"><span class="lineNum">      57 </span>            :         virtual void    batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const;</a>
+<span class="lineNum">      58 </span>            : 
+<span class="lineNum">      59 </span><span class="lineNoCov">          0 :         virtual void setMargin(btScalar collisionMargin)</span>
+<span class="lineNum">      60 </span>            :         {
+<span class="lineNum">      61 </span>            :                 //correct the m_implicitShapeDimensions for the margin
+<span class="lineNum">      62 </span><span class="lineNoCov">          0 :                 btVector3 oldMargin(getMargin(),getMargin(),getMargin());</span>
+<span class="lineNum">      63 </span><span class="lineNoCov">          0 :                 btVector3 implicitShapeDimensionsWithMargin = m_implicitShapeDimensions+oldMargin;</span>
+<span class="lineNum">      64 </span>            :                 
+<span class="lineNum">      65 </span><span class="lineNoCov">          0 :                 btConvexInternalShape::setMargin(collisionMargin);</span>
+<span class="lineNum">      66 </span><span class="lineNoCov">          0 :                 btVector3 newMargin(getMargin(),getMargin(),getMargin());</span>
+<span class="lineNum">      67 </span><span class="lineNoCov">          0 :                 m_implicitShapeDimensions = implicitShapeDimensionsWithMargin - newMargin;</span>
+<span class="lineNum">      68 </span>            : 
+<a name="69"><span class="lineNum">      69 </span><span class="lineNoCov">          0 :         }</span></a>
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span><span class="lineNoCov">          0 :         virtual btVector3       localGetSupportingVertex(const btVector3&amp; vec) const</span>
+<span class="lineNum">      72 </span>            :         {
+<span class="lineNum">      73 </span>            : 
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 :                 btVector3 supVertex;</span>
+<span class="lineNum">      75 </span><span class="lineNoCov">          0 :                 supVertex = localGetSupportingVertexWithoutMargin(vec);</span>
+<span class="lineNum">      76 </span>            :                 
+<span class="lineNum">      77 </span><span class="lineNoCov">          0 :                 if ( getMargin()!=btScalar(0.) )</span>
+<span class="lineNum">      78 </span>            :                 {
+<span class="lineNum">      79 </span><span class="lineNoCov">          0 :                         btVector3 vecnorm = vec;</span>
+<span class="lineNum">      80 </span><span class="lineNoCov">          0 :                         if (vecnorm .length2() &lt; (SIMD_EPSILON*SIMD_EPSILON))</span>
+<span class="lineNum">      81 </span>            :                         {
+<span class="lineNum">      82 </span><span class="lineNoCov">          0 :                                 vecnorm.setValue(btScalar(-1.),btScalar(-1.),btScalar(-1.));</span>
+<span class="lineNum">      83 </span>            :                         } 
+<span class="lineNum">      84 </span><span class="lineNoCov">          0 :                         vecnorm.normalize();</span>
+<span class="lineNum">      85 </span><span class="lineNoCov">          0 :                         supVertex+= getMargin() * vecnorm;</span>
+<span class="lineNum">      86 </span>            :                 }
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :                 return supVertex;</span>
+<span class="lineNum">      88 </span>            :         }
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span>            :         //use box inertia
+<span class="lineNum">      92 </span>            :         //      virtual void    calculateLocalInertia(btScalar mass,btVector3&amp; inertia) const;
+<span class="lineNum">      93 </span>            : 
+<span class="lineNum">      94 </span>            : 
+<span class="lineNum">      95 </span>            :         int     getUpAxis() const
+<span class="lineNum">      96 </span>            :         {
+<span class="lineNum">      97 </span>            :                 return m_upAxis;
+<a name="98"><span class="lineNum">      98 </span>            :         }</a>
+<span class="lineNum">      99 </span>            : 
+<span class="lineNum">     100 </span><span class="lineNoCov">          0 :         virtual btVector3       getAnisotropicRollingFrictionDirection() const</span>
+<span class="lineNum">     101 </span>            :         {
+<span class="lineNum">     102 </span><span class="lineNoCov">          0 :                 btVector3 aniDir(0,0,0);</span>
+<span class="lineNum">     103 </span><span class="lineNoCov">          0 :                 aniDir[getUpAxis()]=1;</span>
+<span class="lineNum">     104 </span><span class="lineNoCov">          0 :                 return aniDir;</span>
+<a name="105"><span class="lineNum">     105 </span>            :         }</a>
+<span class="lineNum">     106 </span>            : 
+<span class="lineNum">     107 </span><span class="lineNoCov">          0 :         virtual btScalar getRadius() const</span>
+<span class="lineNum">     108 </span>            :         {
+<span class="lineNum">     109 </span><span class="lineNoCov">          0 :                 return getHalfExtentsWithMargin().getX();</span>
+<a name="110"><span class="lineNum">     110 </span>            :         }</a>
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span><span class="lineNoCov">          0 :         virtual void    setLocalScaling(const btVector3&amp; scaling)</span>
+<span class="lineNum">     113 </span>            :         {
+<span class="lineNum">     114 </span><span class="lineNoCov">          0 :                 btVector3 oldMargin(getMargin(),getMargin(),getMargin());</span>
+<span class="lineNum">     115 </span><span class="lineNoCov">          0 :                 btVector3 implicitShapeDimensionsWithMargin = m_implicitShapeDimensions+oldMargin;</span>
+<span class="lineNum">     116 </span><span class="lineNoCov">          0 :                 btVector3 unScaledImplicitShapeDimensionsWithMargin = implicitShapeDimensionsWithMargin / m_localScaling;</span>
+<span class="lineNum">     117 </span>            : 
+<span class="lineNum">     118 </span><span class="lineNoCov">          0 :                 btConvexInternalShape::setLocalScaling(scaling);</span>
+<span class="lineNum">     119 </span>            : 
+<span class="lineNum">     120 </span><span class="lineNoCov">          0 :                 m_implicitShapeDimensions = (unScaledImplicitShapeDimensionsWithMargin * m_localScaling) - oldMargin;</span>
+<span class="lineNum">     121 </span>            : 
+<span class="lineNum">     122 </span><span class="lineNoCov">          0 :         }</span>
+<a name="123"><span class="lineNum">     123 </span>            : </a>
+<span class="lineNum">     124 </span>            :         //debugging
+<span class="lineNum">     125 </span><span class="lineNoCov">          0 :         virtual const char*     getName()const</span>
+<span class="lineNum">     126 </span>            :         {
+<span class="lineNum">     127 </span><span class="lineNoCov">          0 :                 return &quot;CylinderY&quot;;</span>
+<span class="lineNum">     128 </span>            :         }
+<span class="lineNum">     129 </span>            : 
+<span class="lineNum">     130 </span>            :         virtual int     calculateSerializeBufferSize() const;
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            :         ///fills the dataBuffer and returns the struct name (and 0 on failure)
+<span class="lineNum">     133 </span>            :         virtual const char*     serialize(void* dataBuffer, btSerializer* serializer) const;
+<span class="lineNum">     134 </span>            : 
+<a name="135"><span class="lineNum">     135 </span>            : };</a>
+<span class="lineNum">     136 </span>            : 
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 : class btCylinderShapeX : public btCylinderShape</span>
+<span class="lineNum">     138 </span>            : {
+<span class="lineNum">     139 </span>            : public:
+<span class="lineNum">     140 </span><span class="lineNoCov">          0 :         BT_DECLARE_ALIGNED_ALLOCATOR();</span>
+<span class="lineNum">     141 </span>            :         
+<span class="lineNum">     142 </span>            :         btCylinderShapeX (const btVector3&amp; halfExtents);
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span>            :         virtual btVector3       localGetSupportingVertexWithoutMargin(const btVector3&amp; vec)const;
+<span class="lineNum">     145 </span>            :         virtual void    batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const;
+<a name="146"><span class="lineNum">     146 </span>            :         </a>
+<span class="lineNum">     147 </span>            :                 //debugging
+<span class="lineNum">     148 </span><span class="lineNoCov">          0 :         virtual const char*     getName()const</span>
+<span class="lineNum">     149 </span>            :         {
+<span class="lineNum">     150 </span><span class="lineNoCov">          0 :                 return &quot;CylinderX&quot;;</span>
+<a name="151"><span class="lineNum">     151 </span>            :         }</a>
+<span class="lineNum">     152 </span>            : 
+<span class="lineNum">     153 </span><span class="lineNoCov">          0 :         virtual btScalar getRadius() const</span>
+<span class="lineNum">     154 </span>            :         {
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :                 return getHalfExtentsWithMargin().getY();</span>
+<span class="lineNum">     156 </span>            :         }
+<span class="lineNum">     157 </span>            : 
+<a name="158"><span class="lineNum">     158 </span>            : };</a>
+<span class="lineNum">     159 </span>            : 
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 : class btCylinderShapeZ : public btCylinderShape</span>
+<span class="lineNum">     161 </span>            : {
+<span class="lineNum">     162 </span>            : public:
+<span class="lineNum">     163 </span><span class="lineNoCov">          0 :         BT_DECLARE_ALIGNED_ALLOCATOR();</span>
+<span class="lineNum">     164 </span>            :         
+<span class="lineNum">     165 </span>            :         btCylinderShapeZ (const btVector3&amp; halfExtents);
+<span class="lineNum">     166 </span>            : 
+<span class="lineNum">     167 </span>            :         virtual btVector3       localGetSupportingVertexWithoutMargin(const btVector3&amp; vec)const;
+<span class="lineNum">     168 </span>            :         virtual void    batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const;
+<a name="169"><span class="lineNum">     169 </span>            : </a>
+<span class="lineNum">     170 </span>            :                 //debugging
+<span class="lineNum">     171 </span><span class="lineNoCov">          0 :         virtual const char*     getName()const</span>
+<span class="lineNum">     172 </span>            :         {
+<span class="lineNum">     173 </span><span class="lineNoCov">          0 :                 return &quot;CylinderZ&quot;;</span>
+<a name="174"><span class="lineNum">     174 </span>            :         }</a>
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span><span class="lineNoCov">          0 :         virtual btScalar getRadius() const</span>
+<span class="lineNum">     177 </span>            :         {
+<span class="lineNum">     178 </span><span class="lineNoCov">          0 :                 return getHalfExtentsWithMargin().getX();</span>
+<span class="lineNum">     179 </span>            :         }
+<span class="lineNum">     180 </span>            : 
+<span class="lineNum">     181 </span>            : };
+<span class="lineNum">     182 </span>            : 
+<span class="lineNum">     183 </span>            : ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
+<span class="lineNum">     184 </span>            : struct  btCylinderShapeData
+<span class="lineNum">     185 </span>            : {
+<span class="lineNum">     186 </span>            :         btConvexInternalShapeData       m_convexInternalShapeData;
+<span class="lineNum">     187 </span>            : 
+<span class="lineNum">     188 </span>            :         int     m_upAxis;
+<span class="lineNum">     189 </span>            : 
+<span class="lineNum">     190 </span>            :         char    m_padding[4];
+<a name="191"><span class="lineNum">     191 </span>            : };</a>
+<span class="lineNum">     192 </span>            : 
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE       int     btCylinderShape::calculateSerializeBufferSize() const</span>
+<span class="lineNum">     194 </span>            : {
+<span class="lineNum">     195 </span><span class="lineNoCov">          0 :         return sizeof(btCylinderShapeData);</span>
+<span class="lineNum">     196 </span>            : }
+<a name="197"><span class="lineNum">     197 </span>            : </a>
+<span class="lineNum">     198 </span>            :         ///fills the dataBuffer and returns the struct name (and 0 on failure)
+<span class="lineNum">     199 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE       const char*     btCylinderShape::serialize(void* dataBuffer, btSerializer* serializer) const</span>
+<span class="lineNum">     200 </span>            : {
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 :         btCylinderShapeData* shapeData = (btCylinderShapeData*) dataBuffer;</span>
+<span class="lineNum">     202 </span>            :         
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :         btConvexInternalShape::serialize(&amp;shapeData-&gt;m_convexInternalShapeData,serializer);</span>
+<span class="lineNum">     204 </span>            : 
+<span class="lineNum">     205 </span><span class="lineNoCov">          0 :         shapeData-&gt;m_upAxis = m_upAxis;</span>
+<span class="lineNum">     206 </span>            :         
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 :         return &quot;btCylinderShapeData&quot;;</span>
+<span class="lineNum">     208 </span>            : }
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span>            : 
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span>            : #endif //BT_CYLINDER_MINKOWSKI_H
+<span class="lineNum">     213 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

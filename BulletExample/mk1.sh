@@ -1,0 +1,1 @@
+g++ *.cpp -o test -I ../Bullet/src/ -L./  -lglut -lGL -lGLU -lBulletDynamics -lBulletCollision -lLinearMath -lm -lstdc++ -lBulletSoftBody

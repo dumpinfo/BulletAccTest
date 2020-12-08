@@ -1,0 +1,534 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/CollisionDispatch/btSimulationIslandManager.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/CollisionDispatch</a> - btSimulationIslandManager.cpp<span style="font-size: 80%;"> (source / <a href="btSimulationIslandManager.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">125</td>
+            <td class="headerCovTableEntry">136</td>
+            <td class="headerCovTableEntryHi">91.9 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">9</td>
+            <td class="headerCovTableEntryLo">66.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : </a>
+<span class="lineNum">       2 </span>            : /*
+<span class="lineNum">       3 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       4 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       5 </span>            : 
+<span class="lineNum">       6 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       7 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       8 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       9 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">      10 </span>            : subject to the following restrictions:
+<span class="lineNum">      11 </span>            : 
+<span class="lineNum">      12 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      13 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      14 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      15 </span>            : */
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span>            : #include &quot;LinearMath/btScalar.h&quot;
+<span class="lineNum">      19 </span>            : #include &quot;btSimulationIslandManager.h&quot;
+<span class="lineNum">      20 </span>            : #include &quot;BulletCollision/BroadphaseCollision/btDispatcher.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;BulletCollision/NarrowPhaseCollision/btPersistentManifold.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;BulletCollision/CollisionDispatch/btCollisionObject.h&quot;
+<span class="lineNum">      23 </span>            : #include &quot;BulletCollision/CollisionDispatch/btCollisionWorld.h&quot;
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : //#include &lt;stdio.h&gt;
+<span class="lineNum">      26 </span>            : #include &quot;LinearMath/btQuickprof.h&quot;
+<span class="lineNum">      27 </span>            : 
+<span class="lineNum">      28 </span><span class="lineCov">          1 : btSimulationIslandManager::btSimulationIslandManager():</span>
+<span class="lineNum">      29 </span><span class="lineCov">          3 : m_splitIslands(true)</span>
+<span class="lineNum">      30 </span>            : {
+<a name="31"><span class="lineNum">      31 </span><span class="lineCov">          1 : }</span></a>
+<span class="lineNum">      32 </span>            : 
+<span class="lineNum">      33 </span><span class="lineNoCov">          0 : btSimulationIslandManager::~btSimulationIslandManager()</span>
+<span class="lineNum">      34 </span>            : {
+<span class="lineNum">      35 </span><span class="lineNoCov">          0 : }</span>
+<a name="36"><span class="lineNum">      36 </span>            : </a>
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span><span class="lineNoCov">          0 : void btSimulationIslandManager::initUnionFind(int n)</span>
+<span class="lineNum">      39 </span>            : {
+<span class="lineNum">      40 </span><span class="lineCov">       1558 :                 m_unionFind.reset(n);</span>
+<span class="lineNum">      41 </span><span class="lineNoCov">          0 : }</span>
+<a name="42"><span class="lineNum">      42 </span>            :                 </a>
+<span class="lineNum">      43 </span>            : 
+<span class="lineNum">      44 </span><span class="lineCov">       1558 : void btSimulationIslandManager::findUnions(btDispatcher* /* dispatcher */,btCollisionWorld* colWorld)</span>
+<span class="lineNum">      45 </span>            : {
+<span class="lineNum">      46 </span>            :         
+<span class="lineNum">      47 </span>            :         {
+<span class="lineNum">      48 </span><span class="lineCov">       3116 :                 btOverlappingPairCache* pairCachePtr = colWorld-&gt;getPairCache();</span>
+<span class="lineNum">      49 </span><span class="lineCov">       1558 :                 const int numOverlappingPairs = pairCachePtr-&gt;getNumOverlappingPairs();</span>
+<span class="lineNum">      50 </span><span class="lineCov">       1558 :                 if (numOverlappingPairs)</span>
+<span class="lineNum">      51 </span>            :                 {
+<span class="lineNum">      52 </span><span class="lineCov">       1558 :                 btBroadphasePair* pairPtr = pairCachePtr-&gt;getOverlappingPairArrayPtr();</span>
+<span class="lineNum">      53 </span>            :                 
+<span class="lineNum">      54 </span><span class="lineCov">     226736 :                 for (int i=0;i&lt;numOverlappingPairs;i++)</span>
+<span class="lineNum">      55 </span>            :                 {
+<span class="lineNum">      56 </span><span class="lineCov">     225178 :                         const btBroadphasePair&amp; collisionPair = pairPtr[i];</span>
+<span class="lineNum">      57 </span><span class="lineCov">     225178 :                         btCollisionObject* colObj0 = (btCollisionObject*)collisionPair.m_pProxy0-&gt;m_clientObject;</span>
+<span class="lineNum">      58 </span><span class="lineCov">     225178 :                         btCollisionObject* colObj1 = (btCollisionObject*)collisionPair.m_pProxy1-&gt;m_clientObject;</span>
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span><span class="lineCov">     450356 :                         if (((colObj0) &amp;&amp; ((colObj0)-&gt;mergesSimulationIslands())) &amp;&amp;</span>
+<span class="lineNum">      61 </span><span class="lineCov">     282640 :                                 ((colObj1) &amp;&amp; ((colObj1)-&gt;mergesSimulationIslands())))</span>
+<span class="lineNum">      62 </span>            :                         {
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span><span class="lineCov">     141320 :                                 m_unionFind.unite((colObj0)-&gt;getIslandTag(),</span>
+<span class="lineNum">      65 </span>            :                                         (colObj1)-&gt;getIslandTag());
+<span class="lineNum">      66 </span>            :                         }
+<span class="lineNum">      67 </span>            :                 }
+<span class="lineNum">      68 </span>            :                 }
+<span class="lineNum">      69 </span>            :         }
+<span class="lineNum">      70 </span><span class="lineCov">       1558 : }</span>
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            : #ifdef STATIC_SIMULATION_ISLAND_OPTIMIZATION
+<span class="lineNum">      73 </span><span class="lineCov">       1558 : void   btSimulationIslandManager::updateActivationState(btCollisionWorld* colWorld,btDispatcher* dispatcher)</span>
+<span class="lineNum">      74 </span>            : {
+<span class="lineNum">      75 </span>            : 
+<span class="lineNum">      76 </span>            :         // put the index into m_controllers into m_tag   
+<span class="lineNum">      77 </span><span class="lineCov">       1558 :         int index = 0;</span>
+<span class="lineNum">      78 </span>            :         {
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span>            :                 int i;
+<span class="lineNum">      81 </span><span class="lineCov">     122119 :                 for (i=0;i&lt;colWorld-&gt;getCollisionObjectArray().size(); i++)</span>
+<span class="lineNum">      82 </span>            :                 {
+<span class="lineNum">      83 </span><span class="lineCov">     241122 :                         btCollisionObject*   collisionObject= colWorld-&gt;getCollisionObjectArray()[i];</span>
+<span class="lineNum">      84 </span>            :                         //Adding filtering here
+<span class="lineNum">      85 </span><span class="lineCov">     241122 :                         if (!collisionObject-&gt;isStaticOrKinematicObject())</span>
+<span class="lineNum">      86 </span>            :                         {
+<span class="lineNum">      87 </span><span class="lineCov">     119003 :                                 collisionObject-&gt;setIslandTag(index++);</span>
+<span class="lineNum">      88 </span>            :                         }
+<span class="lineNum">      89 </span><span class="lineCov">     241122 :                         collisionObject-&gt;setCompanionId(-1);</span>
+<span class="lineNum">      90 </span><span class="lineCov">     241122 :                         collisionObject-&gt;setHitFraction(btScalar(1.));</span>
+<span class="lineNum">      91 </span>            :                 }
+<span class="lineNum">      92 </span>            :         }
+<span class="lineNum">      93 </span>            :         // do the union find
+<span class="lineNum">      94 </span>            : 
+<span class="lineNum">      95 </span><span class="lineCov">       1558 :         initUnionFind( index );</span>
+<span class="lineNum">      96 </span>            : 
+<span class="lineNum">      97 </span><span class="lineCov">       1558 :         findUnions(dispatcher,colWorld);</span>
+<span class="lineNum">      98 </span><span class="lineCov">       1558 : }</span>
+<span class="lineNum">      99 </span>            : 
+<span class="lineNum">     100 </span><span class="lineCov">       1558 : void   btSimulationIslandManager::storeIslandActivationState(btCollisionWorld* colWorld)</span>
+<span class="lineNum">     101 </span>            : {
+<span class="lineNum">     102 </span>            :         // put the islandId ('find' value) into m_tag   
+<span class="lineNum">     103 </span>            :         {
+<span class="lineNum">     104 </span><span class="lineCov">       1558 :                 int index = 0;</span>
+<span class="lineNum">     105 </span>            :                 int i;
+<span class="lineNum">     106 </span><span class="lineCov">     122119 :                 for (i=0;i&lt;colWorld-&gt;getCollisionObjectArray().size();i++)</span>
+<span class="lineNum">     107 </span>            :                 {
+<span class="lineNum">     108 </span><span class="lineCov">     241122 :                         btCollisionObject* collisionObject= colWorld-&gt;getCollisionObjectArray()[i];</span>
+<span class="lineNum">     109 </span><span class="lineCov">     241122 :                         if (!collisionObject-&gt;isStaticOrKinematicObject())</span>
+<span class="lineNum">     110 </span>            :                         {
+<span class="lineNum">     111 </span><span class="lineCov">     238006 :                                 collisionObject-&gt;setIslandTag( m_unionFind.find(index) );</span>
+<span class="lineNum">     112 </span>            :                                 //Set the correct object offset in Collision Object Array
+<span class="lineNum">     113 </span><span class="lineCov">     238006 :                                 m_unionFind.getElement(index).m_sz = i;</span>
+<span class="lineNum">     114 </span><span class="lineCov">     238006 :                                 collisionObject-&gt;setCompanionId(-1);</span>
+<span class="lineNum">     115 </span><span class="lineCov">     119003 :                                 index++;</span>
+<span class="lineNum">     116 </span>            :                         } else
+<span class="lineNum">     117 </span>            :                         {
+<span class="lineNum">     118 </span><span class="lineCov">       3116 :                                 collisionObject-&gt;setIslandTag(-1);</span>
+<span class="lineNum">     119 </span><span class="lineCov">       1558 :                                 collisionObject-&gt;setCompanionId(-2);</span>
+<span class="lineNum">     120 </span>            :                         }
+<span class="lineNum">     121 </span>            :                 }
+<span class="lineNum">     122 </span>            :         }
+<span class="lineNum">     123 </span><span class="lineCov">       1558 : }</span>
+<span class="lineNum">     124 </span>            : 
+<span class="lineNum">     125 </span>            : 
+<span class="lineNum">     126 </span>            : #else //STATIC_SIMULATION_ISLAND_OPTIMIZATION
+<span class="lineNum">     127 </span>            : void    btSimulationIslandManager::updateActivationState(btCollisionWorld* colWorld,btDispatcher* dispatcher)
+<span class="lineNum">     128 </span>            : {
+<span class="lineNum">     129 </span>            : 
+<span class="lineNum">     130 </span>            :         initUnionFind( int (colWorld-&gt;getCollisionObjectArray().size()));
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            :         // put the index into m_controllers into m_tag  
+<span class="lineNum">     133 </span>            :         {
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span>            :                 int index = 0;
+<span class="lineNum">     136 </span>            :                 int i;
+<span class="lineNum">     137 </span>            :                 for (i=0;i&lt;colWorld-&gt;getCollisionObjectArray().size(); i++)
+<span class="lineNum">     138 </span>            :                 {
+<span class="lineNum">     139 </span>            :                         btCollisionObject*      collisionObject= colWorld-&gt;getCollisionObjectArray()[i];
+<span class="lineNum">     140 </span>            :                         collisionObject-&gt;setIslandTag(index);
+<span class="lineNum">     141 </span>            :                         collisionObject-&gt;setCompanionId(-1);
+<span class="lineNum">     142 </span>            :                         collisionObject-&gt;setHitFraction(btScalar(1.));
+<span class="lineNum">     143 </span>            :                         index++;
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span>            :                 }
+<span class="lineNum">     146 </span>            :         }
+<span class="lineNum">     147 </span>            :         // do the union find
+<span class="lineNum">     148 </span>            : 
+<span class="lineNum">     149 </span>            :         findUnions(dispatcher,colWorld);
+<span class="lineNum">     150 </span>            : }
+<span class="lineNum">     151 </span>            : 
+<span class="lineNum">     152 </span>            : void    btSimulationIslandManager::storeIslandActivationState(btCollisionWorld* colWorld)
+<span class="lineNum">     153 </span>            : {
+<span class="lineNum">     154 </span>            :         // put the islandId ('find' value) into m_tag   
+<span class="lineNum">     155 </span>            :         {
+<span class="lineNum">     156 </span>            : 
+<span class="lineNum">     157 </span>            : 
+<span class="lineNum">     158 </span>            :                 int index = 0;
+<span class="lineNum">     159 </span>            :                 int i;
+<span class="lineNum">     160 </span>            :                 for (i=0;i&lt;colWorld-&gt;getCollisionObjectArray().size();i++)
+<span class="lineNum">     161 </span>            :                 {
+<span class="lineNum">     162 </span>            :                         btCollisionObject* collisionObject= colWorld-&gt;getCollisionObjectArray()[i];
+<span class="lineNum">     163 </span>            :                         if (!collisionObject-&gt;isStaticOrKinematicObject())
+<span class="lineNum">     164 </span>            :                         {
+<span class="lineNum">     165 </span>            :                                 collisionObject-&gt;setIslandTag( m_unionFind.find(index) );
+<span class="lineNum">     166 </span>            :                                 collisionObject-&gt;setCompanionId(-1);
+<span class="lineNum">     167 </span>            :                         } else
+<span class="lineNum">     168 </span>            :                         {
+<span class="lineNum">     169 </span>            :                                 collisionObject-&gt;setIslandTag(-1);
+<span class="lineNum">     170 </span>            :                                 collisionObject-&gt;setCompanionId(-2);
+<span class="lineNum">     171 </span>            :                         }
+<span class="lineNum">     172 </span>            :                         index++;
+<span class="lineNum">     173 </span>            :                 }
+<span class="lineNum">     174 </span>            :         }
+<span class="lineNum">     175 </span>            : }
+<span class="lineNum">     176 </span>            : 
+<span class="lineNum">     177 </span>            : #endif //STATIC_SIMULATION_ISLAND_OPTIMIZATION
+<span class="lineNum">     178 </span>            : 
+<span class="lineNum">     179 </span>            : inline  int     getIslandId(const btPersistentManifold* lhs)
+<span class="lineNum">     180 </span>            : {
+<span class="lineNum">     181 </span>            :         int islandId;
+<span class="lineNum">     182 </span><span class="lineCov">    3263024 :         const btCollisionObject* rcolObj0 = static_cast&lt;const btCollisionObject*&gt;(lhs-&gt;getBody0());</span>
+<span class="lineNum">     183 </span><span class="lineCov">    3263024 :         const btCollisionObject* rcolObj1 = static_cast&lt;const btCollisionObject*&gt;(lhs-&gt;getBody1());</span>
+<span class="lineNum">     184 </span><span class="lineCov">    3263024 :         islandId= rcolObj0-&gt;getIslandTag()&gt;=0?rcolObj0-&gt;getIslandTag():rcolObj1-&gt;getIslandTag();</span>
+<span class="lineNum">     185 </span>            :         return islandId;
+<span class="lineNum">     186 </span>            : 
+<span class="lineNum">     187 </span>            : }
+<span class="lineNum">     188 </span>            : 
+<span class="lineNum">     189 </span>            : 
+<span class="lineNum">     190 </span>            : 
+<span class="lineNum">     191 </span>            : /// function object that routes calls to operator&lt;
+<span class="lineNum">     192 </span>            : class btPersistentManifoldSortPredicate
+<span class="lineNum">     193 </span>            : {
+<span class="lineNum">     194 </span>            :         public:
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span>            :                 SIMD_FORCE_INLINE bool operator() ( const btPersistentManifold* lhs, const btPersistentManifold* rhs ) const
+<span class="lineNum">     197 </span>            :                 {
+<span class="lineNum">     198 </span><span class="lineCov">    3014810 :                         return getIslandId(lhs) &lt; getIslandId(rhs);</span>
+<span class="lineNum">     199 </span>            :                 }
+<span class="lineNum">     200 </span>            : };
+<span class="lineNum">     201 </span>            : 
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span><span class="lineCov">       1558 : void btSimulationIslandManager::buildIslands(btDispatcher* dispatcher,btCollisionWorld* collisionWorld)</span>
+<span class="lineNum">     204 </span>            : {
+<span class="lineNum">     205 </span>            : 
+<span class="lineNum">     206 </span><span class="lineCov">       1558 :         BT_PROFILE(&quot;islandUnionFindAndQuickSort&quot;);</span>
+<span class="lineNum">     207 </span>            :         
+<span class="lineNum">     208 </span><span class="lineCov">       1558 :         btCollisionObjectArray&amp; collisionObjects = collisionWorld-&gt;getCollisionObjectArray();</span>
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span><span class="lineCov">       1558 :         m_islandmanifold.resize(0);</span>
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span>            :         //we are going to sort the unionfind array, and store the element id in the size
+<span class="lineNum">     213 </span>            :         //afterwards, we clean unionfind, to make sure no-one uses it anymore
+<span class="lineNum">     214 </span>            :         
+<span class="lineNum">     215 </span><span class="lineCov">       1558 :         getUnionFind().sortIslands();</span>
+<span class="lineNum">     216 </span><span class="lineCov">       3116 :         int numElem = getUnionFind().getNumElements();</span>
+<span class="lineNum">     217 </span>            : 
+<span class="lineNum">     218 </span><span class="lineCov">       1558 :         int endIslandIndex=1;</span>
+<span class="lineNum">     219 </span>            :         int startIslandIndex;
+<span class="lineNum">     220 </span>            : 
+<span class="lineNum">     221 </span>            : 
+<span class="lineNum">     222 </span>            :         //update the sleeping state for bodies, if all are sleeping
+<span class="lineNum">     223 </span><span class="lineCov">       1558 :         for ( startIslandIndex=0;startIslandIndex&lt;numElem;startIslandIndex = endIslandIndex)</span>
+<span class="lineNum">     224 </span>            :         {
+<span class="lineNum">     225 </span><span class="lineCov">      78740 :                 int islandId = getUnionFind().getElement(startIslandIndex).m_id;</span>
+<span class="lineNum">     226 </span><span class="lineCov">     156815 :                 for (endIslandIndex = startIslandIndex+1;(endIslandIndex&lt;numElem) &amp;&amp; (getUnionFind().getElement(endIslandIndex).m_id == islandId);endIslandIndex++)</span>
+<span class="lineNum">     227 </span>            :                 {
+<span class="lineNum">     228 </span>            :                 }
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span>            :                 //int numSleeping = 0;
+<span class="lineNum">     231 </span>            : 
+<span class="lineNum">     232 </span><span class="lineCov">      39370 :                 bool allSleeping = true;</span>
+<span class="lineNum">     233 </span>            : 
+<span class="lineNum">     234 </span>            :                 int idx;
+<span class="lineNum">     235 </span><span class="lineCov">     158373 :                 for (idx=startIslandIndex;idx&lt;endIslandIndex;idx++)</span>
+<span class="lineNum">     236 </span>            :                 {
+<span class="lineNum">     237 </span><span class="lineCov">     238006 :                         int i = getUnionFind().getElement(idx).m_sz;</span>
+<span class="lineNum">     238 </span>            : 
+<span class="lineNum">     239 </span><span class="lineCov">     238006 :                         btCollisionObject* colObj0 = collisionObjects[i];</span>
+<span class="lineNum">     240 </span><span class="lineCov">     119003 :                         if ((colObj0-&gt;getIslandTag() != islandId) &amp;&amp; (colObj0-&gt;getIslandTag() != -1))</span>
+<span class="lineNum">     241 </span>            :                         {
+<span class="lineNum">     242 </span>            : //                              printf(&quot;error in island management\n&quot;);
+<span class="lineNum">     243 </span>            :                         }
+<span class="lineNum">     244 </span>            : 
+<span class="lineNum">     245 </span>            :                         btAssert((colObj0-&gt;getIslandTag() == islandId) || (colObj0-&gt;getIslandTag() == -1));
+<span class="lineNum">     246 </span><span class="lineCov">     119003 :                         if (colObj0-&gt;getIslandTag() == islandId)</span>
+<span class="lineNum">     247 </span>            :                         {
+<span class="lineNum">     248 </span><span class="lineCov">     119003 :                                 if (colObj0-&gt;getActivationState()== ACTIVE_TAG)</span>
+<span class="lineNum">     249 </span>            :                                 {
+<span class="lineNum">     250 </span><span class="lineCov">      79843 :                                         allSleeping = false;</span>
+<span class="lineNum">     251 </span>            :                                 }
+<span class="lineNum">     252 </span><span class="lineCov">     119003 :                                 if (colObj0-&gt;getActivationState()== DISABLE_DEACTIVATION)</span>
+<span class="lineNum">     253 </span>            :                                 {
+<span class="lineNum">     254 </span><span class="lineCov">         11 :                                         allSleeping = false;</span>
+<span class="lineNum">     255 </span>            :                                 }
+<span class="lineNum">     256 </span>            :                         }
+<span class="lineNum">     257 </span>            :                 }
+<span class="lineNum">     258 </span>            :                         
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span><span class="lineCov">      39370 :                 if (allSleeping)</span>
+<span class="lineNum">     261 </span>            :                 {
+<span class="lineNum">     262 </span>            :                         int idx;
+<span class="lineNum">     263 </span><span class="lineCov">      35417 :                         for (idx=startIslandIndex;idx&lt;endIslandIndex;idx++)</span>
+<span class="lineNum">     264 </span>            :                         {
+<span class="lineNum">     265 </span><span class="lineCov">      24484 :                                 int i = getUnionFind().getElement(idx).m_sz;</span>
+<span class="lineNum">     266 </span><span class="lineCov">      24484 :                                 btCollisionObject* colObj0 = collisionObjects[i];</span>
+<span class="lineNum">     267 </span><span class="lineCov">      12242 :                                 if ((colObj0-&gt;getIslandTag() != islandId) &amp;&amp; (colObj0-&gt;getIslandTag() != -1))</span>
+<span class="lineNum">     268 </span>            :                                 {
+<span class="lineNum">     269 </span>            : //                                      printf(&quot;error in island management\n&quot;);
+<span class="lineNum">     270 </span>            :                                 }
+<span class="lineNum">     271 </span>            : 
+<span class="lineNum">     272 </span>            :                                 btAssert((colObj0-&gt;getIslandTag() == islandId) || (colObj0-&gt;getIslandTag() == -1));
+<span class="lineNum">     273 </span>            : 
+<span class="lineNum">     274 </span><span class="lineCov">      12242 :                                 if (colObj0-&gt;getIslandTag() == islandId)</span>
+<span class="lineNum">     275 </span>            :                                 {
+<span class="lineNum">     276 </span><span class="lineCov">      12242 :                                         colObj0-&gt;setActivationState( ISLAND_SLEEPING );</span>
+<span class="lineNum">     277 </span>            :                                 }
+<span class="lineNum">     278 </span>            :                         }
+<span class="lineNum">     279 </span>            :                 } else
+<span class="lineNum">     280 </span>            :                 {
+<span class="lineNum">     281 </span>            : 
+<span class="lineNum">     282 </span>            :                         int idx;
+<span class="lineNum">     283 </span><span class="lineCov">     241959 :                         for (idx=startIslandIndex;idx&lt;endIslandIndex;idx++)</span>
+<span class="lineNum">     284 </span>            :                         {
+<span class="lineNum">     285 </span><span class="lineCov">     213522 :                                 int i = getUnionFind().getElement(idx).m_sz;</span>
+<span class="lineNum">     286 </span>            : 
+<span class="lineNum">     287 </span><span class="lineCov">     213522 :                                 btCollisionObject* colObj0 = collisionObjects[i];</span>
+<span class="lineNum">     288 </span><span class="lineCov">     106761 :                                 if ((colObj0-&gt;getIslandTag() != islandId) &amp;&amp; (colObj0-&gt;getIslandTag() != -1))</span>
+<span class="lineNum">     289 </span>            :                                 {
+<span class="lineNum">     290 </span>            : //                                      printf(&quot;error in island management\n&quot;);
+<span class="lineNum">     291 </span>            :                                 }
+<span class="lineNum">     292 </span>            : 
+<span class="lineNum">     293 </span>            :                                 btAssert((colObj0-&gt;getIslandTag() == islandId) || (colObj0-&gt;getIslandTag() == -1));
+<span class="lineNum">     294 </span>            : 
+<span class="lineNum">     295 </span><span class="lineCov">     106761 :                                 if (colObj0-&gt;getIslandTag() == islandId)</span>
+<span class="lineNum">     296 </span>            :                                 {
+<span class="lineNum">     297 </span><span class="lineCov">     106761 :                                         if ( colObj0-&gt;getActivationState() == ISLAND_SLEEPING)</span>
+<span class="lineNum">     298 </span>            :                                         {
+<span class="lineNum">     299 </span><span class="lineCov">         21 :                                                 colObj0-&gt;setActivationState( WANTS_DEACTIVATION);</span>
+<span class="lineNum">     300 </span><span class="lineCov">         21 :                                                 colObj0-&gt;setDeactivationTime(0.f);</span>
+<span class="lineNum">     301 </span>            :                                         }
+<span class="lineNum">     302 </span>            :                                 }
+<span class="lineNum">     303 </span>            :                         }
+<span class="lineNum">     304 </span>            :                 }
+<span class="lineNum">     305 </span>            :         }
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span>            :         
+<span class="lineNum">     308 </span>            :         int i;
+<span class="lineNum">     309 </span><span class="lineCov">       1558 :         int maxNumManifolds = dispatcher-&gt;getNumManifolds();</span>
+<span class="lineNum">     310 </span>            : 
+<span class="lineNum">     311 </span>            : //#define SPLIT_ISLANDS 1
+<span class="lineNum">     312 </span>            : //#ifdef SPLIT_ISLANDS
+<span class="lineNum">     313 </span>            : 
+<span class="lineNum">     314 </span>            :         
+<span class="lineNum">     315 </span>            : //#endif //SPLIT_ISLANDS
+<span class="lineNum">     316 </span>            : 
+<span class="lineNum">     317 </span>            :         
+<span class="lineNum">     318 </span><span class="lineCov">     451914 :         for (i=0;i&lt;maxNumManifolds ;i++)</span>
+<span class="lineNum">     319 </span>            :         {
+<span class="lineNum">     320 </span><span class="lineCov">     225178 :                  btPersistentManifold* manifold = dispatcher-&gt;getManifoldByIndexInternal(i);</span>
+<span class="lineNum">     321 </span>            :                  
+<span class="lineNum">     322 </span><span class="lineCov">     225178 :                  const btCollisionObject* colObj0 = static_cast&lt;const btCollisionObject*&gt;(manifold-&gt;getBody0());</span>
+<span class="lineNum">     323 </span><span class="lineCov">     225178 :                  const btCollisionObject* colObj1 = static_cast&lt;const btCollisionObject*&gt;(manifold-&gt;getBody1());</span>
+<span class="lineNum">     324 </span>            :                 
+<span class="lineNum">     325 </span>            :                  ///@todo: check sleeping conditions!
+<span class="lineNum">     326 </span><span class="lineCov">     225178 :                  if (((colObj0) &amp;&amp; colObj0-&gt;getActivationState() != ISLAND_SLEEPING) ||</span>
+<span class="lineNum">     327 </span><span class="lineCov">      85167 :                         ((colObj1) &amp;&amp; colObj1-&gt;getActivationState() != ISLAND_SLEEPING))</span>
+<span class="lineNum">     328 </span>            :                 {
+<span class="lineNum">     329 </span>            :                 
+<span class="lineNum">     330 </span>            :                         //kinematic objects don't merge islands, but wake up all connected objects
+<span class="lineNum">     331 </span><span class="lineCov">     423254 :                         if (colObj0-&gt;isKinematicObject() &amp;&amp; colObj0-&gt;getActivationState() != ISLAND_SLEEPING)</span>
+<span class="lineNum">     332 </span>            :                         {
+<span class="lineNum">     333 </span><span class="lineNoCov">          0 :                                 if (colObj0-&gt;hasContactResponse())</span>
+<span class="lineNum">     334 </span><span class="lineNoCov">          0 :                                         colObj1-&gt;activate();</span>
+<span class="lineNum">     335 </span>            :                         }
+<span class="lineNum">     336 </span><span class="lineCov">     423254 :                         if (colObj1-&gt;isKinematicObject() &amp;&amp; colObj1-&gt;getActivationState() != ISLAND_SLEEPING)</span>
+<span class="lineNum">     337 </span>            :                         {
+<span class="lineNum">     338 </span><span class="lineNoCov">          0 :                                 if (colObj1-&gt;hasContactResponse())</span>
+<span class="lineNum">     339 </span><span class="lineNoCov">          0 :                                         colObj0-&gt;activate();</span>
+<span class="lineNum">     340 </span>            :                         }
+<span class="lineNum">     341 </span><span class="lineCov">     211627 :                         if(m_splitIslands)</span>
+<span class="lineNum">     342 </span>            :                         { 
+<span class="lineNum">     343 </span>            :                                 //filtering for response
+<span class="lineNum">     344 </span><span class="lineCov">     211627 :                                 if (dispatcher-&gt;needsResponse(colObj0,colObj1))</span>
+<span class="lineNum">     345 </span><span class="lineCov">     211627 :                                         m_islandmanifold.push_back(manifold);</span>
+<span class="lineNum">     346 </span>            :                         }
+<span class="lineNum">     347 </span>            :                 }
+<span class="lineNum">     348 </span>            :         }
+<span class="lineNum">     349 </span><span class="lineCov">       1558 : }</span>
+<span class="lineNum">     350 </span>            : 
+<span class="lineNum">     351 </span>            : 
+<span class="lineNum">     352 </span>            : 
+<span class="lineNum">     353 </span>            : ///@todo: this is random access, it can be walked 'cache friendly'!
+<span class="lineNum">     354 </span><span class="lineCov">       1558 : void btSimulationIslandManager::buildAndProcessIslands(btDispatcher* dispatcher,btCollisionWorld* collisionWorld, IslandCallback* callback)</span>
+<span class="lineNum">     355 </span>            : {
+<span class="lineNum">     356 </span><span class="lineCov">       1558 :         btCollisionObjectArray&amp; collisionObjects = collisionWorld-&gt;getCollisionObjectArray();</span>
+<span class="lineNum">     357 </span>            : 
+<span class="lineNum">     358 </span><span class="lineCov">       1558 :         buildIslands(dispatcher,collisionWorld);</span>
+<span class="lineNum">     359 </span>            : 
+<span class="lineNum">     360 </span><span class="lineCov">       1558 :         int endIslandIndex=1;</span>
+<span class="lineNum">     361 </span>            :         int startIslandIndex;
+<span class="lineNum">     362 </span><span class="lineCov">       3116 :         int numElem = getUnionFind().getNumElements();</span>
+<span class="lineNum">     363 </span>            : 
+<span class="lineNum">     364 </span><span class="lineCov">       1558 :         BT_PROFILE(&quot;processIslands&quot;);</span>
+<span class="lineNum">     365 </span>            : 
+<span class="lineNum">     366 </span><span class="lineCov">       1558 :         if(!m_splitIslands)</span>
+<span class="lineNum">     367 </span>            :         {
+<span class="lineNum">     368 </span><span class="lineNoCov">          0 :                 btPersistentManifold** manifold = dispatcher-&gt;getInternalManifoldPointer();</span>
+<span class="lineNum">     369 </span><span class="lineNoCov">          0 :                 int maxNumManifolds = dispatcher-&gt;getNumManifolds();</span>
+<span class="lineNum">     370 </span><span class="lineNoCov">          0 :                 callback-&gt;processIsland(&amp;collisionObjects[0],collisionObjects.size(),manifold,maxNumManifolds, -1);</span>
+<span class="lineNum">     371 </span>            :         }
+<span class="lineNum">     372 </span>            :         else
+<span class="lineNum">     373 </span>            :         {
+<span class="lineNum">     374 </span>            :                 // Sort manifolds, based on islands
+<span class="lineNum">     375 </span>            :                 // Sort the vector using predicate and std::sort
+<span class="lineNum">     376 </span>            :                 //std::sort(islandmanifold.begin(), islandmanifold.end(), btPersistentManifoldSortPredicate);
+<span class="lineNum">     377 </span>            : 
+<span class="lineNum">     378 </span><span class="lineCov">       1558 :                 int numManifolds = int (m_islandmanifold.size());</span>
+<span class="lineNum">     379 </span>            : 
+<span class="lineNum">     380 </span>            :                 //tried a radix sort, but quicksort/heapsort seems still faster
+<span class="lineNum">     381 </span>            :                 //@todo rewrite island management
+<span class="lineNum">     382 </span><span class="lineCov">       3116 :                 m_islandmanifold.quickSort(btPersistentManifoldSortPredicate());</span>
+<span class="lineNum">     383 </span>            :                 //m_islandmanifold.heapSort(btPersistentManifoldSortPredicate());
+<span class="lineNum">     384 </span>            : 
+<span class="lineNum">     385 </span>            :                 //now process all active islands (sets of manifolds for now)
+<span class="lineNum">     386 </span>            : 
+<span class="lineNum">     387 </span><span class="lineCov">       1558 :                 int startManifoldIndex = 0;</span>
+<span class="lineNum">     388 </span><span class="lineCov">       1558 :                 int endManifoldIndex = 1;</span>
+<span class="lineNum">     389 </span>            : 
+<span class="lineNum">     390 </span>            :                 //int islandId;
+<span class="lineNum">     391 </span>            : 
+<span class="lineNum">     392 </span>            :                 
+<span class="lineNum">     393 </span>            : 
+<span class="lineNum">     394 </span>            :         //      printf(&quot;Start Islands\n&quot;);
+<span class="lineNum">     395 </span>            : 
+<span class="lineNum">     396 </span>            :                 //traverse the simulation islands, and call the solver, unless all objects are sleeping/deactivated
+<span class="lineNum">     397 </span><span class="lineCov">      40928 :                 for ( startIslandIndex=0;startIslandIndex&lt;numElem;startIslandIndex = endIslandIndex)</span>
+<span class="lineNum">     398 </span>            :                 {
+<span class="lineNum">     399 </span><span class="lineCov">      78740 :                         int islandId = getUnionFind().getElement(startIslandIndex).m_id;</span>
+<span class="lineNum">     400 </span>            : 
+<span class="lineNum">     401 </span>            : 
+<span class="lineNum">     402 </span><span class="lineCov">      39370 :                            bool islandSleeping = true;</span>
+<span class="lineNum">     403 </span>            :                         
+<span class="lineNum">     404 </span><span class="lineCov">     315188 :                                         for (endIslandIndex = startIslandIndex;(endIslandIndex&lt;numElem) &amp;&amp; (getUnionFind().getElement(endIslandIndex).m_id == islandId);endIslandIndex++)</span>
+<span class="lineNum">     405 </span>            :                                         {
+<span class="lineNum">     406 </span><span class="lineCov">     238006 :                                                         int i = getUnionFind().getElement(endIslandIndex).m_sz;</span>
+<span class="lineNum">     407 </span><span class="lineCov">     238006 :                                                         btCollisionObject* colObj0 = collisionObjects[i];</span>
+<span class="lineNum">     408 </span><span class="lineCov">     119003 :                                                         m_islandBodies.push_back(colObj0);</span>
+<span class="lineNum">     409 </span><span class="lineCov">     225764 :                                                         if (colObj0-&gt;isActive())</span>
+<span class="lineNum">     410 </span>            :                                                                         islandSleeping = false;
+<span class="lineNum">     411 </span>            :                                         }
+<span class="lineNum">     412 </span>            :                         
+<span class="lineNum">     413 </span>            : 
+<span class="lineNum">     414 </span>            :                         //find the accompanying contact manifold for this islandId
+<span class="lineNum">     415 </span><span class="lineCov">      39370 :                         int numIslandManifolds = 0;</span>
+<span class="lineNum">     416 </span><span class="lineCov">      39370 :                         btPersistentManifold** startManifold = 0;</span>
+<span class="lineNum">     417 </span>            : 
+<span class="lineNum">     418 </span><span class="lineCov">      39370 :                         if (startManifoldIndex&lt;numManifolds)</span>
+<span class="lineNum">     419 </span>            :                         {
+<span class="lineNum">     420 </span><span class="lineCov">     114435 :                                 int curIslandId = getIslandId(m_islandmanifold[startManifoldIndex]);</span>
+<span class="lineNum">     421 </span><span class="lineCov">      38145 :                                 if (curIslandId == islandId)</span>
+<span class="lineNum">     422 </span>            :                                 {
+<span class="lineNum">     423 </span><span class="lineCov">      19405 :                                         startManifold = &amp;m_islandmanifold[startManifoldIndex];</span>
+<span class="lineNum">     424 </span>            :                                 
+<span class="lineNum">     425 </span><span class="lineCov">     631765 :                                         for (endManifoldIndex = startManifoldIndex+1;(endManifoldIndex&lt;numManifolds) &amp;&amp; (islandId == getIslandId(m_islandmanifold[endManifoldIndex]));endManifoldIndex++)</span>
+<span class="lineNum">     426 </span>            :                                         {
+<span class="lineNum">     427 </span>            : 
+<span class="lineNum">     428 </span>            :                                         }
+<span class="lineNum">     429 </span>            :                                         /// Process the actual simulation, only if not sleeping/deactivated
+<span class="lineNum">     430 </span><span class="lineCov">      19405 :                                         numIslandManifolds = endManifoldIndex-startManifoldIndex;</span>
+<span class="lineNum">     431 </span>            :                                 }
+<span class="lineNum">     432 </span>            : 
+<span class="lineNum">     433 </span>            :                         }
+<span class="lineNum">     434 </span>            : 
+<span class="lineNum">     435 </span><span class="lineCov">      39370 :                         if (!islandSleeping)</span>
+<span class="lineNum">     436 </span>            :                         {
+<span class="lineNum">     437 </span><span class="lineCov">      28437 :                                 callback-&gt;processIsland(&amp;m_islandBodies[0],m_islandBodies.size(),startManifold,numIslandManifolds, islandId);</span>
+<span class="lineNum">     438 </span>            :         //                      printf(&quot;Island callback of size:%d bodies, %d manifolds\n&quot;,islandBodies.size(),numIslandManifolds);
+<span class="lineNum">     439 </span>            :                         }
+<span class="lineNum">     440 </span>            :                         
+<span class="lineNum">     441 </span><span class="lineCov">      39370 :                         if (numIslandManifolds)</span>
+<span class="lineNum">     442 </span>            :                         {
+<span class="lineNum">     443 </span><span class="lineCov">      19405 :                                 startManifoldIndex = endManifoldIndex;</span>
+<span class="lineNum">     444 </span>            :                         }
+<span class="lineNum">     445 </span>            : 
+<span class="lineNum">     446 </span><span class="lineCov">      39370 :                         m_islandBodies.resize(0);</span>
+<span class="lineNum">     447 </span>            :                 }
+<span class="lineNum">     448 </span>            :         } // else if(!splitIslands) 
+<span class="lineNum">     449 </span>            : 
+<span class="lineNum">     450 </span><span class="lineCov">       1558 : }</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

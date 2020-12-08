@@ -1,0 +1,393 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/CollisionDispatch</a> - btDefaultCollisionConfiguration.cpp<span style="font-size: 80%;"> (source / <a href="btDefaultCollisionConfiguration.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">77</td>
+            <td class="headerCovTableEntry">137</td>
+            <td class="headerCovTableEntryLo">56.2 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryLo">33.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : #include &quot;btDefaultCollisionConfiguration.h&quot;
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span>            : #include &quot;BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.h&quot;
+<span class="lineNum">      19 </span>            : #include &quot;BulletCollision/CollisionDispatch/btEmptyCollisionAlgorithm.h&quot;
+<span class="lineNum">      20 </span>            : #include &quot;BulletCollision/CollisionDispatch/btConvexConcaveCollisionAlgorithm.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;BulletCollision/CollisionDispatch/btCompoundCollisionAlgorithm.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;BulletCollision/CollisionDispatch/btConvexPlaneCollisionAlgorithm.h&quot;
+<span class="lineNum">      23 </span>            : #include &quot;BulletCollision/CollisionDispatch/btBoxBoxCollisionAlgorithm.h&quot;
+<span class="lineNum">      24 </span>            : #include &quot;BulletCollision/CollisionDispatch/btSphereSphereCollisionAlgorithm.h&quot;
+<span class="lineNum">      25 </span>            : #ifdef USE_BUGGY_SPHERE_BOX_ALGORITHM
+<span class="lineNum">      26 </span>            : #include &quot;BulletCollision/CollisionDispatch/btSphereBoxCollisionAlgorithm.h&quot;
+<span class="lineNum">      27 </span>            : #endif //USE_BUGGY_SPHERE_BOX_ALGORITHM
+<span class="lineNum">      28 </span>            : #include &quot;BulletCollision/CollisionDispatch/btSphereTriangleCollisionAlgorithm.h&quot;
+<span class="lineNum">      29 </span>            : #include &quot;BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.h&quot;
+<span class="lineNum">      30 </span>            : #include &quot;BulletCollision/NarrowPhaseCollision/btMinkowskiPenetrationDepthSolver.h&quot;
+<span class="lineNum">      31 </span>            : #include &quot;BulletCollision/NarrowPhaseCollision/btVoronoiSimplexSolver.h&quot;
+<span class="lineNum">      32 </span>            : 
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : #include &quot;LinearMath/btStackAlloc.h&quot;
+<span class="lineNum">      36 </span>            : #include &quot;LinearMath/btPoolAllocator.h&quot;
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : 
+<a name="40"><span class="lineNum">      40 </span>            : </a>
+<span class="lineNum">      41 </span>            : 
+<span class="lineNum">      42 </span><span class="lineCov">          1 : btDefaultCollisionConfiguration::btDefaultCollisionConfiguration(const btDefaultCollisionConstructionInfo&amp; constructionInfo)</span>
+<span class="lineNum">      43 </span>            : //btDefaultCollisionConfiguration::btDefaultCollisionConfiguration(btStackAlloc*        stackAlloc,btPoolAllocator*     persistentManifoldPool,btPoolAllocator* collisionAlgorithmPool)
+<span class="lineNum">      44 </span>            : {
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span><span class="lineCov">          1 :         void* mem = btAlignedAlloc(sizeof(btVoronoiSimplexSolver),16);</span>
+<span class="lineNum">      47 </span><span class="lineCov">          2 :         m_simplexSolver = new (mem)btVoronoiSimplexSolver();</span>
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span><span class="lineCov">          1 :         if (constructionInfo.m_useEpaPenetrationAlgorithm)</span>
+<span class="lineNum">      50 </span>            :         {
+<span class="lineNum">      51 </span><span class="lineCov">          1 :                 mem = btAlignedAlloc(sizeof(btGjkEpaPenetrationDepthSolver),16);</span>
+<span class="lineNum">      52 </span><span class="lineCov">          2 :                 m_pdSolver = new (mem)btGjkEpaPenetrationDepthSolver;</span>
+<span class="lineNum">      53 </span>            :         }else
+<span class="lineNum">      54 </span>            :         {
+<span class="lineNum">      55 </span><span class="lineNoCov">          0 :                 mem = btAlignedAlloc(sizeof(btMinkowskiPenetrationDepthSolver),16);</span>
+<span class="lineNum">      56 </span><span class="lineNoCov">          0 :                 m_pdSolver = new (mem)btMinkowskiPenetrationDepthSolver;</span>
+<span class="lineNum">      57 </span>            :         }
+<span class="lineNum">      58 </span>            :         
+<span class="lineNum">      59 </span>            :         //default CreationFunctions, filling the m_doubleDispatch table
+<span class="lineNum">      60 </span><span class="lineCov">          1 :         mem = btAlignedAlloc(sizeof(btConvexConvexAlgorithm::CreateFunc),16);</span>
+<span class="lineNum">      61 </span><span class="lineCov">          1 :         m_convexConvexCreateFunc = new(mem) btConvexConvexAlgorithm::CreateFunc(m_simplexSolver,m_pdSolver);</span>
+<span class="lineNum">      62 </span><span class="lineCov">          1 :         mem = btAlignedAlloc(sizeof(btConvexConcaveCollisionAlgorithm::CreateFunc),16);</span>
+<span class="lineNum">      63 </span><span class="lineCov">          2 :         m_convexConcaveCreateFunc = new (mem)btConvexConcaveCollisionAlgorithm::CreateFunc;</span>
+<span class="lineNum">      64 </span><span class="lineCov">          1 :         mem = btAlignedAlloc(sizeof(btConvexConcaveCollisionAlgorithm::CreateFunc),16);</span>
+<span class="lineNum">      65 </span><span class="lineCov">          2 :         m_swappedConvexConcaveCreateFunc = new (mem)btConvexConcaveCollisionAlgorithm::SwappedCreateFunc;</span>
+<span class="lineNum">      66 </span><span class="lineCov">          1 :         mem = btAlignedAlloc(sizeof(btCompoundCollisionAlgorithm::CreateFunc),16);</span>
+<span class="lineNum">      67 </span><span class="lineCov">          2 :         m_compoundCreateFunc = new (mem)btCompoundCollisionAlgorithm::CreateFunc;</span>
+<span class="lineNum">      68 </span><span class="lineCov">          1 :         mem = btAlignedAlloc(sizeof(btCompoundCollisionAlgorithm::SwappedCreateFunc),16);</span>
+<span class="lineNum">      69 </span><span class="lineCov">          2 :         m_swappedCompoundCreateFunc = new (mem)btCompoundCollisionAlgorithm::SwappedCreateFunc;</span>
+<span class="lineNum">      70 </span><span class="lineCov">          1 :         mem = btAlignedAlloc(sizeof(btEmptyAlgorithm::CreateFunc),16);</span>
+<span class="lineNum">      71 </span><span class="lineCov">          2 :         m_emptyCreateFunc = new(mem) btEmptyAlgorithm::CreateFunc;</span>
+<span class="lineNum">      72 </span>            :         
+<span class="lineNum">      73 </span><span class="lineCov">          1 :         mem = btAlignedAlloc(sizeof(btSphereSphereCollisionAlgorithm::CreateFunc),16);</span>
+<span class="lineNum">      74 </span><span class="lineCov">          2 :         m_sphereSphereCF = new(mem) btSphereSphereCollisionAlgorithm::CreateFunc;</span>
+<span class="lineNum">      75 </span>            : #ifdef USE_BUGGY_SPHERE_BOX_ALGORITHM
+<span class="lineNum">      76 </span>            :         mem = btAlignedAlloc(sizeof(btSphereBoxCollisionAlgorithm::CreateFunc),16);
+<span class="lineNum">      77 </span>            :         m_sphereBoxCF = new(mem) btSphereBoxCollisionAlgorithm::CreateFunc;
+<span class="lineNum">      78 </span>            :         mem = btAlignedAlloc(sizeof(btSphereBoxCollisionAlgorithm::CreateFunc),16);
+<span class="lineNum">      79 </span>            :         m_boxSphereCF = new (mem)btSphereBoxCollisionAlgorithm::CreateFunc;
+<span class="lineNum">      80 </span>            :         m_boxSphereCF-&gt;m_swapped = true;
+<span class="lineNum">      81 </span>            : #endif //USE_BUGGY_SPHERE_BOX_ALGORITHM
+<span class="lineNum">      82 </span>            : 
+<span class="lineNum">      83 </span><span class="lineCov">          1 :         mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc),16);</span>
+<span class="lineNum">      84 </span><span class="lineCov">          2 :         m_sphereTriangleCF = new (mem)btSphereTriangleCollisionAlgorithm::CreateFunc;</span>
+<span class="lineNum">      85 </span><span class="lineCov">          1 :         mem = btAlignedAlloc(sizeof(btSphereTriangleCollisionAlgorithm::CreateFunc),16);</span>
+<span class="lineNum">      86 </span><span class="lineCov">          2 :         m_triangleSphereCF = new (mem)btSphereTriangleCollisionAlgorithm::CreateFunc;</span>
+<span class="lineNum">      87 </span><span class="lineCov">          1 :         m_triangleSphereCF-&gt;m_swapped = true;</span>
+<span class="lineNum">      88 </span>            :         
+<span class="lineNum">      89 </span><span class="lineCov">          1 :         mem = btAlignedAlloc(sizeof(btBoxBoxCollisionAlgorithm::CreateFunc),16);</span>
+<span class="lineNum">      90 </span><span class="lineCov">          2 :         m_boxBoxCF = new(mem)btBoxBoxCollisionAlgorithm::CreateFunc;</span>
+<span class="lineNum">      91 </span>            : 
+<span class="lineNum">      92 </span>            :         //convex versus plane
+<span class="lineNum">      93 </span><span class="lineCov">          1 :         mem = btAlignedAlloc (sizeof(btConvexPlaneCollisionAlgorithm::CreateFunc),16);</span>
+<span class="lineNum">      94 </span><span class="lineCov">          2 :         m_convexPlaneCF = new (mem) btConvexPlaneCollisionAlgorithm::CreateFunc;</span>
+<span class="lineNum">      95 </span><span class="lineCov">          1 :         mem = btAlignedAlloc (sizeof(btConvexPlaneCollisionAlgorithm::CreateFunc),16);</span>
+<span class="lineNum">      96 </span><span class="lineCov">          2 :         m_planeConvexCF = new (mem) btConvexPlaneCollisionAlgorithm::CreateFunc;</span>
+<span class="lineNum">      97 </span><span class="lineCov">          1 :         m_planeConvexCF-&gt;m_swapped = true;</span>
+<span class="lineNum">      98 </span>            :         
+<span class="lineNum">      99 </span>            :         ///calculate maximum element size, big enough to fit any collision algorithm in the memory pool
+<span class="lineNum">     100 </span><span class="lineCov">          1 :         int maxSize = sizeof(btConvexConvexAlgorithm);</span>
+<span class="lineNum">     101 </span><span class="lineCov">          1 :         int maxSize2 = sizeof(btConvexConcaveCollisionAlgorithm);</span>
+<span class="lineNum">     102 </span><span class="lineCov">          1 :         int maxSize3 = sizeof(btCompoundCollisionAlgorithm);</span>
+<span class="lineNum">     103 </span><span class="lineCov">          1 :         int sl = sizeof(btConvexSeparatingDistanceUtil);</span>
+<span class="lineNum">     104 </span><span class="lineCov">          1 :         sl = sizeof(btGjkPairDetector);</span>
+<span class="lineNum">     105 </span><span class="lineCov">          2 :         int     collisionAlgorithmMaxElementSize = btMax(maxSize,constructionInfo.m_customCollisionAlgorithmMaxElementSize);</span>
+<span class="lineNum">     106 </span><span class="lineCov">          1 :         collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize,maxSize2);</span>
+<span class="lineNum">     107 </span><span class="lineCov">          1 :         collisionAlgorithmMaxElementSize = btMax(collisionAlgorithmMaxElementSize,maxSize3);</span>
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span><span class="lineCov">          1 :         if (constructionInfo.m_stackAlloc)</span>
+<span class="lineNum">     110 </span>            :         {
+<span class="lineNum">     111 </span><span class="lineNoCov">          0 :                 m_ownsStackAllocator = false;</span>
+<span class="lineNum">     112 </span><span class="lineNoCov">          0 :                 this-&gt;m_stackAlloc = constructionInfo.m_stackAlloc;</span>
+<span class="lineNum">     113 </span>            :         } else
+<span class="lineNum">     114 </span>            :         {
+<span class="lineNum">     115 </span><span class="lineCov">          1 :                 m_ownsStackAllocator = true;</span>
+<span class="lineNum">     116 </span><span class="lineCov">          1 :                 void* mem = btAlignedAlloc(sizeof(btStackAlloc),16);</span>
+<span class="lineNum">     117 </span><span class="lineCov">          1 :                 m_stackAlloc = new(mem)btStackAlloc(constructionInfo.m_defaultStackAllocatorSize);</span>
+<span class="lineNum">     118 </span>            :         }
+<span class="lineNum">     119 </span>            :                 
+<span class="lineNum">     120 </span><span class="lineCov">          1 :         if (constructionInfo.m_persistentManifoldPool)</span>
+<span class="lineNum">     121 </span>            :         {
+<span class="lineNum">     122 </span><span class="lineNoCov">          0 :                 m_ownsPersistentManifoldPool = false;</span>
+<span class="lineNum">     123 </span><span class="lineNoCov">          0 :                 m_persistentManifoldPool = constructionInfo.m_persistentManifoldPool;</span>
+<span class="lineNum">     124 </span>            :         } else
+<span class="lineNum">     125 </span>            :         {
+<span class="lineNum">     126 </span><span class="lineCov">          1 :                 m_ownsPersistentManifoldPool = true;</span>
+<span class="lineNum">     127 </span><span class="lineCov">          1 :                 void* mem = btAlignedAlloc(sizeof(btPoolAllocator),16);</span>
+<span class="lineNum">     128 </span><span class="lineCov">          1 :                 m_persistentManifoldPool = new (mem) btPoolAllocator(sizeof(btPersistentManifold),constructionInfo.m_defaultMaxPersistentManifoldPoolSize);</span>
+<span class="lineNum">     129 </span>            :         }
+<span class="lineNum">     130 </span>            :         
+<span class="lineNum">     131 </span><span class="lineCov">          1 :         if (constructionInfo.m_collisionAlgorithmPool)</span>
+<span class="lineNum">     132 </span>            :         {
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :                 m_ownsCollisionAlgorithmPool = false;</span>
+<span class="lineNum">     134 </span><span class="lineNoCov">          0 :                 m_collisionAlgorithmPool = constructionInfo.m_collisionAlgorithmPool;</span>
+<span class="lineNum">     135 </span>            :         } else
+<span class="lineNum">     136 </span>            :         {
+<span class="lineNum">     137 </span><span class="lineCov">          1 :                 m_ownsCollisionAlgorithmPool = true;</span>
+<span class="lineNum">     138 </span><span class="lineCov">          1 :                 void* mem = btAlignedAlloc(sizeof(btPoolAllocator),16);</span>
+<span class="lineNum">     139 </span><span class="lineCov">          1 :                 m_collisionAlgorithmPool = new(mem) btPoolAllocator(collisionAlgorithmMaxElementSize,constructionInfo.m_defaultMaxCollisionAlgorithmPoolSize);</span>
+<span class="lineNum">     140 </span>            :         }
+<span class="lineNum">     141 </span>            : 
+<span class="lineNum">     142 </span>            : 
+<a name="143"><span class="lineNum">     143 </span><span class="lineCov">          1 : }</span></a>
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span><span class="lineNoCov">          0 : btDefaultCollisionConfiguration::~btDefaultCollisionConfiguration()</span>
+<span class="lineNum">     146 </span>            : {
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :         if (m_ownsStackAllocator)</span>
+<span class="lineNum">     148 </span>            :         {
+<span class="lineNum">     149 </span><span class="lineNoCov">          0 :                 m_stackAlloc-&gt;destroy();</span>
+<span class="lineNum">     150 </span><span class="lineNoCov">          0 :                 m_stackAlloc-&gt;~btStackAlloc();</span>
+<span class="lineNum">     151 </span><span class="lineNoCov">          0 :                 btAlignedFree(m_stackAlloc);</span>
+<span class="lineNum">     152 </span>            :         }
+<span class="lineNum">     153 </span><span class="lineNoCov">          0 :         if (m_ownsCollisionAlgorithmPool)</span>
+<span class="lineNum">     154 </span>            :         {
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :                 m_collisionAlgorithmPool-&gt;~btPoolAllocator();</span>
+<span class="lineNum">     156 </span><span class="lineNoCov">          0 :                 btAlignedFree(m_collisionAlgorithmPool);</span>
+<span class="lineNum">     157 </span>            :         }
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 :         if (m_ownsPersistentManifoldPool)</span>
+<span class="lineNum">     159 </span>            :         {
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :                 m_persistentManifoldPool-&gt;~btPoolAllocator();</span>
+<span class="lineNum">     161 </span><span class="lineNoCov">          0 :                 btAlignedFree(m_persistentManifoldPool);</span>
+<span class="lineNum">     162 </span>            :         }
+<span class="lineNum">     163 </span>            : 
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :         m_convexConvexCreateFunc-&gt;~btCollisionAlgorithmCreateFunc();</span>
+<span class="lineNum">     165 </span><span class="lineNoCov">          0 :         btAlignedFree(  m_convexConvexCreateFunc);</span>
+<span class="lineNum">     166 </span>            : 
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :         m_convexConcaveCreateFunc-&gt;~btCollisionAlgorithmCreateFunc();</span>
+<span class="lineNum">     168 </span><span class="lineNoCov">          0 :         btAlignedFree( m_convexConcaveCreateFunc);</span>
+<span class="lineNum">     169 </span><span class="lineNoCov">          0 :         m_swappedConvexConcaveCreateFunc-&gt;~btCollisionAlgorithmCreateFunc();</span>
+<span class="lineNum">     170 </span><span class="lineNoCov">          0 :         btAlignedFree( m_swappedConvexConcaveCreateFunc);</span>
+<span class="lineNum">     171 </span>            : 
+<span class="lineNum">     172 </span><span class="lineNoCov">          0 :         m_compoundCreateFunc-&gt;~btCollisionAlgorithmCreateFunc();</span>
+<span class="lineNum">     173 </span><span class="lineNoCov">          0 :         btAlignedFree( m_compoundCreateFunc);</span>
+<span class="lineNum">     174 </span>            : 
+<span class="lineNum">     175 </span><span class="lineNoCov">          0 :         m_swappedCompoundCreateFunc-&gt;~btCollisionAlgorithmCreateFunc();</span>
+<span class="lineNum">     176 </span><span class="lineNoCov">          0 :         btAlignedFree( m_swappedCompoundCreateFunc);</span>
+<span class="lineNum">     177 </span>            : 
+<span class="lineNum">     178 </span><span class="lineNoCov">          0 :         m_emptyCreateFunc-&gt;~btCollisionAlgorithmCreateFunc();</span>
+<span class="lineNum">     179 </span><span class="lineNoCov">          0 :         btAlignedFree( m_emptyCreateFunc);</span>
+<span class="lineNum">     180 </span>            : 
+<span class="lineNum">     181 </span><span class="lineNoCov">          0 :         m_sphereSphereCF-&gt;~btCollisionAlgorithmCreateFunc();</span>
+<span class="lineNum">     182 </span><span class="lineNoCov">          0 :         btAlignedFree( m_sphereSphereCF);</span>
+<span class="lineNum">     183 </span>            : 
+<span class="lineNum">     184 </span>            : #ifdef USE_BUGGY_SPHERE_BOX_ALGORITHM
+<span class="lineNum">     185 </span>            :         m_sphereBoxCF-&gt;~btCollisionAlgorithmCreateFunc();
+<span class="lineNum">     186 </span>            :         btAlignedFree( m_sphereBoxCF);
+<span class="lineNum">     187 </span>            :         m_boxSphereCF-&gt;~btCollisionAlgorithmCreateFunc();
+<span class="lineNum">     188 </span>            :         btAlignedFree( m_boxSphereCF);
+<span class="lineNum">     189 </span>            : #endif //USE_BUGGY_SPHERE_BOX_ALGORITHM
+<span class="lineNum">     190 </span>            : 
+<span class="lineNum">     191 </span><span class="lineNoCov">          0 :         m_sphereTriangleCF-&gt;~btCollisionAlgorithmCreateFunc();</span>
+<span class="lineNum">     192 </span><span class="lineNoCov">          0 :         btAlignedFree( m_sphereTriangleCF);</span>
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 :         m_triangleSphereCF-&gt;~btCollisionAlgorithmCreateFunc();</span>
+<span class="lineNum">     194 </span><span class="lineNoCov">          0 :         btAlignedFree( m_triangleSphereCF);</span>
+<span class="lineNum">     195 </span><span class="lineNoCov">          0 :         m_boxBoxCF-&gt;~btCollisionAlgorithmCreateFunc();</span>
+<span class="lineNum">     196 </span><span class="lineNoCov">          0 :         btAlignedFree( m_boxBoxCF);</span>
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :         m_convexPlaneCF-&gt;~btCollisionAlgorithmCreateFunc();</span>
+<span class="lineNum">     199 </span><span class="lineNoCov">          0 :         btAlignedFree( m_convexPlaneCF);</span>
+<span class="lineNum">     200 </span><span class="lineNoCov">          0 :         m_planeConvexCF-&gt;~btCollisionAlgorithmCreateFunc();</span>
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 :         btAlignedFree( m_planeConvexCF);</span>
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span>            :         m_simplexSolver-&gt;~btVoronoiSimplexSolver();
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :         btAlignedFree(m_simplexSolver);</span>
+<span class="lineNum">     205 </span>            : 
+<span class="lineNum">     206 </span><span class="lineNoCov">          0 :         m_pdSolver-&gt;~btConvexPenetrationDepthSolver();</span>
+<span class="lineNum">     207 </span>            :         
+<span class="lineNum">     208 </span><span class="lineNoCov">          0 :         btAlignedFree(m_pdSolver);</span>
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span>            : 
+<span class="lineNum">     211 </span><span class="lineNoCov">          0 : }</span>
+<a name="212"><span class="lineNum">     212 </span>            : </a>
+<span class="lineNum">     213 </span>            : 
+<span class="lineNum">     214 </span><span class="lineCov">       1296 : btCollisionAlgorithmCreateFunc* btDefaultCollisionConfiguration::getCollisionAlgorithmCreateFunc(int proxyType0,int proxyType1)</span>
+<span class="lineNum">     215 </span>            : {
+<span class="lineNum">     216 </span>            : 
+<span class="lineNum">     217 </span>            : 
+<span class="lineNum">     218 </span>            : 
+<span class="lineNum">     219 </span><span class="lineCov">       1296 :         if ((proxyType0 == SPHERE_SHAPE_PROXYTYPE) &amp;&amp; (proxyType1==SPHERE_SHAPE_PROXYTYPE))</span>
+<span class="lineNum">     220 </span>            :         {
+<span class="lineNum">     221 </span><span class="lineCov">          1 :                 return  m_sphereSphereCF;</span>
+<span class="lineNum">     222 </span>            :         }
+<span class="lineNum">     223 </span>            : #ifdef USE_BUGGY_SPHERE_BOX_ALGORITHM
+<span class="lineNum">     224 </span>            :         if ((proxyType0 == SPHERE_SHAPE_PROXYTYPE) &amp;&amp; (proxyType1==BOX_SHAPE_PROXYTYPE))
+<span class="lineNum">     225 </span>            :         {
+<span class="lineNum">     226 </span>            :                 return  m_sphereBoxCF;
+<span class="lineNum">     227 </span>            :         }
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span>            :         if ((proxyType0 == BOX_SHAPE_PROXYTYPE ) &amp;&amp; (proxyType1==SPHERE_SHAPE_PROXYTYPE))
+<span class="lineNum">     230 </span>            :         {
+<span class="lineNum">     231 </span>            :                 return  m_boxSphereCF;
+<span class="lineNum">     232 </span>            :         }
+<span class="lineNum">     233 </span>            : #endif //USE_BUGGY_SPHERE_BOX_ALGORITHM
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span>            : 
+<span class="lineNum">     236 </span><span class="lineCov">       1295 :         if ((proxyType0 == SPHERE_SHAPE_PROXYTYPE ) &amp;&amp; (proxyType1==TRIANGLE_SHAPE_PROXYTYPE))</span>
+<span class="lineNum">     237 </span>            :         {
+<span class="lineNum">     238 </span><span class="lineCov">          1 :                 return  m_sphereTriangleCF;</span>
+<span class="lineNum">     239 </span>            :         }
+<span class="lineNum">     240 </span>            : 
+<span class="lineNum">     241 </span><span class="lineCov">       1294 :         if ((proxyType0 == TRIANGLE_SHAPE_PROXYTYPE  ) &amp;&amp; (proxyType1==SPHERE_SHAPE_PROXYTYPE))</span>
+<span class="lineNum">     242 </span>            :         {
+<span class="lineNum">     243 </span><span class="lineCov">          1 :                 return  m_triangleSphereCF;</span>
+<span class="lineNum">     244 </span>            :         } 
+<span class="lineNum">     245 </span>            : 
+<span class="lineNum">     246 </span><span class="lineCov">       1293 :         if ((proxyType0 == BOX_SHAPE_PROXYTYPE) &amp;&amp; (proxyType1 == BOX_SHAPE_PROXYTYPE))</span>
+<span class="lineNum">     247 </span>            :         {
+<span class="lineNum">     248 </span><span class="lineCov">          1 :                 return m_boxBoxCF;</span>
+<span class="lineNum">     249 </span>            :         }
+<span class="lineNum">     250 </span>            :         
+<span class="lineNum">     251 </span><span class="lineCov">       1292 :         if (btBroadphaseProxy::isConvex(proxyType0) &amp;&amp; (proxyType1 == STATIC_PLANE_PROXYTYPE))</span>
+<span class="lineNum">     252 </span>            :         {
+<span class="lineNum">     253 </span><span class="lineCov">         20 :                 return m_convexPlaneCF;</span>
+<span class="lineNum">     254 </span>            :         }
+<span class="lineNum">     255 </span>            : 
+<span class="lineNum">     256 </span><span class="lineCov">       1272 :         if (btBroadphaseProxy::isConvex(proxyType1) &amp;&amp; (proxyType0 == STATIC_PLANE_PROXYTYPE))</span>
+<span class="lineNum">     257 </span>            :         {
+<span class="lineNum">     258 </span><span class="lineCov">         20 :                 return m_planeConvexCF;</span>
+<span class="lineNum">     259 </span>            :         }
+<span class="lineNum">     260 </span>            :         
+<span class="lineNum">     261 </span>            : 
+<span class="lineNum">     262 </span>            : 
+<span class="lineNum">     263 </span><span class="lineCov">       1948 :         if (btBroadphaseProxy::isConvex(proxyType0) &amp;&amp; btBroadphaseProxy::isConvex(proxyType1))</span>
+<span class="lineNum">     264 </span>            :         {
+<span class="lineNum">     265 </span><span class="lineCov">        396 :                 return m_convexConvexCreateFunc;</span>
+<span class="lineNum">     266 </span>            :         }
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span><span class="lineCov">       1156 :         if (btBroadphaseProxy::isConvex(proxyType0) &amp;&amp; btBroadphaseProxy::isConcave(proxyType1))</span>
+<span class="lineNum">     269 </span>            :         {
+<span class="lineNum">     270 </span><span class="lineCov">        160 :                 return m_convexConcaveCreateFunc;</span>
+<span class="lineNum">     271 </span>            :         }
+<span class="lineNum">     272 </span>            : 
+<span class="lineNum">     273 </span><span class="lineCov">        996 :         if (btBroadphaseProxy::isConvex(proxyType1) &amp;&amp; btBroadphaseProxy::isConcave(proxyType0))</span>
+<span class="lineNum">     274 </span>            :         {
+<span class="lineNum">     275 </span><span class="lineCov">        160 :                 return m_swappedConvexConcaveCreateFunc;</span>
+<span class="lineNum">     276 </span>            :         }
+<span class="lineNum">     277 </span>            : 
+<span class="lineNum">     278 </span><span class="lineCov">        536 :         if (btBroadphaseProxy::isCompound(proxyType0))</span>
+<span class="lineNum">     279 </span>            :         {
+<span class="lineNum">     280 </span><span class="lineCov">         36 :                 return m_compoundCreateFunc;</span>
+<span class="lineNum">     281 </span>            :         } else
+<span class="lineNum">     282 </span>            :         {
+<span class="lineNum">     283 </span><span class="lineCov">        500 :                 if (btBroadphaseProxy::isCompound(proxyType1))</span>
+<span class="lineNum">     284 </span>            :                 {
+<span class="lineNum">     285 </span><span class="lineCov">         35 :                         return m_swappedCompoundCreateFunc;</span>
+<span class="lineNum">     286 </span>            :                 }
+<span class="lineNum">     287 </span>            :         }
+<span class="lineNum">     288 </span>            : 
+<span class="lineNum">     289 </span>            :         //failed to find an algorithm
+<span class="lineNum">     290 </span><span class="lineCov">        465 :         return m_emptyCreateFunc;</span>
+<a name="291"><span class="lineNum">     291 </span>            : }</a>
+<span class="lineNum">     292 </span>            : 
+<span class="lineNum">     293 </span><span class="lineNoCov">          0 : void btDefaultCollisionConfiguration::setConvexConvexMultipointIterations(int numPerturbationIterations, int minimumPointsPerturbationThreshold)</span>
+<span class="lineNum">     294 </span>            : {
+<span class="lineNum">     295 </span><span class="lineNoCov">          0 :         btConvexConvexAlgorithm::CreateFunc* convexConvex = (btConvexConvexAlgorithm::CreateFunc*) m_convexConvexCreateFunc;</span>
+<span class="lineNum">     296 </span><span class="lineNoCov">          0 :         convexConvex-&gt;m_numPerturbationIterations = numPerturbationIterations;</span>
+<span class="lineNum">     297 </span><span class="lineNoCov">          0 :         convexConvex-&gt;m_minimumPointsPerturbationThreshold = minimumPointsPerturbationThreshold;</span>
+<a name="298"><span class="lineNum">     298 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     299 </span>            : 
+<span class="lineNum">     300 </span><span class="lineNoCov">          0 : void    btDefaultCollisionConfiguration::setPlaneConvexMultipointIterations(int numPerturbationIterations, int minimumPointsPerturbationThreshold)</span>
+<span class="lineNum">     301 </span>            : {
+<span class="lineNum">     302 </span><span class="lineNoCov">          0 :         btConvexPlaneCollisionAlgorithm::CreateFunc* cpCF = (btConvexPlaneCollisionAlgorithm::CreateFunc*)m_convexPlaneCF;</span>
+<span class="lineNum">     303 </span><span class="lineNoCov">          0 :         cpCF-&gt;m_numPerturbationIterations = numPerturbationIterations;</span>
+<span class="lineNum">     304 </span><span class="lineNoCov">          0 :         cpCF-&gt;m_minimumPointsPerturbationThreshold = minimumPointsPerturbationThreshold;</span>
+<span class="lineNum">     305 </span>            :         
+<span class="lineNum">     306 </span><span class="lineNoCov">          0 :         btConvexPlaneCollisionAlgorithm::CreateFunc* pcCF = (btConvexPlaneCollisionAlgorithm::CreateFunc*)m_planeConvexCF;</span>
+<span class="lineNum">     307 </span><span class="lineNoCov">          0 :         pcCF-&gt;m_numPerturbationIterations = numPerturbationIterations;</span>
+<span class="lineNum">     308 </span><span class="lineNoCov">          0 :         pcCF-&gt;m_minimumPointsPerturbationThreshold = minimumPointsPerturbationThreshold;</span>
+<span class="lineNum">     309 </span><span class="lineNoCov">          0 : }</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,1 @@
+g++  -g -O0 -fprofile-arcs -ftest-coverage  *.cpp -o test -I ../../Bullet/src/ -L./lib  -lglut -lGL -lGLU -lBulletDynamics -lBulletCollision -lLinearMath -lm -lBulletSoftBody

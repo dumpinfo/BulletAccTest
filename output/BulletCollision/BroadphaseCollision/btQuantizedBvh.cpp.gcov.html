@@ -1,0 +1,1459 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/BroadphaseCollision/btQuantizedBvh.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/BroadphaseCollision</a> - btQuantizedBvh.cpp<span style="font-size: 80%;"> (source / <a href="btQuantizedBvh.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">582</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">28</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : #include &quot;btQuantizedBvh.h&quot;
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span>            : #include &quot;LinearMath/btAabbUtil2.h&quot;
+<span class="lineNum">      19 </span>            : #include &quot;LinearMath/btIDebugDraw.h&quot;
+<span class="lineNum">      20 </span>            : #include &quot;LinearMath/btSerializer.h&quot;
+<span class="lineNum">      21 </span>            : 
+<span class="lineNum">      22 </span>            : #define RAYAABB2
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span><span class="lineNoCov">          0 : btQuantizedBvh::btQuantizedBvh() : </span>
+<span class="lineNum">      25 </span>            :                                         m_bulletVersion(BT_BULLET_VERSION),
+<span class="lineNum">      26 </span>            :                                         m_useQuantization(false), 
+<span class="lineNum">      27 </span>            :                                         //m_traversalMode(TRAVERSAL_STACKLESS_CACHE_FRIENDLY)
+<span class="lineNum">      28 </span>            :                                         m_traversalMode(TRAVERSAL_STACKLESS)
+<span class="lineNum">      29 </span>            :                                         //m_traversalMode(TRAVERSAL_RECURSIVE)
+<span class="lineNum">      30 </span><span class="lineNoCov">          0 :                                         ,m_subtreeHeaderCount(0) //PCK: add this line</span>
+<span class="lineNum">      31 </span>            : {
+<span class="lineNum">      32 </span><span class="lineNoCov">          0 :         m_bvhAabbMin.setValue(-SIMD_INFINITY,-SIMD_INFINITY,-SIMD_INFINITY);</span>
+<span class="lineNum">      33 </span><span class="lineNoCov">          0 :         m_bvhAabbMax.setValue(SIMD_INFINITY,SIMD_INFINITY,SIMD_INFINITY);</span>
+<span class="lineNum">      34 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span><span class="lineNoCov">          0 : void btQuantizedBvh::buildInternal()</span>
+<span class="lineNum">      41 </span>            : {
+<span class="lineNum">      42 </span>            :         ///assumes that caller filled in the m_quantizedLeafNodes
+<span class="lineNum">      43 </span><span class="lineNoCov">          0 :         m_useQuantization = true;</span>
+<span class="lineNum">      44 </span><span class="lineNoCov">          0 :         int numLeafNodes = 0;</span>
+<span class="lineNum">      45 </span>            :         
+<span class="lineNum">      46 </span>            :         if (m_useQuantization)
+<span class="lineNum">      47 </span>            :         {
+<span class="lineNum">      48 </span>            :                 //now we have an array of leafnodes in m_leafNodes
+<span class="lineNum">      49 </span><span class="lineNoCov">          0 :                 numLeafNodes = m_quantizedLeafNodes.size();</span>
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span><span class="lineNoCov">          0 :                 m_quantizedContiguousNodes.resize(2*numLeafNodes);</span>
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span>            :         }
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span><span class="lineNoCov">          0 :         m_curNodeIndex = 0;</span>
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span><span class="lineNoCov">          0 :         buildTree(0,numLeafNodes);</span>
+<span class="lineNum">      58 </span>            : 
+<span class="lineNum">      59 </span>            :         ///if the entire tree is small then subtree size, we need to create a header info for the tree
+<span class="lineNum">      60 </span><span class="lineNoCov">          0 :         if(m_useQuantization &amp;&amp; !m_SubtreeHeaders.size())</span>
+<span class="lineNum">      61 </span>            :         {
+<span class="lineNum">      62 </span><span class="lineNoCov">          0 :                 btBvhSubtreeInfo&amp; subtree = m_SubtreeHeaders.expand();</span>
+<span class="lineNum">      63 </span><span class="lineNoCov">          0 :                 subtree.setAabbFromQuantizeNode(m_quantizedContiguousNodes[0]);</span>
+<span class="lineNum">      64 </span><span class="lineNoCov">          0 :                 subtree.m_rootNodeIndex = 0;</span>
+<span class="lineNum">      65 </span><span class="lineNoCov">          0 :                 subtree.m_subtreeSize = m_quantizedContiguousNodes[0].isLeafNode() ? 1 : m_quantizedContiguousNodes[0].getEscapeIndex();</span>
+<span class="lineNum">      66 </span>            :         }
+<span class="lineNum">      67 </span>            : 
+<span class="lineNum">      68 </span>            :         //PCK: update the copy of the size
+<span class="lineNum">      69 </span><span class="lineNoCov">          0 :         m_subtreeHeaderCount = m_SubtreeHeaders.size();</span>
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span>            :         //PCK: clear m_quantizedLeafNodes and m_leafNodes, they are temporary
+<span class="lineNum">      72 </span><span class="lineNoCov">          0 :         m_quantizedLeafNodes.clear();</span>
+<span class="lineNum">      73 </span><span class="lineNoCov">          0 :         m_leafNodes.clear();</span>
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      75 </span>            : 
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            : ///just for debugging, to visualize the individual patches/subtrees
+<span class="lineNum">      79 </span>            : #ifdef DEBUG_PATCH_COLORS
+<span class="lineNum">      80 </span>            : btVector3 color[4]=
+<span class="lineNum">      81 </span>            : {
+<span class="lineNum">      82 </span>            :         btVector3(1,0,0),
+<span class="lineNum">      83 </span>            :         btVector3(0,1,0),
+<span class="lineNum">      84 </span>            :         btVector3(0,0,1),
+<span class="lineNum">      85 </span>            :         btVector3(0,1,1)
+<span class="lineNum">      86 </span>            : };
+<span class="lineNum">      87 </span>            : #endif //DEBUG_PATCH_COLORS
+<span class="lineNum">      88 </span>            : 
+<a name="89"><span class="lineNum">      89 </span>            : </a>
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::setQuantizationValues(const btVector3&amp; bvhAabbMin,const btVector3&amp; bvhAabbMax,btScalar quantizationMargin)</span>
+<span class="lineNum">      92 </span>            : {
+<span class="lineNum">      93 </span>            :         //enlarge the AABB to avoid division by zero when initializing the quantization values
+<span class="lineNum">      94 </span><span class="lineNoCov">          0 :         btVector3 clampValue(quantizationMargin,quantizationMargin,quantizationMargin);</span>
+<span class="lineNum">      95 </span><span class="lineNoCov">          0 :         m_bvhAabbMin = bvhAabbMin - clampValue;</span>
+<span class="lineNum">      96 </span><span class="lineNoCov">          0 :         m_bvhAabbMax = bvhAabbMax + clampValue;</span>
+<span class="lineNum">      97 </span><span class="lineNoCov">          0 :         btVector3 aabbSize = m_bvhAabbMax - m_bvhAabbMin;</span>
+<span class="lineNum">      98 </span><span class="lineNoCov">          0 :         m_bvhQuantization = btVector3(btScalar(65533.0),btScalar(65533.0),btScalar(65533.0)) / aabbSize;</span>
+<span class="lineNum">      99 </span><span class="lineNoCov">          0 :         m_useQuantization = true;</span>
+<span class="lineNum">     100 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     101 </span>            : 
+<span class="lineNum">     102 </span>            : 
+<a name="103"><span class="lineNum">     103 </span>            : </a>
+<span class="lineNum">     104 </span>            : 
+<span class="lineNum">     105 </span><span class="lineNoCov">          0 : btQuantizedBvh::~btQuantizedBvh()</span>
+<span class="lineNum">     106 </span>            : {
+<span class="lineNum">     107 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            : #ifdef DEBUG_TREE_BUILDING
+<span class="lineNum">     110 </span>            : int gStackDepth = 0;
+<span class="lineNum">     111 </span>            : int gMaxStackDepth = 0;
+<span class="lineNum">     112 </span>            : #endif //DEBUG_TREE_BUILDING
+<span class="lineNum">     113 </span>            : 
+<span class="lineNum">     114 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::buildTree       (int startIndex,int endIndex)</span>
+<span class="lineNum">     115 </span>            : {
+<span class="lineNum">     116 </span>            : #ifdef DEBUG_TREE_BUILDING
+<span class="lineNum">     117 </span>            :         gStackDepth++;
+<span class="lineNum">     118 </span>            :         if (gStackDepth &gt; gMaxStackDepth)
+<span class="lineNum">     119 </span>            :                 gMaxStackDepth = gStackDepth;
+<span class="lineNum">     120 </span>            : #endif //DEBUG_TREE_BUILDING
+<span class="lineNum">     121 </span>            : 
+<span class="lineNum">     122 </span>            : 
+<span class="lineNum">     123 </span>            :         int splitAxis, splitIndex, i;
+<span class="lineNum">     124 </span><span class="lineNoCov">          0 :         int numIndices =endIndex-startIndex;</span>
+<span class="lineNum">     125 </span><span class="lineNoCov">          0 :         int curIndex = m_curNodeIndex;</span>
+<span class="lineNum">     126 </span>            : 
+<span class="lineNum">     127 </span>            :         btAssert(numIndices&gt;0);
+<span class="lineNum">     128 </span>            : 
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :         if (numIndices==1)</span>
+<span class="lineNum">     130 </span>            :         {
+<span class="lineNum">     131 </span>            : #ifdef DEBUG_TREE_BUILDING
+<span class="lineNum">     132 </span>            :                 gStackDepth--;
+<span class="lineNum">     133 </span>            : #endif //DEBUG_TREE_BUILDING
+<span class="lineNum">     134 </span>            :                 
+<span class="lineNum">     135 </span><span class="lineNoCov">          0 :                 assignInternalNodeFromLeafNode(m_curNodeIndex,startIndex);</span>
+<span class="lineNum">     136 </span>            : 
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 :                 m_curNodeIndex++;</span>
+<span class="lineNum">     138 </span><span class="lineNoCov">          0 :                 return; </span>
+<span class="lineNum">     139 </span>            :         }
+<span class="lineNum">     140 </span>            :         //calculate Best Splitting Axis and where to split it. Sort the incoming 'leafNodes' array within range 'startIndex/endIndex'.
+<span class="lineNum">     141 </span>            :         
+<span class="lineNum">     142 </span><span class="lineNoCov">          0 :         splitAxis = calcSplittingAxis(startIndex,endIndex);</span>
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :         splitIndex = sortAndCalcSplittingIndex(startIndex,endIndex,splitAxis);</span>
+<span class="lineNum">     145 </span>            : 
+<span class="lineNum">     146 </span><span class="lineNoCov">          0 :         int internalNodeIndex = m_curNodeIndex;</span>
+<span class="lineNum">     147 </span>            :         
+<span class="lineNum">     148 </span>            :         //set the min aabb to 'inf' or a max value, and set the max aabb to a -inf/minimum value.
+<span class="lineNum">     149 </span>            :         //the aabb will be expanded during buildTree/mergeInternalNodeAabb with actual node values
+<span class="lineNum">     150 </span><span class="lineNoCov">          0 :         setInternalNodeAabbMin(m_curNodeIndex,m_bvhAabbMax);//can't use btVector3(SIMD_INFINITY,SIMD_INFINITY,SIMD_INFINITY)) because of quantization</span>
+<span class="lineNum">     151 </span><span class="lineNoCov">          0 :         setInternalNodeAabbMax(m_curNodeIndex,m_bvhAabbMin);//can't use btVector3(-SIMD_INFINITY,-SIMD_INFINITY,-SIMD_INFINITY)) because of quantization</span>
+<span class="lineNum">     152 </span>            :         
+<span class="lineNum">     153 </span>            :         
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :         for (i=startIndex;i&lt;endIndex;i++)</span>
+<span class="lineNum">     155 </span>            :         {
+<span class="lineNum">     156 </span><span class="lineNoCov">          0 :                 mergeInternalNodeAabb(m_curNodeIndex,getAabbMin(i),getAabbMax(i));</span>
+<span class="lineNum">     157 </span>            :         }
+<span class="lineNum">     158 </span>            : 
+<span class="lineNum">     159 </span><span class="lineNoCov">          0 :         m_curNodeIndex++;</span>
+<span class="lineNum">     160 </span>            :         
+<span class="lineNum">     161 </span>            : 
+<span class="lineNum">     162 </span>            :         //internalNode-&gt;m_escapeIndex;
+<span class="lineNum">     163 </span>            :         
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :         int leftChildNodexIndex = m_curNodeIndex;</span>
+<span class="lineNum">     165 </span>            : 
+<span class="lineNum">     166 </span>            :         //build left child tree
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :         buildTree(startIndex,splitIndex);</span>
+<span class="lineNum">     168 </span>            : 
+<span class="lineNum">     169 </span><span class="lineNoCov">          0 :         int rightChildNodexIndex = m_curNodeIndex;</span>
+<span class="lineNum">     170 </span>            :         //build right child tree
+<span class="lineNum">     171 </span><span class="lineNoCov">          0 :         buildTree(splitIndex,endIndex);</span>
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span>            : #ifdef DEBUG_TREE_BUILDING
+<span class="lineNum">     174 </span>            :         gStackDepth--;
+<span class="lineNum">     175 </span>            : #endif //DEBUG_TREE_BUILDING
+<span class="lineNum">     176 </span>            : 
+<span class="lineNum">     177 </span><span class="lineNoCov">          0 :         int escapeIndex = m_curNodeIndex - curIndex;</span>
+<span class="lineNum">     178 </span>            : 
+<span class="lineNum">     179 </span><span class="lineNoCov">          0 :         if (m_useQuantization)</span>
+<span class="lineNum">     180 </span>            :         {
+<span class="lineNum">     181 </span>            :                 //escapeIndex is the number of nodes of this subtree
+<span class="lineNum">     182 </span><span class="lineNoCov">          0 :                 const int sizeQuantizedNode =sizeof(btQuantizedBvhNode);</span>
+<span class="lineNum">     183 </span><span class="lineNoCov">          0 :                 const int treeSizeInBytes = escapeIndex * sizeQuantizedNode;</span>
+<span class="lineNum">     184 </span><span class="lineNoCov">          0 :                 if (treeSizeInBytes &gt; MAX_SUBTREE_SIZE_IN_BYTES)</span>
+<span class="lineNum">     185 </span>            :                 {
+<span class="lineNum">     186 </span><span class="lineNoCov">          0 :                         updateSubtreeHeaders(leftChildNodexIndex,rightChildNodexIndex);</span>
+<span class="lineNum">     187 </span>            :                 }
+<span class="lineNum">     188 </span>            :         } else
+<span class="lineNum">     189 </span>            :         {
+<span class="lineNum">     190 </span>            : 
+<span class="lineNum">     191 </span>            :         }
+<span class="lineNum">     192 </span>            : 
+<span class="lineNum">     193 </span>            :         setInternalNodeEscapeIndex(internalNodeIndex,escapeIndex);
+<span class="lineNum">     194 </span>            : 
+<span class="lineNum">     195 </span>            : }
+<span class="lineNum">     196 </span>            : 
+<span class="lineNum">     197 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::updateSubtreeHeaders(int leftChildNodexIndex,int rightChildNodexIndex)</span>
+<span class="lineNum">     198 </span>            : {
+<span class="lineNum">     199 </span>            :         btAssert(m_useQuantization);
+<span class="lineNum">     200 </span>            : 
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 :         btQuantizedBvhNode&amp; leftChildNode = m_quantizedContiguousNodes[leftChildNodexIndex];</span>
+<span class="lineNum">     202 </span><span class="lineNoCov">          0 :         int leftSubTreeSize = leftChildNode.isLeafNode() ? 1 : leftChildNode.getEscapeIndex();</span>
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :         int leftSubTreeSizeInBytes =  leftSubTreeSize * static_cast&lt;int&gt;(sizeof(btQuantizedBvhNode));</span>
+<span class="lineNum">     204 </span>            :         
+<span class="lineNum">     205 </span><span class="lineNoCov">          0 :         btQuantizedBvhNode&amp; rightChildNode = m_quantizedContiguousNodes[rightChildNodexIndex];</span>
+<span class="lineNum">     206 </span><span class="lineNoCov">          0 :         int rightSubTreeSize = rightChildNode.isLeafNode() ? 1 : rightChildNode.getEscapeIndex();</span>
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 :         int rightSubTreeSizeInBytes =  rightSubTreeSize *  static_cast&lt;int&gt;(sizeof(btQuantizedBvhNode));</span>
+<span class="lineNum">     208 </span>            : 
+<span class="lineNum">     209 </span><span class="lineNoCov">          0 :         if(leftSubTreeSizeInBytes &lt;= MAX_SUBTREE_SIZE_IN_BYTES)</span>
+<span class="lineNum">     210 </span>            :         {
+<span class="lineNum">     211 </span><span class="lineNoCov">          0 :                 btBvhSubtreeInfo&amp; subtree = m_SubtreeHeaders.expand();</span>
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :                 subtree.setAabbFromQuantizeNode(leftChildNode);</span>
+<span class="lineNum">     213 </span><span class="lineNoCov">          0 :                 subtree.m_rootNodeIndex = leftChildNodexIndex;</span>
+<span class="lineNum">     214 </span><span class="lineNoCov">          0 :                 subtree.m_subtreeSize = leftSubTreeSize;</span>
+<span class="lineNum">     215 </span>            :         }
+<span class="lineNum">     216 </span>            : 
+<span class="lineNum">     217 </span><span class="lineNoCov">          0 :         if(rightSubTreeSizeInBytes &lt;= MAX_SUBTREE_SIZE_IN_BYTES)</span>
+<span class="lineNum">     218 </span>            :         {
+<span class="lineNum">     219 </span><span class="lineNoCov">          0 :                 btBvhSubtreeInfo&amp; subtree = m_SubtreeHeaders.expand();</span>
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :                 subtree.setAabbFromQuantizeNode(rightChildNode);</span>
+<span class="lineNum">     221 </span><span class="lineNoCov">          0 :                 subtree.m_rootNodeIndex = rightChildNodexIndex;</span>
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :                 subtree.m_subtreeSize = rightSubTreeSize;</span>
+<span class="lineNum">     223 </span>            :         }
+<span class="lineNum">     224 </span>            : 
+<span class="lineNum">     225 </span>            :         //PCK: update the copy of the size
+<span class="lineNum">     226 </span><span class="lineNoCov">          0 :         m_subtreeHeaderCount = m_SubtreeHeaders.size();</span>
+<span class="lineNum">     227 </span><span class="lineNoCov">          0 : }</span>
+<a name="228"><span class="lineNum">     228 </span>            : </a>
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span><span class="lineNoCov">          0 : int     btQuantizedBvh::sortAndCalcSplittingIndex(int startIndex,int endIndex,int splitAxis)</span>
+<span class="lineNum">     231 </span>            : {
+<span class="lineNum">     232 </span>            :         int i;
+<span class="lineNum">     233 </span><span class="lineNoCov">          0 :         int splitIndex =startIndex;</span>
+<span class="lineNum">     234 </span><span class="lineNoCov">          0 :         int numIndices = endIndex - startIndex;</span>
+<span class="lineNum">     235 </span>            :         btScalar splitValue;
+<span class="lineNum">     236 </span>            : 
+<span class="lineNum">     237 </span><span class="lineNoCov">          0 :         btVector3 means(btScalar(0.),btScalar(0.),btScalar(0.));</span>
+<span class="lineNum">     238 </span><span class="lineNoCov">          0 :         for (i=startIndex;i&lt;endIndex;i++)</span>
+<span class="lineNum">     239 </span>            :         {
+<span class="lineNum">     240 </span><span class="lineNoCov">          0 :                 btVector3 center = btScalar(0.5)*(getAabbMax(i)+getAabbMin(i));</span>
+<span class="lineNum">     241 </span><span class="lineNoCov">          0 :                 means+=center;</span>
+<span class="lineNum">     242 </span>            :         }
+<span class="lineNum">     243 </span><span class="lineNoCov">          0 :         means *= (btScalar(1.)/(btScalar)numIndices);</span>
+<span class="lineNum">     244 </span>            :         
+<span class="lineNum">     245 </span><span class="lineNoCov">          0 :         splitValue = means[splitAxis];</span>
+<span class="lineNum">     246 </span>            :         
+<span class="lineNum">     247 </span>            :         //sort leafNodes so all values larger then splitValue comes first, and smaller values start from 'splitIndex'.
+<span class="lineNum">     248 </span><span class="lineNoCov">          0 :         for (i=startIndex;i&lt;endIndex;i++)</span>
+<span class="lineNum">     249 </span>            :         {
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :                 btVector3 center = btScalar(0.5)*(getAabbMax(i)+getAabbMin(i));</span>
+<span class="lineNum">     251 </span><span class="lineNoCov">          0 :                 if (center[splitAxis] &gt; splitValue)</span>
+<span class="lineNum">     252 </span>            :                 {
+<span class="lineNum">     253 </span>            :                         //swap
+<span class="lineNum">     254 </span><span class="lineNoCov">          0 :                         swapLeafNodes(i,splitIndex);</span>
+<span class="lineNum">     255 </span><span class="lineNoCov">          0 :                         splitIndex++;</span>
+<span class="lineNum">     256 </span>            :                 }
+<span class="lineNum">     257 </span>            :         }
+<span class="lineNum">     258 </span>            : 
+<span class="lineNum">     259 </span>            :         //if the splitIndex causes unbalanced trees, fix this by using the center in between startIndex and endIndex
+<span class="lineNum">     260 </span>            :         //otherwise the tree-building might fail due to stack-overflows in certain cases.
+<span class="lineNum">     261 </span>            :         //unbalanced1 is unsafe: it can cause stack overflows
+<span class="lineNum">     262 </span>            :         //bool unbalanced1 = ((splitIndex==startIndex) || (splitIndex == (endIndex-1)));
+<span class="lineNum">     263 </span>            : 
+<span class="lineNum">     264 </span>            :         //unbalanced2 should work too: always use center (perfect balanced trees)       
+<span class="lineNum">     265 </span>            :         //bool unbalanced2 = true;
+<span class="lineNum">     266 </span>            : 
+<span class="lineNum">     267 </span>            :         //this should be safe too:
+<span class="lineNum">     268 </span><span class="lineNoCov">          0 :         int rangeBalancedIndices = numIndices/3;</span>
+<span class="lineNum">     269 </span><span class="lineNoCov">          0 :         bool unbalanced = ((splitIndex&lt;=(startIndex+rangeBalancedIndices)) || (splitIndex &gt;=(endIndex-1-rangeBalancedIndices)));</span>
+<span class="lineNum">     270 </span>            :         
+<span class="lineNum">     271 </span>            :         if (unbalanced)
+<span class="lineNum">     272 </span>            :         {
+<span class="lineNum">     273 </span><span class="lineNoCov">          0 :                 splitIndex = startIndex+ (numIndices&gt;&gt;1);</span>
+<span class="lineNum">     274 </span>            :         }
+<span class="lineNum">     275 </span>            : 
+<span class="lineNum">     276 </span><span class="lineNoCov">          0 :         bool unbal = (splitIndex==startIndex) || (splitIndex == (endIndex));</span>
+<span class="lineNum">     277 </span>            :         (void)unbal;
+<span class="lineNum">     278 </span>            :         btAssert(!unbal);
+<span class="lineNum">     279 </span>            : 
+<span class="lineNum">     280 </span><span class="lineNoCov">          0 :         return splitIndex;</span>
+<span class="lineNum">     281 </span>            : }
+<a name="282"><span class="lineNum">     282 </span>            : </a>
+<span class="lineNum">     283 </span>            : 
+<span class="lineNum">     284 </span><span class="lineNoCov">          0 : int     btQuantizedBvh::calcSplittingAxis(int startIndex,int endIndex)</span>
+<span class="lineNum">     285 </span>            : {
+<span class="lineNum">     286 </span>            :         int i;
+<span class="lineNum">     287 </span>            : 
+<span class="lineNum">     288 </span><span class="lineNoCov">          0 :         btVector3 means(btScalar(0.),btScalar(0.),btScalar(0.));</span>
+<span class="lineNum">     289 </span><span class="lineNoCov">          0 :         btVector3 variance(btScalar(0.),btScalar(0.),btScalar(0.));</span>
+<span class="lineNum">     290 </span><span class="lineNoCov">          0 :         int numIndices = endIndex-startIndex;</span>
+<span class="lineNum">     291 </span>            : 
+<span class="lineNum">     292 </span><span class="lineNoCov">          0 :         for (i=startIndex;i&lt;endIndex;i++)</span>
+<span class="lineNum">     293 </span>            :         {
+<span class="lineNum">     294 </span><span class="lineNoCov">          0 :                 btVector3 center = btScalar(0.5)*(getAabbMax(i)+getAabbMin(i));</span>
+<span class="lineNum">     295 </span><span class="lineNoCov">          0 :                 means+=center;</span>
+<span class="lineNum">     296 </span>            :         }
+<span class="lineNum">     297 </span><span class="lineNoCov">          0 :         means *= (btScalar(1.)/(btScalar)numIndices);</span>
+<span class="lineNum">     298 </span>            :                 
+<span class="lineNum">     299 </span><span class="lineNoCov">          0 :         for (i=startIndex;i&lt;endIndex;i++)</span>
+<span class="lineNum">     300 </span>            :         {
+<span class="lineNum">     301 </span><span class="lineNoCov">          0 :                 btVector3 center = btScalar(0.5)*(getAabbMax(i)+getAabbMin(i));</span>
+<span class="lineNum">     302 </span><span class="lineNoCov">          0 :                 btVector3 diff2 = center-means;</span>
+<span class="lineNum">     303 </span><span class="lineNoCov">          0 :                 diff2 = diff2 * diff2;</span>
+<span class="lineNum">     304 </span><span class="lineNoCov">          0 :                 variance += diff2;</span>
+<span class="lineNum">     305 </span>            :         }
+<span class="lineNum">     306 </span><span class="lineNoCov">          0 :         variance *= (btScalar(1.)/      ((btScalar)numIndices-1)        );</span>
+<span class="lineNum">     307 </span>            :         
+<span class="lineNum">     308 </span><span class="lineNoCov">          0 :         return variance.maxAxis();</span>
+<span class="lineNum">     309 </span>            : }
+<span class="lineNum">     310 </span>            : 
+<a name="311"><span class="lineNum">     311 </span>            : </a>
+<span class="lineNum">     312 </span>            : 
+<span class="lineNum">     313 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::reportAabbOverlappingNodex(btNodeOverlapCallback* nodeCallback,const btVector3&amp; aabbMin,const btVector3&amp; aabbMax) const</span>
+<span class="lineNum">     314 </span>            : {
+<span class="lineNum">     315 </span>            :         //either choose recursive traversal (walkTree) or stackless (walkStacklessTree)
+<span class="lineNum">     316 </span>            : 
+<span class="lineNum">     317 </span><span class="lineNoCov">          0 :         if (m_useQuantization)</span>
+<span class="lineNum">     318 </span>            :         {
+<span class="lineNum">     319 </span>            :                 ///quantize query AABB
+<span class="lineNum">     320 </span>            :                 unsigned short int quantizedQueryAabbMin[3];
+<span class="lineNum">     321 </span>            :                 unsigned short int quantizedQueryAabbMax[3];
+<span class="lineNum">     322 </span><span class="lineNoCov">          0 :                 quantizeWithClamp(quantizedQueryAabbMin,aabbMin,0);</span>
+<span class="lineNum">     323 </span><span class="lineNoCov">          0 :                 quantizeWithClamp(quantizedQueryAabbMax,aabbMax,1);</span>
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span><span class="lineNoCov">          0 :                 switch (m_traversalMode)</span>
+<span class="lineNum">     326 </span>            :                 {
+<span class="lineNum">     327 </span><span class="lineNoCov">          0 :                 case TRAVERSAL_STACKLESS:</span>
+<span class="lineNum">     328 </span><span class="lineNoCov">          0 :                                 walkStacklessQuantizedTree(nodeCallback,quantizedQueryAabbMin,quantizedQueryAabbMax,0,m_curNodeIndex);</span>
+<span class="lineNum">     329 </span>            :                         break;
+<span class="lineNum">     330 </span><span class="lineNoCov">          0 :                 case TRAVERSAL_STACKLESS_CACHE_FRIENDLY:</span>
+<span class="lineNum">     331 </span><span class="lineNoCov">          0 :                                 walkStacklessQuantizedTreeCacheFriendly(nodeCallback,quantizedQueryAabbMin,quantizedQueryAabbMax);</span>
+<span class="lineNum">     332 </span>            :                         break;
+<span class="lineNum">     333 </span><span class="lineNoCov">          0 :                 case TRAVERSAL_RECURSIVE:</span>
+<span class="lineNum">     334 </span>            :                         {
+<span class="lineNum">     335 </span><span class="lineNoCov">          0 :                                 const btQuantizedBvhNode* rootNode = &amp;m_quantizedContiguousNodes[0];</span>
+<span class="lineNum">     336 </span><span class="lineNoCov">          0 :                                 walkRecursiveQuantizedTreeAgainstQueryAabb(rootNode,nodeCallback,quantizedQueryAabbMin,quantizedQueryAabbMax);</span>
+<span class="lineNum">     337 </span>            :                         }
+<span class="lineNum">     338 </span>            :                         break;
+<span class="lineNum">     339 </span><span class="lineNoCov">          0 :                 default:</span>
+<span class="lineNum">     340 </span>            :                         //unsupported
+<span class="lineNum">     341 </span>            :                         btAssert(0);
+<span class="lineNum">     342 </span>            :                 }
+<span class="lineNum">     343 </span>            :         } else
+<span class="lineNum">     344 </span>            :         {
+<span class="lineNum">     345 </span><span class="lineNoCov">          0 :                 walkStacklessTree(nodeCallback,aabbMin,aabbMax);</span>
+<span class="lineNum">     346 </span>            :         }
+<span class="lineNum">     347 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     348 </span>            : 
+<span class="lineNum">     349 </span>            : 
+<span class="lineNum">     350 </span>            : int maxIterations = 0;
+<a name="351"><span class="lineNum">     351 </span>            : </a>
+<span class="lineNum">     352 </span>            : 
+<span class="lineNum">     353 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::walkStacklessTree(btNodeOverlapCallback* nodeCallback,const btVector3&amp; aabbMin,const btVector3&amp; aabbMax) const</span>
+<span class="lineNum">     354 </span>            : {
+<span class="lineNum">     355 </span>            :         btAssert(!m_useQuantization);
+<span class="lineNum">     356 </span>            : 
+<span class="lineNum">     357 </span><span class="lineNoCov">          0 :         const btOptimizedBvhNode* rootNode = &amp;m_contiguousNodes[0];</span>
+<span class="lineNum">     358 </span><span class="lineNoCov">          0 :         int escapeIndex, curIndex = 0;</span>
+<span class="lineNum">     359 </span><span class="lineNoCov">          0 :         int walkIterations = 0;</span>
+<span class="lineNum">     360 </span>            :         bool isLeafNode;
+<span class="lineNum">     361 </span>            :         //PCK: unsigned instead of bool
+<span class="lineNum">     362 </span>            :         unsigned aabbOverlap;
+<span class="lineNum">     363 </span>            : 
+<span class="lineNum">     364 </span><span class="lineNoCov">          0 :         while (curIndex &lt; m_curNodeIndex)</span>
+<span class="lineNum">     365 </span>            :         {
+<span class="lineNum">     366 </span>            :                 //catch bugs in tree data
+<span class="lineNum">     367 </span>            :                 btAssert (walkIterations &lt; m_curNodeIndex);
+<span class="lineNum">     368 </span>            : 
+<span class="lineNum">     369 </span><span class="lineNoCov">          0 :                 walkIterations++;</span>
+<span class="lineNum">     370 </span><span class="lineNoCov">          0 :                 aabbOverlap = TestAabbAgainstAabb2(aabbMin,aabbMax,rootNode-&gt;m_aabbMinOrg,rootNode-&gt;m_aabbMaxOrg);</span>
+<span class="lineNum">     371 </span><span class="lineNoCov">          0 :                 isLeafNode = rootNode-&gt;m_escapeIndex == -1;</span>
+<span class="lineNum">     372 </span>            :                 
+<span class="lineNum">     373 </span>            :                 //PCK: unsigned instead of bool
+<span class="lineNum">     374 </span><span class="lineNoCov">          0 :                 if (isLeafNode &amp;&amp; (aabbOverlap != 0))</span>
+<span class="lineNum">     375 </span>            :                 {
+<span class="lineNum">     376 </span><span class="lineNoCov">          0 :                         nodeCallback-&gt;processNode(rootNode-&gt;m_subPart,rootNode-&gt;m_triangleIndex);</span>
+<span class="lineNum">     377 </span>            :                 } 
+<span class="lineNum">     378 </span>            :                 
+<span class="lineNum">     379 </span>            :                 //PCK: unsigned instead of bool
+<span class="lineNum">     380 </span><span class="lineNoCov">          0 :                 if ((aabbOverlap != 0) || isLeafNode)</span>
+<span class="lineNum">     381 </span>            :                 {
+<span class="lineNum">     382 </span><span class="lineNoCov">          0 :                         rootNode++;</span>
+<span class="lineNum">     383 </span><span class="lineNoCov">          0 :                         curIndex++;</span>
+<span class="lineNum">     384 </span>            :                 } else
+<span class="lineNum">     385 </span>            :                 {
+<span class="lineNum">     386 </span><span class="lineNoCov">          0 :                         escapeIndex = rootNode-&gt;m_escapeIndex;</span>
+<span class="lineNum">     387 </span><span class="lineNoCov">          0 :                         rootNode += escapeIndex;</span>
+<span class="lineNum">     388 </span><span class="lineNoCov">          0 :                         curIndex += escapeIndex;</span>
+<span class="lineNum">     389 </span>            :                 }
+<span class="lineNum">     390 </span>            :         }
+<span class="lineNum">     391 </span><span class="lineNoCov">          0 :         if (maxIterations &lt; walkIterations)</span>
+<span class="lineNum">     392 </span><span class="lineNoCov">          0 :                 maxIterations = walkIterations;</span>
+<span class="lineNum">     393 </span>            : 
+<span class="lineNum">     394 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     395 </span>            : 
+<span class="lineNum">     396 </span>            : /*
+<span class="lineNum">     397 </span>            : ///this was the original recursive traversal, before we optimized towards stackless traversal
+<span class="lineNum">     398 </span>            : void    btQuantizedBvh::walkTree(btOptimizedBvhNode* rootNode,btNodeOverlapCallback* nodeCallback,const btVector3&amp; aabbMin,const btVector3&amp; aabbMax) const
+<span class="lineNum">     399 </span>            : {
+<span class="lineNum">     400 </span>            :         bool isLeafNode, aabbOverlap = TestAabbAgainstAabb2(aabbMin,aabbMax,rootNode-&gt;m_aabbMin,rootNode-&gt;m_aabbMax);
+<span class="lineNum">     401 </span>            :         if (aabbOverlap)
+<span class="lineNum">     402 </span>            :         {
+<span class="lineNum">     403 </span>            :                 isLeafNode = (!rootNode-&gt;m_leftChild &amp;&amp; !rootNode-&gt;m_rightChild);
+<span class="lineNum">     404 </span>            :                 if (isLeafNode)
+<span class="lineNum">     405 </span>            :                 {
+<span class="lineNum">     406 </span>            :                         nodeCallback-&gt;processNode(rootNode);
+<span class="lineNum">     407 </span>            :                 } else
+<span class="lineNum">     408 </span>            :                 {
+<span class="lineNum">     409 </span>            :                         walkTree(rootNode-&gt;m_leftChild,nodeCallback,aabbMin,aabbMax);
+<span class="lineNum">     410 </span>            :                         walkTree(rootNode-&gt;m_rightChild,nodeCallback,aabbMin,aabbMax);
+<span class="lineNum">     411 </span>            :                 }
+<span class="lineNum">     412 </span>            :         }
+<span class="lineNum">     413 </span>            : 
+<span class="lineNum">     414 </span>            : }
+<a name="415"><span class="lineNum">     415 </span>            : */</a>
+<span class="lineNum">     416 </span>            : 
+<span class="lineNum">     417 </span><span class="lineNoCov">          0 : void btQuantizedBvh::walkRecursiveQuantizedTreeAgainstQueryAabb(const btQuantizedBvhNode* currentNode,btNodeOverlapCallback* nodeCallback,unsigned short int* quantizedQueryAabbMin,unsigned short int* quantizedQueryAabbMax) const</span>
+<span class="lineNum">     418 </span>            : {
+<span class="lineNum">     419 </span>            :         btAssert(m_useQuantization);
+<span class="lineNum">     420 </span>            :         
+<span class="lineNum">     421 </span>            :         bool isLeafNode;
+<span class="lineNum">     422 </span>            :         //PCK: unsigned instead of bool
+<span class="lineNum">     423 </span>            :         unsigned aabbOverlap;
+<span class="lineNum">     424 </span>            : 
+<span class="lineNum">     425 </span>            :         //PCK: unsigned instead of bool
+<span class="lineNum">     426 </span><span class="lineNoCov">          0 :         aabbOverlap = testQuantizedAabbAgainstQuantizedAabb(quantizedQueryAabbMin,quantizedQueryAabbMax,currentNode-&gt;m_quantizedAabbMin,currentNode-&gt;m_quantizedAabbMax);</span>
+<span class="lineNum">     427 </span><span class="lineNoCov">          0 :         isLeafNode = currentNode-&gt;isLeafNode();</span>
+<span class="lineNum">     428 </span>            :                 
+<span class="lineNum">     429 </span>            :         //PCK: unsigned instead of bool
+<span class="lineNum">     430 </span><span class="lineNoCov">          0 :         if (aabbOverlap != 0)</span>
+<span class="lineNum">     431 </span>            :         {
+<span class="lineNum">     432 </span><span class="lineNoCov">          0 :                 if (isLeafNode)</span>
+<span class="lineNum">     433 </span>            :                 {
+<span class="lineNum">     434 </span><span class="lineNoCov">          0 :                         nodeCallback-&gt;processNode(currentNode-&gt;getPartId(),currentNode-&gt;getTriangleIndex());</span>
+<span class="lineNum">     435 </span>            :                 } else
+<span class="lineNum">     436 </span>            :                 {
+<span class="lineNum">     437 </span>            :                         //process left and right children
+<span class="lineNum">     438 </span><span class="lineNoCov">          0 :                         const btQuantizedBvhNode* leftChildNode = currentNode+1;</span>
+<span class="lineNum">     439 </span><span class="lineNoCov">          0 :                         walkRecursiveQuantizedTreeAgainstQueryAabb(leftChildNode,nodeCallback,quantizedQueryAabbMin,quantizedQueryAabbMax);</span>
+<span class="lineNum">     440 </span>            : 
+<span class="lineNum">     441 </span><span class="lineNoCov">          0 :                         const btQuantizedBvhNode* rightChildNode = leftChildNode-&gt;isLeafNode() ? leftChildNode+1:leftChildNode+leftChildNode-&gt;getEscapeIndex();</span>
+<span class="lineNum">     442 </span>            :                         walkRecursiveQuantizedTreeAgainstQueryAabb(rightChildNode,nodeCallback,quantizedQueryAabbMin,quantizedQueryAabbMax);
+<span class="lineNum">     443 </span>            :                 }
+<span class="lineNum">     444 </span>            :         }               
+<span class="lineNum">     445 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     446 </span>            : 
+<a name="447"><span class="lineNum">     447 </span>            : </a>
+<span class="lineNum">     448 </span>            : 
+<span class="lineNum">     449 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::walkStacklessTreeAgainstRay(btNodeOverlapCallback* nodeCallback, const btVector3&amp; raySource, const btVector3&amp; rayTarget, const btVector3&amp; aabbMin, const btVector3&amp; aabbMax, int startNodeIndex,int endNodeIndex) const</span>
+<span class="lineNum">     450 </span>            : {
+<span class="lineNum">     451 </span>            :         btAssert(!m_useQuantization);
+<span class="lineNum">     452 </span>            : 
+<span class="lineNum">     453 </span><span class="lineNoCov">          0 :         const btOptimizedBvhNode* rootNode = &amp;m_contiguousNodes[0];</span>
+<span class="lineNum">     454 </span><span class="lineNoCov">          0 :         int escapeIndex, curIndex = 0;</span>
+<span class="lineNum">     455 </span><span class="lineNoCov">          0 :         int walkIterations = 0;</span>
+<span class="lineNum">     456 </span>            :         bool isLeafNode;
+<span class="lineNum">     457 </span>            :         //PCK: unsigned instead of bool
+<span class="lineNum">     458 </span><span class="lineNoCov">          0 :         unsigned aabbOverlap=0;</span>
+<span class="lineNum">     459 </span><span class="lineNoCov">          0 :         unsigned rayBoxOverlap=0;</span>
+<span class="lineNum">     460 </span><span class="lineNoCov">          0 :         btScalar lambda_max = 1.0;</span>
+<span class="lineNum">     461 </span>            :         
+<span class="lineNum">     462 </span>            :                 /* Quick pruning by quantized box */
+<span class="lineNum">     463 </span><span class="lineNoCov">          0 :         btVector3 rayAabbMin = raySource;</span>
+<span class="lineNum">     464 </span><span class="lineNoCov">          0 :         btVector3 rayAabbMax = raySource;</span>
+<span class="lineNum">     465 </span><span class="lineNoCov">          0 :         rayAabbMin.setMin(rayTarget);</span>
+<span class="lineNum">     466 </span><span class="lineNoCov">          0 :         rayAabbMax.setMax(rayTarget);</span>
+<span class="lineNum">     467 </span>            : 
+<span class="lineNum">     468 </span>            :         /* Add box cast extents to bounding box */
+<span class="lineNum">     469 </span><span class="lineNoCov">          0 :         rayAabbMin += aabbMin;</span>
+<span class="lineNum">     470 </span><span class="lineNoCov">          0 :         rayAabbMax += aabbMax;</span>
+<span class="lineNum">     471 </span>            : 
+<span class="lineNum">     472 </span>            : #ifdef RAYAABB2
+<span class="lineNum">     473 </span><span class="lineNoCov">          0 :         btVector3 rayDir = (rayTarget-raySource);</span>
+<span class="lineNum">     474 </span><span class="lineNoCov">          0 :         rayDir.normalize ();</span>
+<span class="lineNum">     475 </span><span class="lineNoCov">          0 :         lambda_max = rayDir.dot(rayTarget-raySource);</span>
+<span class="lineNum">     476 </span>            :         ///what about division by zero? --&gt; just set rayDirection[i] to 1.0
+<span class="lineNum">     477 </span><span class="lineNoCov">          0 :         btVector3 rayDirectionInverse;</span>
+<span class="lineNum">     478 </span><span class="lineNoCov">          0 :         rayDirectionInverse[0] = rayDir[0] == btScalar(0.0) ? btScalar(BT_LARGE_FLOAT) : btScalar(1.0) / rayDir[0];</span>
+<span class="lineNum">     479 </span><span class="lineNoCov">          0 :         rayDirectionInverse[1] = rayDir[1] == btScalar(0.0) ? btScalar(BT_LARGE_FLOAT) : btScalar(1.0) / rayDir[1];</span>
+<span class="lineNum">     480 </span><span class="lineNoCov">          0 :         rayDirectionInverse[2] = rayDir[2] == btScalar(0.0) ? btScalar(BT_LARGE_FLOAT) : btScalar(1.0) / rayDir[2];</span>
+<span class="lineNum">     481 </span><span class="lineNoCov">          0 :         unsigned int sign[3] = { rayDirectionInverse[0] &lt; 0.0, rayDirectionInverse[1] &lt; 0.0, rayDirectionInverse[2] &lt; 0.0};</span>
+<span class="lineNum">     482 </span>            : #endif
+<span class="lineNum">     483 </span>            : 
+<span class="lineNum">     484 </span>            :         btVector3 bounds[2];
+<span class="lineNum">     485 </span>            : 
+<span class="lineNum">     486 </span><span class="lineNoCov">          0 :         while (curIndex &lt; m_curNodeIndex)</span>
+<span class="lineNum">     487 </span>            :         {
+<span class="lineNum">     488 </span><span class="lineNoCov">          0 :                 btScalar param = 1.0;</span>
+<span class="lineNum">     489 </span>            :                 //catch bugs in tree data
+<span class="lineNum">     490 </span>            :                 btAssert (walkIterations &lt; m_curNodeIndex);
+<span class="lineNum">     491 </span>            : 
+<span class="lineNum">     492 </span><span class="lineNoCov">          0 :                 walkIterations++;</span>
+<span class="lineNum">     493 </span>            : 
+<span class="lineNum">     494 </span><span class="lineNoCov">          0 :                 bounds[0] = rootNode-&gt;m_aabbMinOrg;</span>
+<span class="lineNum">     495 </span><span class="lineNoCov">          0 :                 bounds[1] = rootNode-&gt;m_aabbMaxOrg;</span>
+<span class="lineNum">     496 </span>            :                 /* Add box cast extents */
+<span class="lineNum">     497 </span><span class="lineNoCov">          0 :                 bounds[0] -= aabbMax;</span>
+<span class="lineNum">     498 </span><span class="lineNoCov">          0 :                 bounds[1] -= aabbMin;</span>
+<span class="lineNum">     499 </span>            : 
+<span class="lineNum">     500 </span><span class="lineNoCov">          0 :                 aabbOverlap = TestAabbAgainstAabb2(rayAabbMin,rayAabbMax,rootNode-&gt;m_aabbMinOrg,rootNode-&gt;m_aabbMaxOrg);</span>
+<span class="lineNum">     501 </span>            :                 //perhaps profile if it is worth doing the aabbOverlap test first
+<span class="lineNum">     502 </span>            : 
+<span class="lineNum">     503 </span>            : #ifdef RAYAABB2
+<span class="lineNum">     504 </span>            :                         ///careful with this check: need to check division by zero (above) and fix the unQuantize method
+<span class="lineNum">     505 </span>            :                         ///thanks Joerg/hiker for the reproduction case!
+<span class="lineNum">     506 </span>            :                         ///http://www.bulletphysics.com/Bullet/phpBB3/viewtopic.php?f=9&amp;t=1858
+<span class="lineNum">     507 </span><span class="lineNoCov">          0 :                 rayBoxOverlap = aabbOverlap ? btRayAabb2 (raySource, rayDirectionInverse, sign, bounds, param, 0.0f, lambda_max) : false;</span>
+<span class="lineNum">     508 </span>            : 
+<span class="lineNum">     509 </span>            : #else
+<span class="lineNum">     510 </span>            :                 btVector3 normal;
+<span class="lineNum">     511 </span>            :                 rayBoxOverlap = btRayAabb(raySource, rayTarget,bounds[0],bounds[1],param, normal);
+<span class="lineNum">     512 </span>            : #endif
+<span class="lineNum">     513 </span>            : 
+<span class="lineNum">     514 </span><span class="lineNoCov">          0 :                 isLeafNode = rootNode-&gt;m_escapeIndex == -1;</span>
+<span class="lineNum">     515 </span>            :                 
+<span class="lineNum">     516 </span>            :                 //PCK: unsigned instead of bool
+<span class="lineNum">     517 </span><span class="lineNoCov">          0 :                 if (isLeafNode &amp;&amp; (rayBoxOverlap != 0))</span>
+<span class="lineNum">     518 </span>            :                 {
+<span class="lineNum">     519 </span><span class="lineNoCov">          0 :                         nodeCallback-&gt;processNode(rootNode-&gt;m_subPart,rootNode-&gt;m_triangleIndex);</span>
+<span class="lineNum">     520 </span>            :                 } 
+<span class="lineNum">     521 </span>            :                 
+<span class="lineNum">     522 </span>            :                 //PCK: unsigned instead of bool
+<span class="lineNum">     523 </span><span class="lineNoCov">          0 :                 if ((rayBoxOverlap != 0) || isLeafNode)</span>
+<span class="lineNum">     524 </span>            :                 {
+<span class="lineNum">     525 </span><span class="lineNoCov">          0 :                         rootNode++;</span>
+<span class="lineNum">     526 </span><span class="lineNoCov">          0 :                         curIndex++;</span>
+<span class="lineNum">     527 </span>            :                 } else
+<span class="lineNum">     528 </span>            :                 {
+<span class="lineNum">     529 </span><span class="lineNoCov">          0 :                         escapeIndex = rootNode-&gt;m_escapeIndex;</span>
+<span class="lineNum">     530 </span><span class="lineNoCov">          0 :                         rootNode += escapeIndex;</span>
+<span class="lineNum">     531 </span><span class="lineNoCov">          0 :                         curIndex += escapeIndex;</span>
+<span class="lineNum">     532 </span>            :                 }
+<span class="lineNum">     533 </span>            :         }
+<span class="lineNum">     534 </span><span class="lineNoCov">          0 :         if (maxIterations &lt; walkIterations)</span>
+<span class="lineNum">     535 </span><span class="lineNoCov">          0 :                 maxIterations = walkIterations;</span>
+<span class="lineNum">     536 </span>            : 
+<span class="lineNum">     537 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     538 </span>            : 
+<span class="lineNum">     539 </span>            : 
+<span class="lineNum">     540 </span>            : 
+<span class="lineNum">     541 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::walkStacklessQuantizedTreeAgainstRay(btNodeOverlapCallback* nodeCallback, const btVector3&amp; raySource, const btVector3&amp; rayTarget, const btVector3&amp; aabbMin, const btVector3&amp; aabbMax, int startNodeIndex,int endNodeIndex) const</span>
+<span class="lineNum">     542 </span>            : {
+<span class="lineNum">     543 </span>            :         btAssert(m_useQuantization);
+<span class="lineNum">     544 </span>            :         
+<span class="lineNum">     545 </span><span class="lineNoCov">          0 :         int curIndex = startNodeIndex;</span>
+<span class="lineNum">     546 </span><span class="lineNoCov">          0 :         int walkIterations = 0;</span>
+<span class="lineNum">     547 </span><span class="lineNoCov">          0 :         int subTreeSize = endNodeIndex - startNodeIndex;</span>
+<span class="lineNum">     548 </span>            :         (void)subTreeSize;
+<span class="lineNum">     549 </span>            : 
+<span class="lineNum">     550 </span><span class="lineNoCov">          0 :         const btQuantizedBvhNode* rootNode = &amp;m_quantizedContiguousNodes[startNodeIndex];</span>
+<span class="lineNum">     551 </span>            :         int escapeIndex;
+<span class="lineNum">     552 </span>            :         
+<span class="lineNum">     553 </span>            :         bool isLeafNode;
+<span class="lineNum">     554 </span>            :         //PCK: unsigned instead of bool
+<span class="lineNum">     555 </span><span class="lineNoCov">          0 :         unsigned boxBoxOverlap = 0;</span>
+<span class="lineNum">     556 </span><span class="lineNoCov">          0 :         unsigned rayBoxOverlap = 0;</span>
+<span class="lineNum">     557 </span>            : 
+<span class="lineNum">     558 </span><span class="lineNoCov">          0 :         btScalar lambda_max = 1.0;</span>
+<span class="lineNum">     559 </span>            : 
+<span class="lineNum">     560 </span>            : #ifdef RAYAABB2
+<span class="lineNum">     561 </span><span class="lineNoCov">          0 :         btVector3 rayDirection = (rayTarget-raySource);</span>
+<span class="lineNum">     562 </span><span class="lineNoCov">          0 :         rayDirection.normalize ();</span>
+<span class="lineNum">     563 </span><span class="lineNoCov">          0 :         lambda_max = rayDirection.dot(rayTarget-raySource);</span>
+<span class="lineNum">     564 </span>            :         ///what about division by zero? --&gt; just set rayDirection[i] to 1.0
+<span class="lineNum">     565 </span><span class="lineNoCov">          0 :         rayDirection[0] = rayDirection[0] == btScalar(0.0) ? btScalar(BT_LARGE_FLOAT) : btScalar(1.0) / rayDirection[0];</span>
+<span class="lineNum">     566 </span><span class="lineNoCov">          0 :         rayDirection[1] = rayDirection[1] == btScalar(0.0) ? btScalar(BT_LARGE_FLOAT) : btScalar(1.0) / rayDirection[1];</span>
+<span class="lineNum">     567 </span><span class="lineNoCov">          0 :         rayDirection[2] = rayDirection[2] == btScalar(0.0) ? btScalar(BT_LARGE_FLOAT) : btScalar(1.0) / rayDirection[2];</span>
+<span class="lineNum">     568 </span><span class="lineNoCov">          0 :         unsigned int sign[3] = { rayDirection[0] &lt; 0.0, rayDirection[1] &lt; 0.0, rayDirection[2] &lt; 0.0};</span>
+<span class="lineNum">     569 </span>            : #endif
+<span class="lineNum">     570 </span>            : 
+<span class="lineNum">     571 </span>            :         /* Quick pruning by quantized box */
+<span class="lineNum">     572 </span><span class="lineNoCov">          0 :         btVector3 rayAabbMin = raySource;</span>
+<span class="lineNum">     573 </span><span class="lineNoCov">          0 :         btVector3 rayAabbMax = raySource;</span>
+<span class="lineNum">     574 </span><span class="lineNoCov">          0 :         rayAabbMin.setMin(rayTarget);</span>
+<span class="lineNum">     575 </span><span class="lineNoCov">          0 :         rayAabbMax.setMax(rayTarget);</span>
+<span class="lineNum">     576 </span>            : 
+<span class="lineNum">     577 </span>            :         /* Add box cast extents to bounding box */
+<span class="lineNum">     578 </span><span class="lineNoCov">          0 :         rayAabbMin += aabbMin;</span>
+<span class="lineNum">     579 </span><span class="lineNoCov">          0 :         rayAabbMax += aabbMax;</span>
+<span class="lineNum">     580 </span>            : 
+<span class="lineNum">     581 </span>            :         unsigned short int quantizedQueryAabbMin[3];
+<span class="lineNum">     582 </span>            :         unsigned short int quantizedQueryAabbMax[3];
+<span class="lineNum">     583 </span><span class="lineNoCov">          0 :         quantizeWithClamp(quantizedQueryAabbMin,rayAabbMin,0);</span>
+<span class="lineNum">     584 </span><span class="lineNoCov">          0 :         quantizeWithClamp(quantizedQueryAabbMax,rayAabbMax,1);</span>
+<span class="lineNum">     585 </span>            : 
+<span class="lineNum">     586 </span><span class="lineNoCov">          0 :         while (curIndex &lt; endNodeIndex)</span>
+<span class="lineNum">     587 </span>            :         {
+<span class="lineNum">     588 </span>            : 
+<span class="lineNum">     589 </span>            : //#define VISUALLY_ANALYZE_BVH 1
+<span class="lineNum">     590 </span>            : #ifdef VISUALLY_ANALYZE_BVH
+<span class="lineNum">     591 </span>            :                 //some code snippet to debugDraw aabb, to visually analyze bvh structure
+<span class="lineNum">     592 </span>            :                 static int drawPatch = 0;
+<span class="lineNum">     593 </span>            :                 //need some global access to a debugDrawer
+<span class="lineNum">     594 </span>            :                 extern btIDebugDraw* debugDrawerPtr;
+<span class="lineNum">     595 </span>            :                 if (curIndex==drawPatch)
+<span class="lineNum">     596 </span>            :                 {
+<span class="lineNum">     597 </span>            :                         btVector3 aabbMin,aabbMax;
+<span class="lineNum">     598 </span>            :                         aabbMin = unQuantize(rootNode-&gt;m_quantizedAabbMin);
+<span class="lineNum">     599 </span>            :                         aabbMax = unQuantize(rootNode-&gt;m_quantizedAabbMax);
+<span class="lineNum">     600 </span>            :                         btVector3       color(1,0,0);
+<span class="lineNum">     601 </span>            :                         debugDrawerPtr-&gt;drawAabb(aabbMin,aabbMax,color);
+<span class="lineNum">     602 </span>            :                 }
+<span class="lineNum">     603 </span>            : #endif//VISUALLY_ANALYZE_BVH
+<span class="lineNum">     604 </span>            : 
+<span class="lineNum">     605 </span>            :                 //catch bugs in tree data
+<span class="lineNum">     606 </span>            :                 btAssert (walkIterations &lt; subTreeSize);
+<span class="lineNum">     607 </span>            : 
+<span class="lineNum">     608 </span><span class="lineNoCov">          0 :                 walkIterations++;</span>
+<span class="lineNum">     609 </span>            :                 //PCK: unsigned instead of bool
+<span class="lineNum">     610 </span>            :                 // only interested if this is closer than any previous hit
+<span class="lineNum">     611 </span><span class="lineNoCov">          0 :                 btScalar param = 1.0;</span>
+<span class="lineNum">     612 </span><span class="lineNoCov">          0 :                 rayBoxOverlap = 0;</span>
+<span class="lineNum">     613 </span><span class="lineNoCov">          0 :                 boxBoxOverlap = testQuantizedAabbAgainstQuantizedAabb(quantizedQueryAabbMin,quantizedQueryAabbMax,rootNode-&gt;m_quantizedAabbMin,rootNode-&gt;m_quantizedAabbMax);</span>
+<span class="lineNum">     614 </span><span class="lineNoCov">          0 :                 isLeafNode = rootNode-&gt;isLeafNode();</span>
+<span class="lineNum">     615 </span><span class="lineNoCov">          0 :                 if (boxBoxOverlap)</span>
+<span class="lineNum">     616 </span>            :                 {
+<span class="lineNum">     617 </span>            :                         btVector3 bounds[2];
+<span class="lineNum">     618 </span><span class="lineNoCov">          0 :                         bounds[0] = unQuantize(rootNode-&gt;m_quantizedAabbMin);</span>
+<span class="lineNum">     619 </span><span class="lineNoCov">          0 :                         bounds[1] = unQuantize(rootNode-&gt;m_quantizedAabbMax);</span>
+<span class="lineNum">     620 </span>            :                         /* Add box cast extents */
+<span class="lineNum">     621 </span><span class="lineNoCov">          0 :                         bounds[0] -= aabbMax;</span>
+<span class="lineNum">     622 </span><span class="lineNoCov">          0 :                         bounds[1] -= aabbMin;</span>
+<span class="lineNum">     623 </span><span class="lineNoCov">          0 :                         btVector3 normal;</span>
+<span class="lineNum">     624 </span>            : #if 0
+<span class="lineNum">     625 </span>            :                         bool ra2 = btRayAabb2 (raySource, rayDirection, sign, bounds, param, 0.0, lambda_max);
+<span class="lineNum">     626 </span>            :                         bool ra = btRayAabb (raySource, rayTarget, bounds[0], bounds[1], param, normal);
+<span class="lineNum">     627 </span>            :                         if (ra2 != ra)
+<span class="lineNum">     628 </span>            :                         {
+<span class="lineNum">     629 </span>            :                                 printf(&quot;functions don't match\n&quot;);
+<span class="lineNum">     630 </span>            :                         }
+<span class="lineNum">     631 </span>            : #endif
+<span class="lineNum">     632 </span>            : #ifdef RAYAABB2
+<span class="lineNum">     633 </span>            :                         ///careful with this check: need to check division by zero (above) and fix the unQuantize method
+<span class="lineNum">     634 </span>            :                         ///thanks Joerg/hiker for the reproduction case!
+<span class="lineNum">     635 </span>            :                         ///http://www.bulletphysics.com/Bullet/phpBB3/viewtopic.php?f=9&amp;t=1858
+<span class="lineNum">     636 </span>            : 
+<span class="lineNum">     637 </span>            :                         //BT_PROFILE(&quot;btRayAabb2&quot;);
+<span class="lineNum">     638 </span><span class="lineNoCov">          0 :                         rayBoxOverlap = btRayAabb2 (raySource, rayDirection, sign, bounds, param, 0.0f, lambda_max);</span>
+<span class="lineNum">     639 </span>            :                         
+<span class="lineNum">     640 </span>            : #else
+<span class="lineNum">     641 </span>            :                         rayBoxOverlap = true;//btRayAabb(raySource, rayTarget, bounds[0], bounds[1], param, normal);
+<span class="lineNum">     642 </span>            : #endif
+<span class="lineNum">     643 </span>            :                 }
+<span class="lineNum">     644 </span>            :                 
+<span class="lineNum">     645 </span><span class="lineNoCov">          0 :                 if (isLeafNode &amp;&amp; rayBoxOverlap)</span>
+<span class="lineNum">     646 </span>            :                 {
+<span class="lineNum">     647 </span><span class="lineNoCov">          0 :                         nodeCallback-&gt;processNode(rootNode-&gt;getPartId(),rootNode-&gt;getTriangleIndex());</span>
+<span class="lineNum">     648 </span>            :                 }
+<span class="lineNum">     649 </span>            :                 
+<span class="lineNum">     650 </span>            :                 //PCK: unsigned instead of bool
+<span class="lineNum">     651 </span><span class="lineNoCov">          0 :                 if ((rayBoxOverlap != 0) || isLeafNode)</span>
+<span class="lineNum">     652 </span>            :                 {
+<span class="lineNum">     653 </span><span class="lineNoCov">          0 :                         rootNode++;</span>
+<span class="lineNum">     654 </span><span class="lineNoCov">          0 :                         curIndex++;</span>
+<span class="lineNum">     655 </span>            :                 } else
+<span class="lineNum">     656 </span>            :                 {
+<span class="lineNum">     657 </span><span class="lineNoCov">          0 :                         escapeIndex = rootNode-&gt;getEscapeIndex();</span>
+<span class="lineNum">     658 </span><span class="lineNoCov">          0 :                         rootNode += escapeIndex;</span>
+<span class="lineNum">     659 </span><span class="lineNoCov">          0 :                         curIndex += escapeIndex;</span>
+<span class="lineNum">     660 </span>            :                 }
+<span class="lineNum">     661 </span>            :         }
+<span class="lineNum">     662 </span><span class="lineNoCov">          0 :         if (maxIterations &lt; walkIterations)</span>
+<span class="lineNum">     663 </span><span class="lineNoCov">          0 :                 maxIterations = walkIterations;</span>
+<span class="lineNum">     664 </span>            : 
+<span class="lineNum">     665 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     666 </span>            : 
+<span class="lineNum">     667 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::walkStacklessQuantizedTree(btNodeOverlapCallback* nodeCallback,unsigned short int* quantizedQueryAabbMin,unsigned short int* quantizedQueryAabbMax,int startNodeIndex,int endNodeIndex) const</span>
+<span class="lineNum">     668 </span>            : {
+<span class="lineNum">     669 </span>            :         btAssert(m_useQuantization);
+<span class="lineNum">     670 </span>            :         
+<span class="lineNum">     671 </span><span class="lineNoCov">          0 :         int curIndex = startNodeIndex;</span>
+<span class="lineNum">     672 </span><span class="lineNoCov">          0 :         int walkIterations = 0;</span>
+<span class="lineNum">     673 </span><span class="lineNoCov">          0 :         int subTreeSize = endNodeIndex - startNodeIndex;</span>
+<span class="lineNum">     674 </span>            :         (void)subTreeSize;
+<span class="lineNum">     675 </span>            : 
+<span class="lineNum">     676 </span><span class="lineNoCov">          0 :         const btQuantizedBvhNode* rootNode = &amp;m_quantizedContiguousNodes[startNodeIndex];</span>
+<span class="lineNum">     677 </span>            :         int escapeIndex;
+<span class="lineNum">     678 </span>            :         
+<span class="lineNum">     679 </span>            :         bool isLeafNode;
+<span class="lineNum">     680 </span>            :         //PCK: unsigned instead of bool
+<span class="lineNum">     681 </span>            :         unsigned aabbOverlap;
+<span class="lineNum">     682 </span>            : 
+<span class="lineNum">     683 </span><span class="lineNoCov">          0 :         while (curIndex &lt; endNodeIndex)</span>
+<span class="lineNum">     684 </span>            :         {
+<span class="lineNum">     685 </span>            : 
+<span class="lineNum">     686 </span>            : //#define VISUALLY_ANALYZE_BVH 1
+<span class="lineNum">     687 </span>            : #ifdef VISUALLY_ANALYZE_BVH
+<span class="lineNum">     688 </span>            :                 //some code snippet to debugDraw aabb, to visually analyze bvh structure
+<span class="lineNum">     689 </span>            :                 static int drawPatch = 0;
+<span class="lineNum">     690 </span>            :                 //need some global access to a debugDrawer
+<span class="lineNum">     691 </span>            :                 extern btIDebugDraw* debugDrawerPtr;
+<span class="lineNum">     692 </span>            :                 if (curIndex==drawPatch)
+<span class="lineNum">     693 </span>            :                 {
+<span class="lineNum">     694 </span>            :                         btVector3 aabbMin,aabbMax;
+<span class="lineNum">     695 </span>            :                         aabbMin = unQuantize(rootNode-&gt;m_quantizedAabbMin);
+<span class="lineNum">     696 </span>            :                         aabbMax = unQuantize(rootNode-&gt;m_quantizedAabbMax);
+<span class="lineNum">     697 </span>            :                         btVector3       color(1,0,0);
+<span class="lineNum">     698 </span>            :                         debugDrawerPtr-&gt;drawAabb(aabbMin,aabbMax,color);
+<span class="lineNum">     699 </span>            :                 }
+<span class="lineNum">     700 </span>            : #endif//VISUALLY_ANALYZE_BVH
+<span class="lineNum">     701 </span>            : 
+<span class="lineNum">     702 </span>            :                 //catch bugs in tree data
+<span class="lineNum">     703 </span>            :                 btAssert (walkIterations &lt; subTreeSize);
+<span class="lineNum">     704 </span>            : 
+<span class="lineNum">     705 </span><span class="lineNoCov">          0 :                 walkIterations++;</span>
+<span class="lineNum">     706 </span>            :                 //PCK: unsigned instead of bool
+<span class="lineNum">     707 </span><span class="lineNoCov">          0 :                 aabbOverlap = testQuantizedAabbAgainstQuantizedAabb(quantizedQueryAabbMin,quantizedQueryAabbMax,rootNode-&gt;m_quantizedAabbMin,rootNode-&gt;m_quantizedAabbMax);</span>
+<span class="lineNum">     708 </span><span class="lineNoCov">          0 :                 isLeafNode = rootNode-&gt;isLeafNode();</span>
+<span class="lineNum">     709 </span>            :                 
+<span class="lineNum">     710 </span><span class="lineNoCov">          0 :                 if (isLeafNode &amp;&amp; aabbOverlap)</span>
+<span class="lineNum">     711 </span>            :                 {
+<span class="lineNum">     712 </span><span class="lineNoCov">          0 :                         nodeCallback-&gt;processNode(rootNode-&gt;getPartId(),rootNode-&gt;getTriangleIndex());</span>
+<span class="lineNum">     713 </span>            :                 } 
+<span class="lineNum">     714 </span>            :                 
+<span class="lineNum">     715 </span>            :                 //PCK: unsigned instead of bool
+<span class="lineNum">     716 </span><span class="lineNoCov">          0 :                 if ((aabbOverlap != 0) || isLeafNode)</span>
+<span class="lineNum">     717 </span>            :                 {
+<span class="lineNum">     718 </span><span class="lineNoCov">          0 :                         rootNode++;</span>
+<span class="lineNum">     719 </span><span class="lineNoCov">          0 :                         curIndex++;</span>
+<span class="lineNum">     720 </span>            :                 } else
+<span class="lineNum">     721 </span>            :                 {
+<span class="lineNum">     722 </span><span class="lineNoCov">          0 :                         escapeIndex = rootNode-&gt;getEscapeIndex();</span>
+<span class="lineNum">     723 </span><span class="lineNoCov">          0 :                         rootNode += escapeIndex;</span>
+<span class="lineNum">     724 </span><span class="lineNoCov">          0 :                         curIndex += escapeIndex;</span>
+<span class="lineNum">     725 </span>            :                 }
+<span class="lineNum">     726 </span>            :         }
+<span class="lineNum">     727 </span><span class="lineNoCov">          0 :         if (maxIterations &lt; walkIterations)</span>
+<span class="lineNum">     728 </span><span class="lineNoCov">          0 :                 maxIterations = walkIterations;</span>
+<span class="lineNum">     729 </span>            : 
+<span class="lineNum">     730 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     731 </span>            : 
+<span class="lineNum">     732 </span>            : //This traversal can be called from Playstation 3 SPU
+<span class="lineNum">     733 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::walkStacklessQuantizedTreeCacheFriendly(btNodeOverlapCallback* nodeCallback,unsigned short int* quantizedQueryAabbMin,unsigned short int* quantizedQueryAabbMax) const</span>
+<span class="lineNum">     734 </span>            : {
+<span class="lineNum">     735 </span>            :         btAssert(m_useQuantization);
+<span class="lineNum">     736 </span>            : 
+<span class="lineNum">     737 </span>            :         int i;
+<span class="lineNum">     738 </span>            : 
+<span class="lineNum">     739 </span>            : 
+<span class="lineNum">     740 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;this-&gt;m_SubtreeHeaders.size();i++)</span>
+<span class="lineNum">     741 </span>            :         {
+<span class="lineNum">     742 </span><span class="lineNoCov">          0 :                 const btBvhSubtreeInfo&amp; subtree = m_SubtreeHeaders[i];</span>
+<span class="lineNum">     743 </span>            : 
+<span class="lineNum">     744 </span>            :                 //PCK: unsigned instead of bool
+<span class="lineNum">     745 </span><span class="lineNoCov">          0 :                 unsigned overlap = testQuantizedAabbAgainstQuantizedAabb(quantizedQueryAabbMin,quantizedQueryAabbMax,subtree.m_quantizedAabbMin,subtree.m_quantizedAabbMax);</span>
+<span class="lineNum">     746 </span><span class="lineNoCov">          0 :                 if (overlap != 0)</span>
+<span class="lineNum">     747 </span>            :                 {
+<span class="lineNum">     748 </span><span class="lineNoCov">          0 :                         walkStacklessQuantizedTree(nodeCallback,quantizedQueryAabbMin,quantizedQueryAabbMax,</span>
+<span class="lineNum">     749 </span>            :                                 subtree.m_rootNodeIndex,
+<span class="lineNum">     750 </span><span class="lineNoCov">          0 :                                 subtree.m_rootNodeIndex+subtree.m_subtreeSize);</span>
+<span class="lineNum">     751 </span>            :                 }
+<span class="lineNum">     752 </span>            :         }
+<span class="lineNum">     753 </span><span class="lineNoCov">          0 : }</span>
+<a name="754"><span class="lineNum">     754 </span>            : </a>
+<span class="lineNum">     755 </span>            : 
+<span class="lineNum">     756 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::reportRayOverlappingNodex (btNodeOverlapCallback* nodeCallback, const btVector3&amp; raySource, const btVector3&amp; rayTarget) const</span>
+<span class="lineNum">     757 </span>            : {
+<span class="lineNum">     758 </span><span class="lineNoCov">          0 :         reportBoxCastOverlappingNodex(nodeCallback,raySource,rayTarget,btVector3(0,0,0),btVector3(0,0,0));</span>
+<span class="lineNum">     759 </span><span class="lineNoCov">          0 : }</span>
+<a name="760"><span class="lineNum">     760 </span>            : </a>
+<span class="lineNum">     761 </span>            : 
+<span class="lineNum">     762 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::reportBoxCastOverlappingNodex(btNodeOverlapCallback* nodeCallback, const btVector3&amp; raySource, const btVector3&amp; rayTarget, const btVector3&amp; aabbMin,const btVector3&amp; aabbMax) const</span>
+<span class="lineNum">     763 </span>            : {
+<span class="lineNum">     764 </span>            :         //always use stackless
+<span class="lineNum">     765 </span>            : 
+<span class="lineNum">     766 </span><span class="lineNoCov">          0 :         if (m_useQuantization)</span>
+<span class="lineNum">     767 </span>            :         {
+<span class="lineNum">     768 </span><span class="lineNoCov">          0 :                 walkStacklessQuantizedTreeAgainstRay(nodeCallback, raySource, rayTarget, aabbMin, aabbMax, 0, m_curNodeIndex);</span>
+<span class="lineNum">     769 </span>            :         }
+<span class="lineNum">     770 </span>            :         else
+<span class="lineNum">     771 </span>            :         {
+<span class="lineNum">     772 </span><span class="lineNoCov">          0 :                 walkStacklessTreeAgainstRay(nodeCallback, raySource, rayTarget, aabbMin, aabbMax, 0, m_curNodeIndex);</span>
+<span class="lineNum">     773 </span>            :         }
+<span class="lineNum">     774 </span>            :         /*
+<span class="lineNum">     775 </span>            :         {
+<span class="lineNum">     776 </span>            :                 //recursive traversal
+<span class="lineNum">     777 </span>            :                 btVector3 qaabbMin = raySource;
+<span class="lineNum">     778 </span>            :                 btVector3 qaabbMax = raySource;
+<span class="lineNum">     779 </span>            :                 qaabbMin.setMin(rayTarget);
+<span class="lineNum">     780 </span>            :                 qaabbMax.setMax(rayTarget);
+<span class="lineNum">     781 </span>            :                 qaabbMin += aabbMin;
+<span class="lineNum">     782 </span>            :                 qaabbMax += aabbMax;
+<span class="lineNum">     783 </span>            :                 reportAabbOverlappingNodex(nodeCallback,qaabbMin,qaabbMax);
+<span class="lineNum">     784 </span>            :         }
+<span class="lineNum">     785 </span>            :         */
+<span class="lineNum">     786 </span>            : 
+<span class="lineNum">     787 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     788 </span>            : 
+<span class="lineNum">     789 </span>            : 
+<span class="lineNum">     790 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::swapLeafNodes(int i,int splitIndex)</span>
+<span class="lineNum">     791 </span>            : {
+<span class="lineNum">     792 </span><span class="lineNoCov">          0 :         if (m_useQuantization)</span>
+<span class="lineNum">     793 </span>            :         {
+<span class="lineNum">     794 </span><span class="lineNoCov">          0 :                         btQuantizedBvhNode tmp = m_quantizedLeafNodes[i];</span>
+<span class="lineNum">     795 </span><span class="lineNoCov">          0 :                         m_quantizedLeafNodes[i] = m_quantizedLeafNodes[splitIndex];</span>
+<span class="lineNum">     796 </span><span class="lineNoCov">          0 :                         m_quantizedLeafNodes[splitIndex] = tmp;</span>
+<span class="lineNum">     797 </span>            :         } else
+<span class="lineNum">     798 </span>            :         {
+<span class="lineNum">     799 </span><span class="lineNoCov">          0 :                         btOptimizedBvhNode tmp = m_leafNodes[i];</span>
+<span class="lineNum">     800 </span><span class="lineNoCov">          0 :                         m_leafNodes[i] = m_leafNodes[splitIndex];</span>
+<span class="lineNum">     801 </span><span class="lineNoCov">          0 :                         m_leafNodes[splitIndex] = tmp;</span>
+<span class="lineNum">     802 </span>            :         }
+<span class="lineNum">     803 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     804 </span>            : 
+<span class="lineNum">     805 </span><span class="lineNoCov">          0 : void    btQuantizedBvh::assignInternalNodeFromLeafNode(int internalNode,int leafNodeIndex)</span>
+<span class="lineNum">     806 </span>            : {
+<span class="lineNum">     807 </span><span class="lineNoCov">          0 :         if (m_useQuantization)</span>
+<span class="lineNum">     808 </span>            :         {
+<span class="lineNum">     809 </span><span class="lineNoCov">          0 :                 m_quantizedContiguousNodes[internalNode] = m_quantizedLeafNodes[leafNodeIndex];</span>
+<span class="lineNum">     810 </span>            :         } else
+<span class="lineNum">     811 </span>            :         {
+<span class="lineNum">     812 </span><span class="lineNoCov">          0 :                 m_contiguousNodes[internalNode] = m_leafNodes[leafNodeIndex];</span>
+<span class="lineNum">     813 </span>            :         }
+<span class="lineNum">     814 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     815 </span>            : 
+<span class="lineNum">     816 </span>            : //PCK: include
+<span class="lineNum">     817 </span>            : #include &lt;new&gt;
+<span class="lineNum">     818 </span>            : 
+<span class="lineNum">     819 </span>            : #if 0
+<span class="lineNum">     820 </span>            : //PCK: consts
+<span class="lineNum">     821 </span>            : static const unsigned BVH_ALIGNMENT = 16;
+<span class="lineNum">     822 </span>            : static const unsigned BVH_ALIGNMENT_MASK = BVH_ALIGNMENT-1;
+<span class="lineNum">     823 </span>            : 
+<span class="lineNum">     824 </span>            : static const unsigned BVH_ALIGNMENT_BLOCKS = 2;
+<span class="lineNum">     825 </span>            : #endif
+<a name="826"><span class="lineNum">     826 </span>            : </a>
+<span class="lineNum">     827 </span>            : 
+<span class="lineNum">     828 </span><span class="lineNoCov">          0 : unsigned int btQuantizedBvh::getAlignmentSerializationPadding()</span>
+<span class="lineNum">     829 </span>            : {
+<span class="lineNum">     830 </span>            :         // I changed this to 0 since the extra padding is not needed or used.
+<span class="lineNum">     831 </span><span class="lineNoCov">          0 :         return 0;//BVH_ALIGNMENT_BLOCKS * BVH_ALIGNMENT;</span>
+<a name="832"><span class="lineNum">     832 </span>            : }</a>
+<span class="lineNum">     833 </span>            : 
+<span class="lineNum">     834 </span><span class="lineNoCov">          0 : unsigned btQuantizedBvh::calculateSerializeBufferSize() const</span>
+<span class="lineNum">     835 </span>            : {
+<span class="lineNum">     836 </span><span class="lineNoCov">          0 :         unsigned baseSize = sizeof(btQuantizedBvh) + getAlignmentSerializationPadding();</span>
+<span class="lineNum">     837 </span><span class="lineNoCov">          0 :         baseSize += sizeof(btBvhSubtreeInfo) * m_subtreeHeaderCount;</span>
+<span class="lineNum">     838 </span><span class="lineNoCov">          0 :         if (m_useQuantization)</span>
+<span class="lineNum">     839 </span>            :         {
+<span class="lineNum">     840 </span><span class="lineNoCov">          0 :                 return baseSize + m_curNodeIndex * sizeof(btQuantizedBvhNode);</span>
+<span class="lineNum">     841 </span>            :         }
+<span class="lineNum">     842 </span><span class="lineNoCov">          0 :         return baseSize + m_curNodeIndex * sizeof(btOptimizedBvhNode);</span>
+<span class="lineNum">     843 </span>            : }
+<span class="lineNum">     844 </span>            : 
+<span class="lineNum">     845 </span><span class="lineNoCov">          0 : bool btQuantizedBvh::serialize(void *o_alignedDataBuffer, unsigned /*i_dataBufferSize */, bool i_swapEndian) const</span>
+<span class="lineNum">     846 </span>            : {
+<span class="lineNum">     847 </span>            :         btAssert(m_subtreeHeaderCount == m_SubtreeHeaders.size());
+<span class="lineNum">     848 </span><span class="lineNoCov">          0 :         m_subtreeHeaderCount = m_SubtreeHeaders.size();</span>
+<span class="lineNum">     849 </span>            : 
+<span class="lineNum">     850 </span>            : /*      if (i_dataBufferSize &lt; calculateSerializeBufferSize() || o_alignedDataBuffer == NULL || (((unsigned)o_alignedDataBuffer &amp; BVH_ALIGNMENT_MASK) != 0))
+<span class="lineNum">     851 </span>            :         {
+<span class="lineNum">     852 </span>            :                 ///check alignedment for buffer?
+<span class="lineNum">     853 </span>            :                 btAssert(0);
+<span class="lineNum">     854 </span>            :                 return false;
+<span class="lineNum">     855 </span>            :         }
+<span class="lineNum">     856 </span>            : */
+<span class="lineNum">     857 </span>            : 
+<span class="lineNum">     858 </span><span class="lineNoCov">          0 :         btQuantizedBvh *targetBvh = (btQuantizedBvh *)o_alignedDataBuffer;</span>
+<span class="lineNum">     859 </span>            : 
+<span class="lineNum">     860 </span>            :         // construct the class so the virtual function table, etc will be set up
+<span class="lineNum">     861 </span>            :         // Also, m_leafNodes and m_quantizedLeafNodes will be initialized to default values by the constructor
+<span class="lineNum">     862 </span><span class="lineNoCov">          0 :         new (targetBvh) btQuantizedBvh;</span>
+<span class="lineNum">     863 </span>            : 
+<span class="lineNum">     864 </span><span class="lineNoCov">          0 :         if (i_swapEndian)</span>
+<span class="lineNum">     865 </span>            :         {
+<span class="lineNum">     866 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_curNodeIndex = static_cast&lt;int&gt;(btSwapEndian(m_curNodeIndex));</span>
+<span class="lineNum">     867 </span>            : 
+<span class="lineNum">     868 </span>            : 
+<span class="lineNum">     869 </span><span class="lineNoCov">          0 :                 btSwapVector3Endian(m_bvhAabbMin,targetBvh-&gt;m_bvhAabbMin);</span>
+<span class="lineNum">     870 </span>            :                 btSwapVector3Endian(m_bvhAabbMax,targetBvh-&gt;m_bvhAabbMax);
+<span class="lineNum">     871 </span><span class="lineNoCov">          0 :                 btSwapVector3Endian(m_bvhQuantization,targetBvh-&gt;m_bvhQuantization);</span>
+<span class="lineNum">     872 </span>            : 
+<span class="lineNum">     873 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_traversalMode = (btTraversalMode)btSwapEndian(m_traversalMode);</span>
+<span class="lineNum">     874 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_subtreeHeaderCount = static_cast&lt;int&gt;(btSwapEndian(m_subtreeHeaderCount));</span>
+<span class="lineNum">     875 </span>            :         }
+<span class="lineNum">     876 </span>            :         else
+<span class="lineNum">     877 </span>            :         {
+<span class="lineNum">     878 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_curNodeIndex = m_curNodeIndex;</span>
+<span class="lineNum">     879 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_bvhAabbMin = m_bvhAabbMin;</span>
+<span class="lineNum">     880 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_bvhAabbMax = m_bvhAabbMax;</span>
+<span class="lineNum">     881 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_bvhQuantization = m_bvhQuantization;</span>
+<span class="lineNum">     882 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_traversalMode = m_traversalMode;</span>
+<span class="lineNum">     883 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_subtreeHeaderCount = m_subtreeHeaderCount;</span>
+<span class="lineNum">     884 </span>            :         }
+<span class="lineNum">     885 </span>            : 
+<span class="lineNum">     886 </span><span class="lineNoCov">          0 :         targetBvh-&gt;m_useQuantization = m_useQuantization;</span>
+<span class="lineNum">     887 </span>            : 
+<span class="lineNum">     888 </span><span class="lineNoCov">          0 :         unsigned char *nodeData = (unsigned char *)targetBvh;</span>
+<span class="lineNum">     889 </span><span class="lineNoCov">          0 :         nodeData += sizeof(btQuantizedBvh);</span>
+<span class="lineNum">     890 </span>            :         
+<span class="lineNum">     891 </span><span class="lineNoCov">          0 :         unsigned sizeToAdd = 0;//(BVH_ALIGNMENT-((unsigned)nodeData &amp; BVH_ALIGNMENT_MASK))&amp;BVH_ALIGNMENT_MASK;</span>
+<span class="lineNum">     892 </span><span class="lineNoCov">          0 :         nodeData += sizeToAdd;</span>
+<span class="lineNum">     893 </span>            :         
+<span class="lineNum">     894 </span><span class="lineNoCov">          0 :         int nodeCount = m_curNodeIndex;</span>
+<span class="lineNum">     895 </span>            : 
+<span class="lineNum">     896 </span><span class="lineNoCov">          0 :         if (m_useQuantization)</span>
+<span class="lineNum">     897 </span>            :         {
+<span class="lineNum">     898 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_quantizedContiguousNodes.initializeFromBuffer(nodeData, nodeCount, nodeCount);</span>
+<span class="lineNum">     899 </span>            : 
+<span class="lineNum">     900 </span><span class="lineNoCov">          0 :                 if (i_swapEndian)</span>
+<span class="lineNum">     901 </span>            :                 {
+<span class="lineNum">     902 </span><span class="lineNoCov">          0 :                         for (int nodeIndex = 0; nodeIndex &lt; nodeCount; nodeIndex++)</span>
+<span class="lineNum">     903 </span>            :                         {
+<span class="lineNum">     904 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[0] = btSwapEndian(m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[0]);</span>
+<span class="lineNum">     905 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[1] = btSwapEndian(m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[1]);</span>
+<span class="lineNum">     906 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[2] = btSwapEndian(m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[2]);</span>
+<span class="lineNum">     907 </span>            : 
+<span class="lineNum">     908 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[0] = btSwapEndian(m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[0]);</span>
+<span class="lineNum">     909 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[1] = btSwapEndian(m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[1]);</span>
+<span class="lineNum">     910 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[2] = btSwapEndian(m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[2]);</span>
+<span class="lineNum">     911 </span>            : 
+<span class="lineNum">     912 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_escapeIndexOrTriangleIndex = static_cast&lt;int&gt;(btSwapEndian(m_quantizedContiguousNodes[nodeIndex].m_escapeIndexOrTriangleIndex));</span>
+<span class="lineNum">     913 </span>            :                         }
+<span class="lineNum">     914 </span>            :                 }
+<span class="lineNum">     915 </span>            :                 else
+<span class="lineNum">     916 </span>            :                 {
+<span class="lineNum">     917 </span><span class="lineNoCov">          0 :                         for (int nodeIndex = 0; nodeIndex &lt; nodeCount; nodeIndex++)</span>
+<span class="lineNum">     918 </span>            :                         {
+<span class="lineNum">     919 </span>            :         
+<span class="lineNum">     920 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[0] = m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[0];</span>
+<span class="lineNum">     921 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[1] = m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[1];</span>
+<span class="lineNum">     922 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[2] = m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[2];</span>
+<span class="lineNum">     923 </span>            : 
+<span class="lineNum">     924 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[0] = m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[0];</span>
+<span class="lineNum">     925 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[1] = m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[1];</span>
+<span class="lineNum">     926 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[2] = m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[2];</span>
+<span class="lineNum">     927 </span>            : 
+<span class="lineNum">     928 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_escapeIndexOrTriangleIndex = m_quantizedContiguousNodes[nodeIndex].m_escapeIndexOrTriangleIndex;</span>
+<span class="lineNum">     929 </span>            : 
+<span class="lineNum">     930 </span>            : 
+<span class="lineNum">     931 </span>            :                         }
+<span class="lineNum">     932 </span>            :                 }
+<span class="lineNum">     933 </span><span class="lineNoCov">          0 :                 nodeData += sizeof(btQuantizedBvhNode) * nodeCount;</span>
+<span class="lineNum">     934 </span>            : 
+<span class="lineNum">     935 </span>            :                 // this clears the pointer in the member variable it doesn't really do anything to the data
+<span class="lineNum">     936 </span>            :                 // it does call the destructor on the contained objects, but they are all classes with no destructor defined
+<span class="lineNum">     937 </span>            :                 // so the memory (which is not freed) is left alone
+<span class="lineNum">     938 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_quantizedContiguousNodes.initializeFromBuffer(NULL, 0, 0);</span>
+<span class="lineNum">     939 </span>            :         }
+<span class="lineNum">     940 </span>            :         else
+<span class="lineNum">     941 </span>            :         {
+<span class="lineNum">     942 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_contiguousNodes.initializeFromBuffer(nodeData, nodeCount, nodeCount);</span>
+<span class="lineNum">     943 </span>            : 
+<span class="lineNum">     944 </span><span class="lineNoCov">          0 :                 if (i_swapEndian)</span>
+<span class="lineNum">     945 </span>            :                 {
+<span class="lineNum">     946 </span><span class="lineNoCov">          0 :                         for (int nodeIndex = 0; nodeIndex &lt; nodeCount; nodeIndex++)</span>
+<span class="lineNum">     947 </span>            :                         {
+<span class="lineNum">     948 </span><span class="lineNoCov">          0 :                                 btSwapVector3Endian(m_contiguousNodes[nodeIndex].m_aabbMinOrg, targetBvh-&gt;m_contiguousNodes[nodeIndex].m_aabbMinOrg);</span>
+<span class="lineNum">     949 </span><span class="lineNoCov">          0 :                                 btSwapVector3Endian(m_contiguousNodes[nodeIndex].m_aabbMaxOrg, targetBvh-&gt;m_contiguousNodes[nodeIndex].m_aabbMaxOrg);</span>
+<span class="lineNum">     950 </span>            : 
+<span class="lineNum">     951 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_contiguousNodes[nodeIndex].m_escapeIndex = static_cast&lt;int&gt;(btSwapEndian(m_contiguousNodes[nodeIndex].m_escapeIndex));</span>
+<span class="lineNum">     952 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_contiguousNodes[nodeIndex].m_subPart = static_cast&lt;int&gt;(btSwapEndian(m_contiguousNodes[nodeIndex].m_subPart));</span>
+<span class="lineNum">     953 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_contiguousNodes[nodeIndex].m_triangleIndex = static_cast&lt;int&gt;(btSwapEndian(m_contiguousNodes[nodeIndex].m_triangleIndex));</span>
+<span class="lineNum">     954 </span>            :                         }
+<span class="lineNum">     955 </span>            :                 }
+<span class="lineNum">     956 </span>            :                 else
+<span class="lineNum">     957 </span>            :                 {
+<span class="lineNum">     958 </span><span class="lineNoCov">          0 :                         for (int nodeIndex = 0; nodeIndex &lt; nodeCount; nodeIndex++)</span>
+<span class="lineNum">     959 </span>            :                         {
+<span class="lineNum">     960 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_contiguousNodes[nodeIndex].m_aabbMinOrg = m_contiguousNodes[nodeIndex].m_aabbMinOrg;</span>
+<span class="lineNum">     961 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_contiguousNodes[nodeIndex].m_aabbMaxOrg = m_contiguousNodes[nodeIndex].m_aabbMaxOrg;</span>
+<span class="lineNum">     962 </span>            : 
+<span class="lineNum">     963 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_contiguousNodes[nodeIndex].m_escapeIndex = m_contiguousNodes[nodeIndex].m_escapeIndex;</span>
+<span class="lineNum">     964 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_contiguousNodes[nodeIndex].m_subPart = m_contiguousNodes[nodeIndex].m_subPart;</span>
+<span class="lineNum">     965 </span><span class="lineNoCov">          0 :                                 targetBvh-&gt;m_contiguousNodes[nodeIndex].m_triangleIndex = m_contiguousNodes[nodeIndex].m_triangleIndex;</span>
+<span class="lineNum">     966 </span>            :                         }
+<span class="lineNum">     967 </span>            :                 }
+<span class="lineNum">     968 </span><span class="lineNoCov">          0 :                 nodeData += sizeof(btOptimizedBvhNode) * nodeCount;</span>
+<span class="lineNum">     969 </span>            : 
+<span class="lineNum">     970 </span>            :                 // this clears the pointer in the member variable it doesn't really do anything to the data
+<span class="lineNum">     971 </span>            :                 // it does call the destructor on the contained objects, but they are all classes with no destructor defined
+<span class="lineNum">     972 </span>            :                 // so the memory (which is not freed) is left alone
+<span class="lineNum">     973 </span><span class="lineNoCov">          0 :                 targetBvh-&gt;m_contiguousNodes.initializeFromBuffer(NULL, 0, 0);</span>
+<span class="lineNum">     974 </span>            :         }
+<span class="lineNum">     975 </span>            : 
+<span class="lineNum">     976 </span><span class="lineNoCov">          0 :         sizeToAdd = 0;//(BVH_ALIGNMENT-((unsigned)nodeData &amp; BVH_ALIGNMENT_MASK))&amp;BVH_ALIGNMENT_MASK;</span>
+<span class="lineNum">     977 </span><span class="lineNoCov">          0 :         nodeData += sizeToAdd;</span>
+<span class="lineNum">     978 </span>            : 
+<span class="lineNum">     979 </span>            :         // Now serialize the subtree headers
+<span class="lineNum">     980 </span><span class="lineNoCov">          0 :         targetBvh-&gt;m_SubtreeHeaders.initializeFromBuffer(nodeData, m_subtreeHeaderCount, m_subtreeHeaderCount);</span>
+<span class="lineNum">     981 </span><span class="lineNoCov">          0 :         if (i_swapEndian)</span>
+<span class="lineNum">     982 </span>            :         {
+<span class="lineNum">     983 </span><span class="lineNoCov">          0 :                 for (int i = 0; i &lt; m_subtreeHeaderCount; i++)</span>
+<span class="lineNum">     984 </span>            :                 {
+<span class="lineNum">     985 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMin[0] = btSwapEndian(m_SubtreeHeaders[i].m_quantizedAabbMin[0]);</span>
+<span class="lineNum">     986 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMin[1] = btSwapEndian(m_SubtreeHeaders[i].m_quantizedAabbMin[1]);</span>
+<span class="lineNum">     987 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMin[2] = btSwapEndian(m_SubtreeHeaders[i].m_quantizedAabbMin[2]);</span>
+<span class="lineNum">     988 </span>            : 
+<span class="lineNum">     989 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMax[0] = btSwapEndian(m_SubtreeHeaders[i].m_quantizedAabbMax[0]);</span>
+<span class="lineNum">     990 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMax[1] = btSwapEndian(m_SubtreeHeaders[i].m_quantizedAabbMax[1]);</span>
+<span class="lineNum">     991 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMax[2] = btSwapEndian(m_SubtreeHeaders[i].m_quantizedAabbMax[2]);</span>
+<span class="lineNum">     992 </span>            : 
+<span class="lineNum">     993 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_rootNodeIndex = static_cast&lt;int&gt;(btSwapEndian(m_SubtreeHeaders[i].m_rootNodeIndex));</span>
+<span class="lineNum">     994 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_subtreeSize = static_cast&lt;int&gt;(btSwapEndian(m_SubtreeHeaders[i].m_subtreeSize));</span>
+<span class="lineNum">     995 </span>            :                 }
+<span class="lineNum">     996 </span>            :         }
+<span class="lineNum">     997 </span>            :         else
+<span class="lineNum">     998 </span>            :         {
+<span class="lineNum">     999 </span><span class="lineNoCov">          0 :                 for (int i = 0; i &lt; m_subtreeHeaderCount; i++)</span>
+<span class="lineNum">    1000 </span>            :                 {
+<span class="lineNum">    1001 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMin[0] = (m_SubtreeHeaders[i].m_quantizedAabbMin[0]);</span>
+<span class="lineNum">    1002 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMin[1] = (m_SubtreeHeaders[i].m_quantizedAabbMin[1]);</span>
+<span class="lineNum">    1003 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMin[2] = (m_SubtreeHeaders[i].m_quantizedAabbMin[2]);</span>
+<span class="lineNum">    1004 </span>            : 
+<span class="lineNum">    1005 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMax[0] = (m_SubtreeHeaders[i].m_quantizedAabbMax[0]);</span>
+<span class="lineNum">    1006 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMax[1] = (m_SubtreeHeaders[i].m_quantizedAabbMax[1]);</span>
+<span class="lineNum">    1007 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMax[2] = (m_SubtreeHeaders[i].m_quantizedAabbMax[2]);</span>
+<span class="lineNum">    1008 </span>            : 
+<span class="lineNum">    1009 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_rootNodeIndex = (m_SubtreeHeaders[i].m_rootNodeIndex);</span>
+<span class="lineNum">    1010 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_subtreeSize = (m_SubtreeHeaders[i].m_subtreeSize);</span>
+<span class="lineNum">    1011 </span>            : 
+<span class="lineNum">    1012 </span>            :                         // need to clear padding in destination buffer
+<span class="lineNum">    1013 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_padding[0] = 0;</span>
+<span class="lineNum">    1014 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_padding[1] = 0;</span>
+<span class="lineNum">    1015 </span><span class="lineNoCov">          0 :                         targetBvh-&gt;m_SubtreeHeaders[i].m_padding[2] = 0;</span>
+<span class="lineNum">    1016 </span>            :                 }
+<span class="lineNum">    1017 </span>            :         }
+<span class="lineNum">    1018 </span><span class="lineNoCov">          0 :         nodeData += sizeof(btBvhSubtreeInfo) * m_subtreeHeaderCount;</span>
+<span class="lineNum">    1019 </span>            : 
+<span class="lineNum">    1020 </span>            :         // this clears the pointer in the member variable it doesn't really do anything to the data
+<span class="lineNum">    1021 </span>            :         // it does call the destructor on the contained objects, but they are all classes with no destructor defined
+<span class="lineNum">    1022 </span>            :         // so the memory (which is not freed) is left alone
+<span class="lineNum">    1023 </span><span class="lineNoCov">          0 :         targetBvh-&gt;m_SubtreeHeaders.initializeFromBuffer(NULL, 0, 0);</span>
+<span class="lineNum">    1024 </span>            : 
+<span class="lineNum">    1025 </span>            :         // this wipes the virtual function table pointer at the start of the buffer for the class
+<span class="lineNum">    1026 </span><span class="lineNoCov">          0 :         *((void**)o_alignedDataBuffer) = NULL;</span>
+<span class="lineNum">    1027 </span>            : 
+<span class="lineNum">    1028 </span><span class="lineNoCov">          0 :         return true;</span>
+<span class="lineNum">    1029 </span>            : }
+<span class="lineNum">    1030 </span>            : 
+<span class="lineNum">    1031 </span><span class="lineNoCov">          0 : btQuantizedBvh *btQuantizedBvh::deSerializeInPlace(void *i_alignedDataBuffer, unsigned int i_dataBufferSize, bool i_swapEndian)</span>
+<span class="lineNum">    1032 </span>            : {
+<span class="lineNum">    1033 </span>            : 
+<span class="lineNum">    1034 </span><span class="lineNoCov">          0 :         if (i_alignedDataBuffer == NULL)// || (((unsigned)i_alignedDataBuffer &amp; BVH_ALIGNMENT_MASK) != 0))</span>
+<span class="lineNum">    1035 </span>            :         {
+<span class="lineNum">    1036 </span>            :                 return NULL;
+<span class="lineNum">    1037 </span>            :         }
+<span class="lineNum">    1038 </span><span class="lineNoCov">          0 :         btQuantizedBvh *bvh = (btQuantizedBvh *)i_alignedDataBuffer;</span>
+<span class="lineNum">    1039 </span>            : 
+<span class="lineNum">    1040 </span><span class="lineNoCov">          0 :         if (i_swapEndian)</span>
+<span class="lineNum">    1041 </span>            :         {
+<span class="lineNum">    1042 </span><span class="lineNoCov">          0 :                 bvh-&gt;m_curNodeIndex = static_cast&lt;int&gt;(btSwapEndian(bvh-&gt;m_curNodeIndex));</span>
+<span class="lineNum">    1043 </span>            : 
+<span class="lineNum">    1044 </span><span class="lineNoCov">          0 :                 btUnSwapVector3Endian(bvh-&gt;m_bvhAabbMin);</span>
+<span class="lineNum">    1045 </span><span class="lineNoCov">          0 :                 btUnSwapVector3Endian(bvh-&gt;m_bvhAabbMax);</span>
+<span class="lineNum">    1046 </span><span class="lineNoCov">          0 :                 btUnSwapVector3Endian(bvh-&gt;m_bvhQuantization);</span>
+<span class="lineNum">    1047 </span>            : 
+<span class="lineNum">    1048 </span><span class="lineNoCov">          0 :                 bvh-&gt;m_traversalMode = (btTraversalMode)btSwapEndian(bvh-&gt;m_traversalMode);</span>
+<span class="lineNum">    1049 </span><span class="lineNoCov">          0 :                 bvh-&gt;m_subtreeHeaderCount = static_cast&lt;int&gt;(btSwapEndian(bvh-&gt;m_subtreeHeaderCount));</span>
+<span class="lineNum">    1050 </span>            :         }
+<span class="lineNum">    1051 </span>            : 
+<span class="lineNum">    1052 </span><span class="lineNoCov">          0 :         unsigned int calculatedBufSize = bvh-&gt;calculateSerializeBufferSize();</span>
+<span class="lineNum">    1053 </span>            :         btAssert(calculatedBufSize &lt;= i_dataBufferSize);
+<span class="lineNum">    1054 </span>            : 
+<span class="lineNum">    1055 </span><span class="lineNoCov">          0 :         if (calculatedBufSize &gt; i_dataBufferSize)</span>
+<span class="lineNum">    1056 </span>            :         {
+<span class="lineNum">    1057 </span>            :                 return NULL;
+<span class="lineNum">    1058 </span>            :         }
+<span class="lineNum">    1059 </span>            : 
+<span class="lineNum">    1060 </span><span class="lineNoCov">          0 :         unsigned char *nodeData = (unsigned char *)bvh;</span>
+<span class="lineNum">    1061 </span><span class="lineNoCov">          0 :         nodeData += sizeof(btQuantizedBvh);</span>
+<span class="lineNum">    1062 </span>            :         
+<span class="lineNum">    1063 </span><span class="lineNoCov">          0 :         unsigned sizeToAdd = 0;//(BVH_ALIGNMENT-((unsigned)nodeData &amp; BVH_ALIGNMENT_MASK))&amp;BVH_ALIGNMENT_MASK;</span>
+<span class="lineNum">    1064 </span><span class="lineNoCov">          0 :         nodeData += sizeToAdd;</span>
+<span class="lineNum">    1065 </span>            :         
+<span class="lineNum">    1066 </span><span class="lineNoCov">          0 :         int nodeCount = bvh-&gt;m_curNodeIndex;</span>
+<span class="lineNum">    1067 </span>            : 
+<span class="lineNum">    1068 </span>            :         // Must call placement new to fill in virtual function table, etc, but we don't want to overwrite most data, so call a special version of the constructor
+<span class="lineNum">    1069 </span>            :         // Also, m_leafNodes and m_quantizedLeafNodes will be initialized to default values by the constructor
+<span class="lineNum">    1070 </span><span class="lineNoCov">          0 :         new (bvh) btQuantizedBvh(*bvh, false);</span>
+<span class="lineNum">    1071 </span>            : 
+<span class="lineNum">    1072 </span><span class="lineNoCov">          0 :         if (bvh-&gt;m_useQuantization)</span>
+<span class="lineNum">    1073 </span>            :         {
+<span class="lineNum">    1074 </span><span class="lineNoCov">          0 :                 bvh-&gt;m_quantizedContiguousNodes.initializeFromBuffer(nodeData, nodeCount, nodeCount);</span>
+<span class="lineNum">    1075 </span>            : 
+<span class="lineNum">    1076 </span><span class="lineNoCov">          0 :                 if (i_swapEndian)</span>
+<span class="lineNum">    1077 </span>            :                 {
+<span class="lineNum">    1078 </span><span class="lineNoCov">          0 :                         for (int nodeIndex = 0; nodeIndex &lt; nodeCount; nodeIndex++)</span>
+<span class="lineNum">    1079 </span>            :                         {
+<span class="lineNum">    1080 </span><span class="lineNoCov">          0 :                                 bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[0] = btSwapEndian(bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[0]);</span>
+<span class="lineNum">    1081 </span><span class="lineNoCov">          0 :                                 bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[1] = btSwapEndian(bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[1]);</span>
+<span class="lineNum">    1082 </span><span class="lineNoCov">          0 :                                 bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[2] = btSwapEndian(bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMin[2]);</span>
+<span class="lineNum">    1083 </span>            : 
+<span class="lineNum">    1084 </span><span class="lineNoCov">          0 :                                 bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[0] = btSwapEndian(bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[0]);</span>
+<span class="lineNum">    1085 </span><span class="lineNoCov">          0 :                                 bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[1] = btSwapEndian(bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[1]);</span>
+<span class="lineNum">    1086 </span><span class="lineNoCov">          0 :                                 bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[2] = btSwapEndian(bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_quantizedAabbMax[2]);</span>
+<span class="lineNum">    1087 </span>            : 
+<span class="lineNum">    1088 </span><span class="lineNoCov">          0 :                                 bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_escapeIndexOrTriangleIndex = static_cast&lt;int&gt;(btSwapEndian(bvh-&gt;m_quantizedContiguousNodes[nodeIndex].m_escapeIndexOrTriangleIndex));</span>
+<span class="lineNum">    1089 </span>            :                         }
+<span class="lineNum">    1090 </span>            :                 }
+<span class="lineNum">    1091 </span><span class="lineNoCov">          0 :                 nodeData += sizeof(btQuantizedBvhNode) * nodeCount;</span>
+<span class="lineNum">    1092 </span>            :         }
+<span class="lineNum">    1093 </span>            :         else
+<span class="lineNum">    1094 </span>            :         {
+<span class="lineNum">    1095 </span><span class="lineNoCov">          0 :                 bvh-&gt;m_contiguousNodes.initializeFromBuffer(nodeData, nodeCount, nodeCount);</span>
+<span class="lineNum">    1096 </span>            : 
+<span class="lineNum">    1097 </span><span class="lineNoCov">          0 :                 if (i_swapEndian)</span>
+<span class="lineNum">    1098 </span>            :                 {
+<span class="lineNum">    1099 </span><span class="lineNoCov">          0 :                         for (int nodeIndex = 0; nodeIndex &lt; nodeCount; nodeIndex++)</span>
+<span class="lineNum">    1100 </span>            :                         {
+<span class="lineNum">    1101 </span><span class="lineNoCov">          0 :                                 btUnSwapVector3Endian(bvh-&gt;m_contiguousNodes[nodeIndex].m_aabbMinOrg);</span>
+<span class="lineNum">    1102 </span><span class="lineNoCov">          0 :                                 btUnSwapVector3Endian(bvh-&gt;m_contiguousNodes[nodeIndex].m_aabbMaxOrg);</span>
+<span class="lineNum">    1103 </span>            :                                 
+<span class="lineNum">    1104 </span><span class="lineNoCov">          0 :                                 bvh-&gt;m_contiguousNodes[nodeIndex].m_escapeIndex = static_cast&lt;int&gt;(btSwapEndian(bvh-&gt;m_contiguousNodes[nodeIndex].m_escapeIndex));</span>
+<span class="lineNum">    1105 </span><span class="lineNoCov">          0 :                                 bvh-&gt;m_contiguousNodes[nodeIndex].m_subPart = static_cast&lt;int&gt;(btSwapEndian(bvh-&gt;m_contiguousNodes[nodeIndex].m_subPart));</span>
+<span class="lineNum">    1106 </span><span class="lineNoCov">          0 :                                 bvh-&gt;m_contiguousNodes[nodeIndex].m_triangleIndex = static_cast&lt;int&gt;(btSwapEndian(bvh-&gt;m_contiguousNodes[nodeIndex].m_triangleIndex));</span>
+<span class="lineNum">    1107 </span>            :                         }
+<span class="lineNum">    1108 </span>            :                 }
+<span class="lineNum">    1109 </span><span class="lineNoCov">          0 :                 nodeData += sizeof(btOptimizedBvhNode) * nodeCount;</span>
+<span class="lineNum">    1110 </span>            :         }
+<span class="lineNum">    1111 </span>            : 
+<span class="lineNum">    1112 </span><span class="lineNoCov">          0 :         sizeToAdd = 0;//(BVH_ALIGNMENT-((unsigned)nodeData &amp; BVH_ALIGNMENT_MASK))&amp;BVH_ALIGNMENT_MASK;</span>
+<span class="lineNum">    1113 </span><span class="lineNoCov">          0 :         nodeData += sizeToAdd;</span>
+<span class="lineNum">    1114 </span>            : 
+<span class="lineNum">    1115 </span>            :         // Now serialize the subtree headers
+<span class="lineNum">    1116 </span><span class="lineNoCov">          0 :         bvh-&gt;m_SubtreeHeaders.initializeFromBuffer(nodeData, bvh-&gt;m_subtreeHeaderCount, bvh-&gt;m_subtreeHeaderCount);</span>
+<span class="lineNum">    1117 </span><span class="lineNoCov">          0 :         if (i_swapEndian)</span>
+<span class="lineNum">    1118 </span>            :         {
+<span class="lineNum">    1119 </span><span class="lineNoCov">          0 :                 for (int i = 0; i &lt; bvh-&gt;m_subtreeHeaderCount; i++)</span>
+<span class="lineNum">    1120 </span>            :                 {
+<span class="lineNum">    1121 </span><span class="lineNoCov">          0 :                         bvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMin[0] = btSwapEndian(bvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMin[0]);</span>
+<span class="lineNum">    1122 </span><span class="lineNoCov">          0 :                         bvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMin[1] = btSwapEndian(bvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMin[1]);</span>
+<span class="lineNum">    1123 </span><span class="lineNoCov">          0 :                         bvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMin[2] = btSwapEndian(bvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMin[2]);</span>
+<span class="lineNum">    1124 </span>            : 
+<span class="lineNum">    1125 </span><span class="lineNoCov">          0 :                         bvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMax[0] = btSwapEndian(bvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMax[0]);</span>
+<span class="lineNum">    1126 </span><span class="lineNoCov">          0 :                         bvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMax[1] = btSwapEndian(bvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMax[1]);</span>
+<span class="lineNum">    1127 </span><span class="lineNoCov">          0 :                         bvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMax[2] = btSwapEndian(bvh-&gt;m_SubtreeHeaders[i].m_quantizedAabbMax[2]);</span>
+<span class="lineNum">    1128 </span>            : 
+<span class="lineNum">    1129 </span><span class="lineNoCov">          0 :                         bvh-&gt;m_SubtreeHeaders[i].m_rootNodeIndex = static_cast&lt;int&gt;(btSwapEndian(bvh-&gt;m_SubtreeHeaders[i].m_rootNodeIndex));</span>
+<span class="lineNum">    1130 </span><span class="lineNoCov">          0 :                         bvh-&gt;m_SubtreeHeaders[i].m_subtreeSize = static_cast&lt;int&gt;(btSwapEndian(bvh-&gt;m_SubtreeHeaders[i].m_subtreeSize));</span>
+<span class="lineNum">    1131 </span>            :                 }
+<span class="lineNum">    1132 </span>            :         }
+<span class="lineNum">    1133 </span>            : 
+<span class="lineNum">    1134 </span>            :         return bvh;
+<span class="lineNum">    1135 </span>            : }
+<span class="lineNum">    1136 </span>            : 
+<span class="lineNum">    1137 </span>            : // Constructor that prevents btVector3's default constructor from being called
+<span class="lineNum">    1138 </span><span class="lineNoCov">          0 : btQuantizedBvh::btQuantizedBvh(btQuantizedBvh &amp;self, bool /* ownsMemory */) :</span>
+<span class="lineNum">    1139 </span>            : m_bvhAabbMin(self.m_bvhAabbMin),
+<span class="lineNum">    1140 </span>            : m_bvhAabbMax(self.m_bvhAabbMax),
+<span class="lineNum">    1141 </span>            : m_bvhQuantization(self.m_bvhQuantization),
+<span class="lineNum">    1142 </span><span class="lineNoCov">          0 : m_bulletVersion(BT_BULLET_VERSION)</span>
+<span class="lineNum">    1143 </span>            : {
+<span class="lineNum">    1144 </span>            : 
+<span class="lineNum">    1145 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">    1146 </span>            : 
+<span class="lineNum">    1147 </span><span class="lineNoCov">          0 : void btQuantizedBvh::deSerializeFloat(struct btQuantizedBvhFloatData&amp; quantizedBvhFloatData)</span>
+<span class="lineNum">    1148 </span>            : {
+<span class="lineNum">    1149 </span><span class="lineNoCov">          0 :         m_bvhAabbMax.deSerializeFloat(quantizedBvhFloatData.m_bvhAabbMax);</span>
+<span class="lineNum">    1150 </span>            :         m_bvhAabbMin.deSerializeFloat(quantizedBvhFloatData.m_bvhAabbMin);
+<span class="lineNum">    1151 </span><span class="lineNoCov">          0 :         m_bvhQuantization.deSerializeFloat(quantizedBvhFloatData.m_bvhQuantization);</span>
+<span class="lineNum">    1152 </span>            : 
+<span class="lineNum">    1153 </span><span class="lineNoCov">          0 :         m_curNodeIndex = quantizedBvhFloatData.m_curNodeIndex;</span>
+<span class="lineNum">    1154 </span><span class="lineNoCov">          0 :         m_useQuantization = quantizedBvhFloatData.m_useQuantization!=0;</span>
+<span class="lineNum">    1155 </span>            :         
+<span class="lineNum">    1156 </span>            :         {
+<span class="lineNum">    1157 </span><span class="lineNoCov">          0 :                 int numElem = quantizedBvhFloatData.m_numContiguousLeafNodes;</span>
+<span class="lineNum">    1158 </span><span class="lineNoCov">          0 :                 m_contiguousNodes.resize(numElem);</span>
+<span class="lineNum">    1159 </span>            : 
+<span class="lineNum">    1160 </span><span class="lineNoCov">          0 :                 if (numElem)</span>
+<span class="lineNum">    1161 </span>            :                 {
+<span class="lineNum">    1162 </span><span class="lineNoCov">          0 :                         btOptimizedBvhNodeFloatData* memPtr = quantizedBvhFloatData.m_contiguousNodesPtr;</span>
+<span class="lineNum">    1163 </span>            : 
+<span class="lineNum">    1164 </span><span class="lineNoCov">          0 :                         for (int i=0;i&lt;numElem;i++,memPtr++)</span>
+<span class="lineNum">    1165 </span>            :                         {
+<span class="lineNum">    1166 </span><span class="lineNoCov">          0 :                                 m_contiguousNodes[i].m_aabbMaxOrg.deSerializeFloat(memPtr-&gt;m_aabbMaxOrg);</span>
+<span class="lineNum">    1167 </span><span class="lineNoCov">          0 :                                 m_contiguousNodes[i].m_aabbMinOrg.deSerializeFloat(memPtr-&gt;m_aabbMinOrg);</span>
+<span class="lineNum">    1168 </span><span class="lineNoCov">          0 :                                 m_contiguousNodes[i].m_escapeIndex = memPtr-&gt;m_escapeIndex;</span>
+<span class="lineNum">    1169 </span><span class="lineNoCov">          0 :                                 m_contiguousNodes[i].m_subPart = memPtr-&gt;m_subPart;</span>
+<span class="lineNum">    1170 </span><span class="lineNoCov">          0 :                                 m_contiguousNodes[i].m_triangleIndex = memPtr-&gt;m_triangleIndex;</span>
+<span class="lineNum">    1171 </span>            :                         }
+<span class="lineNum">    1172 </span>            :                 }
+<span class="lineNum">    1173 </span>            :         }
+<span class="lineNum">    1174 </span>            : 
+<span class="lineNum">    1175 </span>            :         {
+<span class="lineNum">    1176 </span><span class="lineNoCov">          0 :                 int numElem = quantizedBvhFloatData.m_numQuantizedContiguousNodes;</span>
+<span class="lineNum">    1177 </span><span class="lineNoCov">          0 :                 m_quantizedContiguousNodes.resize(numElem);</span>
+<span class="lineNum">    1178 </span>            :                 
+<span class="lineNum">    1179 </span><span class="lineNoCov">          0 :                 if (numElem)</span>
+<span class="lineNum">    1180 </span>            :                 {
+<span class="lineNum">    1181 </span><span class="lineNoCov">          0 :                         btQuantizedBvhNodeData* memPtr = quantizedBvhFloatData.m_quantizedContiguousNodesPtr;</span>
+<span class="lineNum">    1182 </span><span class="lineNoCov">          0 :                         for (int i=0;i&lt;numElem;i++,memPtr++)</span>
+<span class="lineNum">    1183 </span>            :                         {
+<span class="lineNum">    1184 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_escapeIndexOrTriangleIndex = memPtr-&gt;m_escapeIndexOrTriangleIndex;</span>
+<span class="lineNum">    1185 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_quantizedAabbMax[0] = memPtr-&gt;m_quantizedAabbMax[0];</span>
+<span class="lineNum">    1186 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_quantizedAabbMax[1] = memPtr-&gt;m_quantizedAabbMax[1];</span>
+<span class="lineNum">    1187 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_quantizedAabbMax[2] = memPtr-&gt;m_quantizedAabbMax[2];</span>
+<span class="lineNum">    1188 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_quantizedAabbMin[0] = memPtr-&gt;m_quantizedAabbMin[0];</span>
+<span class="lineNum">    1189 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_quantizedAabbMin[1] = memPtr-&gt;m_quantizedAabbMin[1];</span>
+<span class="lineNum">    1190 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_quantizedAabbMin[2] = memPtr-&gt;m_quantizedAabbMin[2];</span>
+<span class="lineNum">    1191 </span>            :                         }
+<span class="lineNum">    1192 </span>            :                 }
+<span class="lineNum">    1193 </span>            :         }
+<span class="lineNum">    1194 </span>            : 
+<span class="lineNum">    1195 </span><span class="lineNoCov">          0 :         m_traversalMode = btTraversalMode(quantizedBvhFloatData.m_traversalMode);</span>
+<span class="lineNum">    1196 </span>            :         
+<span class="lineNum">    1197 </span>            :         {
+<span class="lineNum">    1198 </span><span class="lineNoCov">          0 :                 int numElem = quantizedBvhFloatData.m_numSubtreeHeaders;</span>
+<span class="lineNum">    1199 </span><span class="lineNoCov">          0 :                 m_SubtreeHeaders.resize(numElem);</span>
+<span class="lineNum">    1200 </span><span class="lineNoCov">          0 :                 if (numElem)</span>
+<span class="lineNum">    1201 </span>            :                 {
+<span class="lineNum">    1202 </span><span class="lineNoCov">          0 :                         btBvhSubtreeInfoData* memPtr = quantizedBvhFloatData.m_subTreeInfoPtr;</span>
+<span class="lineNum">    1203 </span><span class="lineNoCov">          0 :                         for (int i=0;i&lt;numElem;i++,memPtr++)</span>
+<span class="lineNum">    1204 </span>            :                         {
+<span class="lineNum">    1205 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_quantizedAabbMax[0] = memPtr-&gt;m_quantizedAabbMax[0] ;</span>
+<span class="lineNum">    1206 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_quantizedAabbMax[1] = memPtr-&gt;m_quantizedAabbMax[1];</span>
+<span class="lineNum">    1207 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_quantizedAabbMax[2] = memPtr-&gt;m_quantizedAabbMax[2];</span>
+<span class="lineNum">    1208 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_quantizedAabbMin[0] = memPtr-&gt;m_quantizedAabbMin[0];</span>
+<span class="lineNum">    1209 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_quantizedAabbMin[1] = memPtr-&gt;m_quantizedAabbMin[1];</span>
+<span class="lineNum">    1210 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_quantizedAabbMin[2] = memPtr-&gt;m_quantizedAabbMin[2];</span>
+<span class="lineNum">    1211 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_rootNodeIndex = memPtr-&gt;m_rootNodeIndex;</span>
+<span class="lineNum">    1212 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_subtreeSize = memPtr-&gt;m_subtreeSize;</span>
+<span class="lineNum">    1213 </span>            :                         }
+<span class="lineNum">    1214 </span>            :                 }
+<span class="lineNum">    1215 </span>            :         }
+<span class="lineNum">    1216 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">    1217 </span>            : 
+<span class="lineNum">    1218 </span><span class="lineNoCov">          0 : void btQuantizedBvh::deSerializeDouble(struct btQuantizedBvhDoubleData&amp; quantizedBvhDoubleData)</span>
+<span class="lineNum">    1219 </span>            : {
+<span class="lineNum">    1220 </span><span class="lineNoCov">          0 :         m_bvhAabbMax.deSerializeDouble(quantizedBvhDoubleData.m_bvhAabbMax);</span>
+<span class="lineNum">    1221 </span>            :         m_bvhAabbMin.deSerializeDouble(quantizedBvhDoubleData.m_bvhAabbMin);
+<span class="lineNum">    1222 </span><span class="lineNoCov">          0 :         m_bvhQuantization.deSerializeDouble(quantizedBvhDoubleData.m_bvhQuantization);</span>
+<span class="lineNum">    1223 </span>            : 
+<span class="lineNum">    1224 </span><span class="lineNoCov">          0 :         m_curNodeIndex = quantizedBvhDoubleData.m_curNodeIndex;</span>
+<span class="lineNum">    1225 </span><span class="lineNoCov">          0 :         m_useQuantization = quantizedBvhDoubleData.m_useQuantization!=0;</span>
+<span class="lineNum">    1226 </span>            :         
+<span class="lineNum">    1227 </span>            :         {
+<span class="lineNum">    1228 </span><span class="lineNoCov">          0 :                 int numElem = quantizedBvhDoubleData.m_numContiguousLeafNodes;</span>
+<span class="lineNum">    1229 </span><span class="lineNoCov">          0 :                 m_contiguousNodes.resize(numElem);</span>
+<span class="lineNum">    1230 </span>            : 
+<span class="lineNum">    1231 </span><span class="lineNoCov">          0 :                 if (numElem)</span>
+<span class="lineNum">    1232 </span>            :                 {
+<span class="lineNum">    1233 </span><span class="lineNoCov">          0 :                         btOptimizedBvhNodeDoubleData* memPtr = quantizedBvhDoubleData.m_contiguousNodesPtr;</span>
+<span class="lineNum">    1234 </span>            : 
+<span class="lineNum">    1235 </span><span class="lineNoCov">          0 :                         for (int i=0;i&lt;numElem;i++,memPtr++)</span>
+<span class="lineNum">    1236 </span>            :                         {
+<span class="lineNum">    1237 </span><span class="lineNoCov">          0 :                                 m_contiguousNodes[i].m_aabbMaxOrg.deSerializeDouble(memPtr-&gt;m_aabbMaxOrg);</span>
+<span class="lineNum">    1238 </span><span class="lineNoCov">          0 :                                 m_contiguousNodes[i].m_aabbMinOrg.deSerializeDouble(memPtr-&gt;m_aabbMinOrg);</span>
+<span class="lineNum">    1239 </span><span class="lineNoCov">          0 :                                 m_contiguousNodes[i].m_escapeIndex = memPtr-&gt;m_escapeIndex;</span>
+<span class="lineNum">    1240 </span><span class="lineNoCov">          0 :                                 m_contiguousNodes[i].m_subPart = memPtr-&gt;m_subPart;</span>
+<span class="lineNum">    1241 </span><span class="lineNoCov">          0 :                                 m_contiguousNodes[i].m_triangleIndex = memPtr-&gt;m_triangleIndex;</span>
+<span class="lineNum">    1242 </span>            :                         }
+<span class="lineNum">    1243 </span>            :                 }
+<span class="lineNum">    1244 </span>            :         }
+<span class="lineNum">    1245 </span>            : 
+<span class="lineNum">    1246 </span>            :         {
+<span class="lineNum">    1247 </span><span class="lineNoCov">          0 :                 int numElem = quantizedBvhDoubleData.m_numQuantizedContiguousNodes;</span>
+<span class="lineNum">    1248 </span><span class="lineNoCov">          0 :                 m_quantizedContiguousNodes.resize(numElem);</span>
+<span class="lineNum">    1249 </span>            :                 
+<span class="lineNum">    1250 </span><span class="lineNoCov">          0 :                 if (numElem)</span>
+<span class="lineNum">    1251 </span>            :                 {
+<span class="lineNum">    1252 </span><span class="lineNoCov">          0 :                         btQuantizedBvhNodeData* memPtr = quantizedBvhDoubleData.m_quantizedContiguousNodesPtr;</span>
+<span class="lineNum">    1253 </span><span class="lineNoCov">          0 :                         for (int i=0;i&lt;numElem;i++,memPtr++)</span>
+<span class="lineNum">    1254 </span>            :                         {
+<span class="lineNum">    1255 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_escapeIndexOrTriangleIndex = memPtr-&gt;m_escapeIndexOrTriangleIndex;</span>
+<span class="lineNum">    1256 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_quantizedAabbMax[0] = memPtr-&gt;m_quantizedAabbMax[0];</span>
+<span class="lineNum">    1257 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_quantizedAabbMax[1] = memPtr-&gt;m_quantizedAabbMax[1];</span>
+<span class="lineNum">    1258 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_quantizedAabbMax[2] = memPtr-&gt;m_quantizedAabbMax[2];</span>
+<span class="lineNum">    1259 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_quantizedAabbMin[0] = memPtr-&gt;m_quantizedAabbMin[0];</span>
+<span class="lineNum">    1260 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_quantizedAabbMin[1] = memPtr-&gt;m_quantizedAabbMin[1];</span>
+<span class="lineNum">    1261 </span><span class="lineNoCov">          0 :                                 m_quantizedContiguousNodes[i].m_quantizedAabbMin[2] = memPtr-&gt;m_quantizedAabbMin[2];</span>
+<span class="lineNum">    1262 </span>            :                         }
+<span class="lineNum">    1263 </span>            :                 }
+<span class="lineNum">    1264 </span>            :         }
+<span class="lineNum">    1265 </span>            : 
+<span class="lineNum">    1266 </span><span class="lineNoCov">          0 :         m_traversalMode = btTraversalMode(quantizedBvhDoubleData.m_traversalMode);</span>
+<span class="lineNum">    1267 </span>            :         
+<span class="lineNum">    1268 </span>            :         {
+<span class="lineNum">    1269 </span><span class="lineNoCov">          0 :                 int numElem = quantizedBvhDoubleData.m_numSubtreeHeaders;</span>
+<span class="lineNum">    1270 </span><span class="lineNoCov">          0 :                 m_SubtreeHeaders.resize(numElem);</span>
+<span class="lineNum">    1271 </span><span class="lineNoCov">          0 :                 if (numElem)</span>
+<span class="lineNum">    1272 </span>            :                 {
+<span class="lineNum">    1273 </span><span class="lineNoCov">          0 :                         btBvhSubtreeInfoData* memPtr = quantizedBvhDoubleData.m_subTreeInfoPtr;</span>
+<span class="lineNum">    1274 </span><span class="lineNoCov">          0 :                         for (int i=0;i&lt;numElem;i++,memPtr++)</span>
+<span class="lineNum">    1275 </span>            :                         {
+<span class="lineNum">    1276 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_quantizedAabbMax[0] = memPtr-&gt;m_quantizedAabbMax[0] ;</span>
+<span class="lineNum">    1277 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_quantizedAabbMax[1] = memPtr-&gt;m_quantizedAabbMax[1];</span>
+<span class="lineNum">    1278 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_quantizedAabbMax[2] = memPtr-&gt;m_quantizedAabbMax[2];</span>
+<span class="lineNum">    1279 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_quantizedAabbMin[0] = memPtr-&gt;m_quantizedAabbMin[0];</span>
+<span class="lineNum">    1280 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_quantizedAabbMin[1] = memPtr-&gt;m_quantizedAabbMin[1];</span>
+<span class="lineNum">    1281 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_quantizedAabbMin[2] = memPtr-&gt;m_quantizedAabbMin[2];</span>
+<span class="lineNum">    1282 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_rootNodeIndex = memPtr-&gt;m_rootNodeIndex;</span>
+<span class="lineNum">    1283 </span><span class="lineNoCov">          0 :                                 m_SubtreeHeaders[i].m_subtreeSize = memPtr-&gt;m_subtreeSize;</span>
+<span class="lineNum">    1284 </span>            :                         }
+<span class="lineNum">    1285 </span>            :                 }
+<span class="lineNum">    1286 </span>            :         }
+<span class="lineNum">    1287 </span>            : 
+<span class="lineNum">    1288 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">    1289 </span>            : 
+<span class="lineNum">    1290 </span>            : 
+<span class="lineNum">    1291 </span>            : 
+<span class="lineNum">    1292 </span>            : ///fills the dataBuffer and returns the struct name (and 0 on failure)
+<span class="lineNum">    1293 </span><span class="lineNoCov">          0 : const char*     btQuantizedBvh::serialize(void* dataBuffer, btSerializer* serializer) const</span>
+<span class="lineNum">    1294 </span>            : {
+<span class="lineNum">    1295 </span><span class="lineNoCov">          0 :         btQuantizedBvhData* quantizedData = (btQuantizedBvhData*)dataBuffer;</span>
+<span class="lineNum">    1296 </span>            :         
+<span class="lineNum">    1297 </span><span class="lineNoCov">          0 :         m_bvhAabbMax.serialize(quantizedData-&gt;m_bvhAabbMax);</span>
+<span class="lineNum">    1298 </span>            :         m_bvhAabbMin.serialize(quantizedData-&gt;m_bvhAabbMin);
+<span class="lineNum">    1299 </span><span class="lineNoCov">          0 :         m_bvhQuantization.serialize(quantizedData-&gt;m_bvhQuantization);</span>
+<span class="lineNum">    1300 </span>            : 
+<span class="lineNum">    1301 </span><span class="lineNoCov">          0 :         quantizedData-&gt;m_curNodeIndex = m_curNodeIndex;</span>
+<span class="lineNum">    1302 </span><span class="lineNoCov">          0 :         quantizedData-&gt;m_useQuantization = m_useQuantization;</span>
+<span class="lineNum">    1303 </span>            :         
+<span class="lineNum">    1304 </span><span class="lineNoCov">          0 :         quantizedData-&gt;m_numContiguousLeafNodes = m_contiguousNodes.size();</span>
+<span class="lineNum">    1305 </span><span class="lineNoCov">          0 :         quantizedData-&gt;m_contiguousNodesPtr = (btOptimizedBvhNodeData*) (m_contiguousNodes.size() ? serializer-&gt;getUniquePointer((void*)&amp;m_contiguousNodes[0]) : 0);</span>
+<span class="lineNum">    1306 </span><span class="lineNoCov">          0 :         if (quantizedData-&gt;m_contiguousNodesPtr)</span>
+<span class="lineNum">    1307 </span>            :         {
+<span class="lineNum">    1308 </span><span class="lineNoCov">          0 :                 int sz = sizeof(btOptimizedBvhNodeData);</span>
+<span class="lineNum">    1309 </span><span class="lineNoCov">          0 :                 int numElem = m_contiguousNodes.size();</span>
+<span class="lineNum">    1310 </span><span class="lineNoCov">          0 :                 btChunk* chunk = serializer-&gt;allocate(sz,numElem);</span>
+<span class="lineNum">    1311 </span><span class="lineNoCov">          0 :                 btOptimizedBvhNodeData* memPtr = (btOptimizedBvhNodeData*)chunk-&gt;m_oldPtr;</span>
+<span class="lineNum">    1312 </span><span class="lineNoCov">          0 :                 for (int i=0;i&lt;numElem;i++,memPtr++)</span>
+<span class="lineNum">    1313 </span>            :                 {
+<span class="lineNum">    1314 </span><span class="lineNoCov">          0 :                         m_contiguousNodes[i].m_aabbMaxOrg.serialize(memPtr-&gt;m_aabbMaxOrg);</span>
+<span class="lineNum">    1315 </span><span class="lineNoCov">          0 :                         m_contiguousNodes[i].m_aabbMinOrg.serialize(memPtr-&gt;m_aabbMinOrg);</span>
+<span class="lineNum">    1316 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_escapeIndex = m_contiguousNodes[i].m_escapeIndex;</span>
+<span class="lineNum">    1317 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_subPart = m_contiguousNodes[i].m_subPart;</span>
+<span class="lineNum">    1318 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_triangleIndex = m_contiguousNodes[i].m_triangleIndex;</span>
+<span class="lineNum">    1319 </span>            :                 }
+<span class="lineNum">    1320 </span><span class="lineNoCov">          0 :                 serializer-&gt;finalizeChunk(chunk,&quot;btOptimizedBvhNodeData&quot;,BT_ARRAY_CODE,(void*)&amp;m_contiguousNodes[0]);</span>
+<span class="lineNum">    1321 </span>            :         }
+<span class="lineNum">    1322 </span>            : 
+<span class="lineNum">    1323 </span><span class="lineNoCov">          0 :         quantizedData-&gt;m_numQuantizedContiguousNodes = m_quantizedContiguousNodes.size();</span>
+<span class="lineNum">    1324 </span>            : //      printf(&quot;quantizedData-&gt;m_numQuantizedContiguousNodes=%d\n&quot;,quantizedData-&gt;m_numQuantizedContiguousNodes);
+<span class="lineNum">    1325 </span><span class="lineNoCov">          0 :         quantizedData-&gt;m_quantizedContiguousNodesPtr =(btQuantizedBvhNodeData*) (m_quantizedContiguousNodes.size() ? serializer-&gt;getUniquePointer((void*)&amp;m_quantizedContiguousNodes[0]) : 0);</span>
+<span class="lineNum">    1326 </span><span class="lineNoCov">          0 :         if (quantizedData-&gt;m_quantizedContiguousNodesPtr)</span>
+<span class="lineNum">    1327 </span>            :         {
+<span class="lineNum">    1328 </span><span class="lineNoCov">          0 :                 int sz = sizeof(btQuantizedBvhNodeData);</span>
+<span class="lineNum">    1329 </span><span class="lineNoCov">          0 :                 int numElem = m_quantizedContiguousNodes.size();</span>
+<span class="lineNum">    1330 </span><span class="lineNoCov">          0 :                 btChunk* chunk = serializer-&gt;allocate(sz,numElem);</span>
+<span class="lineNum">    1331 </span><span class="lineNoCov">          0 :                 btQuantizedBvhNodeData* memPtr = (btQuantizedBvhNodeData*)chunk-&gt;m_oldPtr;</span>
+<span class="lineNum">    1332 </span><span class="lineNoCov">          0 :                 for (int i=0;i&lt;numElem;i++,memPtr++)</span>
+<span class="lineNum">    1333 </span>            :                 {
+<span class="lineNum">    1334 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_escapeIndexOrTriangleIndex = m_quantizedContiguousNodes[i].m_escapeIndexOrTriangleIndex;</span>
+<span class="lineNum">    1335 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_quantizedAabbMax[0] = m_quantizedContiguousNodes[i].m_quantizedAabbMax[0];</span>
+<span class="lineNum">    1336 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_quantizedAabbMax[1] = m_quantizedContiguousNodes[i].m_quantizedAabbMax[1];</span>
+<span class="lineNum">    1337 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_quantizedAabbMax[2] = m_quantizedContiguousNodes[i].m_quantizedAabbMax[2];</span>
+<span class="lineNum">    1338 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_quantizedAabbMin[0] = m_quantizedContiguousNodes[i].m_quantizedAabbMin[0];</span>
+<span class="lineNum">    1339 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_quantizedAabbMin[1] = m_quantizedContiguousNodes[i].m_quantizedAabbMin[1];</span>
+<span class="lineNum">    1340 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_quantizedAabbMin[2] = m_quantizedContiguousNodes[i].m_quantizedAabbMin[2];</span>
+<span class="lineNum">    1341 </span>            :                 }
+<span class="lineNum">    1342 </span><span class="lineNoCov">          0 :                 serializer-&gt;finalizeChunk(chunk,&quot;btQuantizedBvhNodeData&quot;,BT_ARRAY_CODE,(void*)&amp;m_quantizedContiguousNodes[0]);</span>
+<span class="lineNum">    1343 </span>            :         }
+<span class="lineNum">    1344 </span>            : 
+<span class="lineNum">    1345 </span><span class="lineNoCov">          0 :         quantizedData-&gt;m_traversalMode = int(m_traversalMode);</span>
+<span class="lineNum">    1346 </span><span class="lineNoCov">          0 :         quantizedData-&gt;m_numSubtreeHeaders = m_SubtreeHeaders.size();</span>
+<span class="lineNum">    1347 </span>            : 
+<span class="lineNum">    1348 </span><span class="lineNoCov">          0 :         quantizedData-&gt;m_subTreeInfoPtr = (btBvhSubtreeInfoData*) (m_SubtreeHeaders.size() ? serializer-&gt;getUniquePointer((void*)&amp;m_SubtreeHeaders[0]) : 0);</span>
+<span class="lineNum">    1349 </span><span class="lineNoCov">          0 :         if (quantizedData-&gt;m_subTreeInfoPtr)</span>
+<span class="lineNum">    1350 </span>            :         {
+<span class="lineNum">    1351 </span><span class="lineNoCov">          0 :                 int sz = sizeof(btBvhSubtreeInfoData);</span>
+<span class="lineNum">    1352 </span><span class="lineNoCov">          0 :                 int numElem = m_SubtreeHeaders.size();</span>
+<span class="lineNum">    1353 </span><span class="lineNoCov">          0 :                 btChunk* chunk = serializer-&gt;allocate(sz,numElem);</span>
+<span class="lineNum">    1354 </span><span class="lineNoCov">          0 :                 btBvhSubtreeInfoData* memPtr = (btBvhSubtreeInfoData*)chunk-&gt;m_oldPtr;</span>
+<span class="lineNum">    1355 </span><span class="lineNoCov">          0 :                 for (int i=0;i&lt;numElem;i++,memPtr++)</span>
+<span class="lineNum">    1356 </span>            :                 {
+<span class="lineNum">    1357 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_quantizedAabbMax[0] = m_SubtreeHeaders[i].m_quantizedAabbMax[0];</span>
+<span class="lineNum">    1358 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_quantizedAabbMax[1] = m_SubtreeHeaders[i].m_quantizedAabbMax[1];</span>
+<span class="lineNum">    1359 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_quantizedAabbMax[2] = m_SubtreeHeaders[i].m_quantizedAabbMax[2];</span>
+<span class="lineNum">    1360 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_quantizedAabbMin[0] = m_SubtreeHeaders[i].m_quantizedAabbMin[0];</span>
+<span class="lineNum">    1361 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_quantizedAabbMin[1] = m_SubtreeHeaders[i].m_quantizedAabbMin[1];</span>
+<span class="lineNum">    1362 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_quantizedAabbMin[2] = m_SubtreeHeaders[i].m_quantizedAabbMin[2];</span>
+<span class="lineNum">    1363 </span>            : 
+<span class="lineNum">    1364 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_rootNodeIndex = m_SubtreeHeaders[i].m_rootNodeIndex;</span>
+<span class="lineNum">    1365 </span><span class="lineNoCov">          0 :                         memPtr-&gt;m_subtreeSize = m_SubtreeHeaders[i].m_subtreeSize;</span>
+<span class="lineNum">    1366 </span>            :                 }
+<span class="lineNum">    1367 </span><span class="lineNoCov">          0 :                 serializer-&gt;finalizeChunk(chunk,&quot;btBvhSubtreeInfoData&quot;,BT_ARRAY_CODE,(void*)&amp;m_SubtreeHeaders[0]);</span>
+<span class="lineNum">    1368 </span>            :         }
+<span class="lineNum">    1369 </span><span class="lineNoCov">          0 :         return btQuantizedBvhDataName;</span>
+<span class="lineNum">    1370 </span>            : }
+<span class="lineNum">    1371 </span>            : 
+<span class="lineNum">    1372 </span>            : 
+<span class="lineNum">    1373 </span>            : 
+<span class="lineNum">    1374 </span>            : 
+<span class="lineNum">    1375 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

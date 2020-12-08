@@ -1,0 +1,650 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - LinearMath/btQuickprof.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">LinearMath</a> - btQuickprof.cpp<span style="font-size: 80%;"> (source / <a href="btQuickprof.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">75</td>
+            <td class="headerCovTableEntry">150</td>
+            <td class="headerCovTableEntryLo">50.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">16</td>
+            <td class="headerCovTableEntry">29</td>
+            <td class="headerCovTableEntryLo">55.2 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : 
+<span class="lineNum">       3 </span>            : ***************************************************************************************************
+<span class="lineNum">       4 </span>            : **
+<span class="lineNum">       5 </span>            : ** profile.cpp
+<span class="lineNum">       6 </span>            : **
+<span class="lineNum">       7 </span>            : ** Real-Time Hierarchical Profiling for Game Programming Gems 3
+<span class="lineNum">       8 </span>            : **
+<span class="lineNum">       9 </span>            : ** by Greg Hjelstrom &amp; Byon Garrabrant
+<span class="lineNum">      10 </span>            : **
+<span class="lineNum">      11 </span>            : ***************************************************************************************************/
+<span class="lineNum">      12 </span>            : 
+<span class="lineNum">      13 </span>            : // Credits: The Clock class was inspired by the Timer classes in 
+<span class="lineNum">      14 </span>            : // Ogre (www.ogre3d.org).
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : #include &quot;btQuickprof.h&quot;
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span>            : #ifndef BT_NO_PROFILE
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span><span class="lineCov">          1 : static btClock gProfileClock;</span>
+<span class="lineNum">      22 </span>            : 
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : #ifdef __CELLOS_LV2__
+<span class="lineNum">      25 </span>            : #include &lt;sys/sys_time.h&gt;
+<span class="lineNum">      26 </span>            : #include &lt;sys/time_util.h&gt;
+<span class="lineNum">      27 </span>            : #include &lt;stdio.h&gt;
+<span class="lineNum">      28 </span>            : #endif
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span>            : #if defined (SUNOS) || defined (__SUNOS__) 
+<span class="lineNum">      31 </span>            : #include &lt;stdio.h&gt; 
+<span class="lineNum">      32 </span>            : #endif
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            : #if defined(WIN32) || defined(_WIN32)
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span>            : #define BT_USE_WINDOWS_TIMERS
+<span class="lineNum">      37 </span>            : #define WIN32_LEAN_AND_MEAN
+<span class="lineNum">      38 </span>            : #define NOWINRES
+<span class="lineNum">      39 </span>            : #define NOMCX
+<span class="lineNum">      40 </span>            : #define NOIME 
+<span class="lineNum">      41 </span>            : 
+<span class="lineNum">      42 </span>            : #ifdef _XBOX
+<span class="lineNum">      43 </span>            :         #include &lt;Xtl.h&gt;
+<span class="lineNum">      44 </span>            : #else //_XBOX
+<span class="lineNum">      45 </span>            :         #include &lt;windows.h&gt;
+<span class="lineNum">      46 </span>            : #endif //_XBOX
+<span class="lineNum">      47 </span>            : 
+<span class="lineNum">      48 </span>            : #include &lt;time.h&gt;
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span>            : #else //_WIN32
+<span class="lineNum">      52 </span>            : #include &lt;sys/time.h&gt;
+<span class="lineNum">      53 </span>            : #endif //_WIN32
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            : #define mymin(a,b) (a &gt; b ? a : b)
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span>            : struct btClockData
+<span class="lineNum">      58 </span>            : {
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span>            : #ifdef BT_USE_WINDOWS_TIMERS
+<span class="lineNum">      61 </span>            :         LARGE_INTEGER mClockFrequency;
+<span class="lineNum">      62 </span>            :         DWORD mStartTick;
+<span class="lineNum">      63 </span>            :         LONGLONG mPrevElapsedTime;
+<span class="lineNum">      64 </span>            :         LARGE_INTEGER mStartTime;
+<span class="lineNum">      65 </span>            : #else
+<span class="lineNum">      66 </span>            : #ifdef __CELLOS_LV2__
+<span class="lineNum">      67 </span>            :         uint64_t        mStartTime;
+<span class="lineNum">      68 </span>            : #else
+<span class="lineNum">      69 </span>            :         struct timeval mStartTime;
+<span class="lineNum">      70 </span>            : #endif
+<span class="lineNum">      71 </span>            : #endif //__CELLOS_LV2__
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span>            : };
+<a name="74"><span class="lineNum">      74 </span>            : </a>
+<span class="lineNum">      75 </span>            : ///The btClock is a portable basic clock that measures accurate time in seconds, use for profiling.
+<span class="lineNum">      76 </span><span class="lineCov">          2 : btClock::btClock()</span>
+<span class="lineNum">      77 </span>            : {
+<span class="lineNum">      78 </span><span class="lineCov">          2 :         m_data = new btClockData;</span>
+<span class="lineNum">      79 </span>            : #ifdef BT_USE_WINDOWS_TIMERS
+<span class="lineNum">      80 </span>            :         QueryPerformanceFrequency(&amp;m_data-&gt;mClockFrequency);
+<span class="lineNum">      81 </span>            : #endif
+<span class="lineNum">      82 </span><span class="lineCov">          2 :         reset();</span>
+<a name="83"><span class="lineNum">      83 </span><span class="lineCov">          2 : }</span></a>
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span><span class="lineCov">          4 : btClock::~btClock()</span>
+<span class="lineNum">      86 </span>            : {
+<span class="lineNum">      87 </span><span class="lineCov">          2 :         delete m_data;</span>
+<a name="88"><span class="lineNum">      88 </span><span class="lineCov">          2 : }</span></a>
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span><span class="lineNoCov">          0 : btClock::btClock(const btClock&amp; other)</span>
+<span class="lineNum">      91 </span>            : {
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :         m_data = new btClockData;</span>
+<span class="lineNum">      93 </span><span class="lineNoCov">          0 :         *m_data = *other.m_data;</span>
+<a name="94"><span class="lineNum">      94 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      95 </span>            : 
+<span class="lineNum">      96 </span><span class="lineNoCov">          0 : btClock&amp; btClock::operator=(const btClock&amp; other)</span>
+<span class="lineNum">      97 </span>            : {
+<span class="lineNum">      98 </span><span class="lineNoCov">          0 :         *m_data = *other.m_data;</span>
+<span class="lineNum">      99 </span><span class="lineNoCov">          0 :         return *this;</span>
+<span class="lineNum">     100 </span>            : }
+<span class="lineNum">     101 </span>            : 
+<a name="102"><span class="lineNum">     102 </span>            : </a>
+<span class="lineNum">     103 </span>            :         /// Resets the initial reference time.
+<span class="lineNum">     104 </span><span class="lineCov">       6106 : void btClock::reset()</span>
+<span class="lineNum">     105 </span>            : {
+<span class="lineNum">     106 </span>            : #ifdef BT_USE_WINDOWS_TIMERS
+<span class="lineNum">     107 </span>            :         QueryPerformanceCounter(&amp;m_data-&gt;mStartTime);
+<span class="lineNum">     108 </span>            :         m_data-&gt;mStartTick = GetTickCount();
+<span class="lineNum">     109 </span>            :         m_data-&gt;mPrevElapsedTime = 0;
+<span class="lineNum">     110 </span>            : #else
+<span class="lineNum">     111 </span>            : #ifdef __CELLOS_LV2__
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span>            :         typedef uint64_t  ClockSize;
+<span class="lineNum">     114 </span>            :         ClockSize newTime;
+<span class="lineNum">     115 </span>            :         //__asm __volatile__( &quot;mftb %0&quot; : &quot;=r&quot; (newTime) : : &quot;memory&quot;);
+<span class="lineNum">     116 </span>            :         SYS_TIMEBASE_GET( newTime );
+<span class="lineNum">     117 </span>            :         m_data-&gt;mStartTime = newTime;
+<span class="lineNum">     118 </span>            : #else
+<span class="lineNum">     119 </span><span class="lineCov">      12214 :         gettimeofday(&amp;m_data-&gt;mStartTime, 0);</span>
+<span class="lineNum">     120 </span>            : #endif
+<span class="lineNum">     121 </span>            : #endif
+<span class="lineNum">     122 </span><span class="lineCov">       6106 : }</span>
+<span class="lineNum">     123 </span>            : 
+<a name="124"><span class="lineNum">     124 </span>            : /// Returns the time in ms since the last call to reset or since </a>
+<span class="lineNum">     125 </span>            : /// the btClock was created.
+<span class="lineNum">     126 </span><span class="lineCov">       6106 : unsigned long int btClock::getTimeMilliseconds()</span>
+<span class="lineNum">     127 </span>            : {
+<span class="lineNum">     128 </span>            : #ifdef BT_USE_WINDOWS_TIMERS
+<span class="lineNum">     129 </span>            :         LARGE_INTEGER currentTime;
+<span class="lineNum">     130 </span>            :         QueryPerformanceCounter(&amp;currentTime);
+<span class="lineNum">     131 </span>            :         LONGLONG elapsedTime = currentTime.QuadPart - 
+<span class="lineNum">     132 </span>            :                 m_data-&gt;mStartTime.QuadPart;
+<span class="lineNum">     133 </span>            :                 // Compute the number of millisecond ticks elapsed.
+<span class="lineNum">     134 </span>            :         unsigned long msecTicks = (unsigned long)(1000 * elapsedTime / 
+<span class="lineNum">     135 </span>            :                 m_data-&gt;mClockFrequency.QuadPart);
+<span class="lineNum">     136 </span>            :                 // Check for unexpected leaps in the Win32 performance counter.  
+<span class="lineNum">     137 </span>            :         // (This is caused by unexpected data across the PCI to ISA 
+<span class="lineNum">     138 </span>            :                 // bridge, aka south bridge.  See Microsoft KB274323.)
+<span class="lineNum">     139 </span>            :                 unsigned long elapsedTicks = GetTickCount() - m_data-&gt;mStartTick;
+<span class="lineNum">     140 </span>            :                 signed long msecOff = (signed long)(msecTicks - elapsedTicks);
+<span class="lineNum">     141 </span>            :                 if (msecOff &lt; -100 || msecOff &gt; 100)
+<span class="lineNum">     142 </span>            :                 {
+<span class="lineNum">     143 </span>            :                         // Adjust the starting time forwards.
+<span class="lineNum">     144 </span>            :                         LONGLONG msecAdjustment = mymin(msecOff * 
+<span class="lineNum">     145 </span>            :                                 m_data-&gt;mClockFrequency.QuadPart / 1000, elapsedTime - 
+<span class="lineNum">     146 </span>            :                                 m_data-&gt;mPrevElapsedTime);
+<span class="lineNum">     147 </span>            :                         m_data-&gt;mStartTime.QuadPart += msecAdjustment;
+<span class="lineNum">     148 </span>            :                         elapsedTime -= msecAdjustment;
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span>            :                         // Recompute the number of millisecond ticks elapsed.
+<span class="lineNum">     151 </span>            :                         msecTicks = (unsigned long)(1000 * elapsedTime / 
+<span class="lineNum">     152 </span>            :                                 m_data-&gt;mClockFrequency.QuadPart);
+<span class="lineNum">     153 </span>            :                 }
+<span class="lineNum">     154 </span>            : 
+<span class="lineNum">     155 </span>            :                 // Store the current elapsed time for adjustments next time.
+<span class="lineNum">     156 </span>            :                 m_data-&gt;mPrevElapsedTime = elapsedTime;
+<span class="lineNum">     157 </span>            : 
+<span class="lineNum">     158 </span>            :                 return msecTicks;
+<span class="lineNum">     159 </span>            : #else
+<span class="lineNum">     160 </span>            : 
+<span class="lineNum">     161 </span>            : #ifdef __CELLOS_LV2__
+<span class="lineNum">     162 </span>            :                 uint64_t freq=sys_time_get_timebase_frequency();
+<span class="lineNum">     163 </span>            :                 double dFreq=((double) freq) / 1000.0;
+<span class="lineNum">     164 </span>            :                 typedef uint64_t  ClockSize;
+<span class="lineNum">     165 </span>            :                 ClockSize newTime;
+<span class="lineNum">     166 </span>            :                 SYS_TIMEBASE_GET( newTime );
+<span class="lineNum">     167 </span>            :                 //__asm __volatile__( &quot;mftb %0&quot; : &quot;=r&quot; (newTime) : : &quot;memory&quot;);
+<span class="lineNum">     168 </span>            : 
+<span class="lineNum">     169 </span>            :                 return (unsigned long int)((double(newTime-m_data-&gt;mStartTime)) / dFreq);
+<span class="lineNum">     170 </span>            : #else
+<span class="lineNum">     171 </span>            : 
+<span class="lineNum">     172 </span>            :                 struct timeval currentTime;
+<span class="lineNum">     173 </span><span class="lineCov">       6106 :                 gettimeofday(&amp;currentTime, 0);</span>
+<span class="lineNum">     174 </span><span class="lineCov">      12212 :                 return (currentTime.tv_sec - m_data-&gt;mStartTime.tv_sec) * 1000 + </span>
+<span class="lineNum">     175 </span><span class="lineCov">      12212 :                         (currentTime.tv_usec - m_data-&gt;mStartTime.tv_usec) / 1000;</span>
+<span class="lineNum">     176 </span>            : #endif //__CELLOS_LV2__
+<span class="lineNum">     177 </span>            : #endif
+<span class="lineNum">     178 </span>            : }
+<span class="lineNum">     179 </span>            : 
+<a name="180"><span class="lineNum">     180 </span>            :         /// Returns the time in us since the last call to reset or since </a>
+<span class="lineNum">     181 </span>            :         /// the Clock was created.
+<span class="lineNum">     182 </span><span class="lineCov">     104555 : unsigned long int btClock::getTimeMicroseconds()</span>
+<span class="lineNum">     183 </span>            : {
+<span class="lineNum">     184 </span>            : #ifdef BT_USE_WINDOWS_TIMERS
+<span class="lineNum">     185 </span>            :                 LARGE_INTEGER currentTime;
+<span class="lineNum">     186 </span>            :                 QueryPerformanceCounter(&amp;currentTime);
+<span class="lineNum">     187 </span>            :                 LONGLONG elapsedTime = currentTime.QuadPart - 
+<span class="lineNum">     188 </span>            :                         m_data-&gt;mStartTime.QuadPart;
+<span class="lineNum">     189 </span>            : 
+<span class="lineNum">     190 </span>            :                 // Compute the number of millisecond ticks elapsed.
+<span class="lineNum">     191 </span>            :                 unsigned long msecTicks = (unsigned long)(1000 * elapsedTime / 
+<span class="lineNum">     192 </span>            :                         m_data-&gt;mClockFrequency.QuadPart);
+<span class="lineNum">     193 </span>            : 
+<span class="lineNum">     194 </span>            :                 // Check for unexpected leaps in the Win32 performance counter.  
+<span class="lineNum">     195 </span>            :                 // (This is caused by unexpected data across the PCI to ISA 
+<span class="lineNum">     196 </span>            :                 // bridge, aka south bridge.  See Microsoft KB274323.)
+<span class="lineNum">     197 </span>            :                 unsigned long elapsedTicks = GetTickCount() - m_data-&gt;mStartTick;
+<span class="lineNum">     198 </span>            :                 signed long msecOff = (signed long)(msecTicks - elapsedTicks);
+<span class="lineNum">     199 </span>            :                 if (msecOff &lt; -100 || msecOff &gt; 100)
+<span class="lineNum">     200 </span>            :                 {
+<span class="lineNum">     201 </span>            :                         // Adjust the starting time forwards.
+<span class="lineNum">     202 </span>            :                         LONGLONG msecAdjustment = mymin(msecOff * 
+<span class="lineNum">     203 </span>            :                                 m_data-&gt;mClockFrequency.QuadPart / 1000, elapsedTime - 
+<span class="lineNum">     204 </span>            :                                 m_data-&gt;mPrevElapsedTime);
+<span class="lineNum">     205 </span>            :                         m_data-&gt;mStartTime.QuadPart += msecAdjustment;
+<span class="lineNum">     206 </span>            :                         elapsedTime -= msecAdjustment;
+<span class="lineNum">     207 </span>            :                 }
+<span class="lineNum">     208 </span>            : 
+<span class="lineNum">     209 </span>            :                 // Store the current elapsed time for adjustments next time.
+<span class="lineNum">     210 </span>            :                 m_data-&gt;mPrevElapsedTime = elapsedTime;
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span>            :                 // Convert to microseconds.
+<span class="lineNum">     213 </span>            :                 unsigned long usecTicks = (unsigned long)(1000000 * elapsedTime / 
+<span class="lineNum">     214 </span>            :                         m_data-&gt;mClockFrequency.QuadPart);
+<span class="lineNum">     215 </span>            : 
+<span class="lineNum">     216 </span>            :                 return usecTicks;
+<span class="lineNum">     217 </span>            : #else
+<span class="lineNum">     218 </span>            : 
+<span class="lineNum">     219 </span>            : #ifdef __CELLOS_LV2__
+<span class="lineNum">     220 </span>            :                 uint64_t freq=sys_time_get_timebase_frequency();
+<span class="lineNum">     221 </span>            :                 double dFreq=((double) freq)/ 1000000.0;
+<span class="lineNum">     222 </span>            :                 typedef uint64_t  ClockSize;
+<span class="lineNum">     223 </span>            :                 ClockSize newTime;
+<span class="lineNum">     224 </span>            :                 //__asm __volatile__( &quot;mftb %0&quot; : &quot;=r&quot; (newTime) : : &quot;memory&quot;);
+<span class="lineNum">     225 </span>            :                 SYS_TIMEBASE_GET( newTime );
+<span class="lineNum">     226 </span>            : 
+<span class="lineNum">     227 </span>            :                 return (unsigned long int)((double(newTime-m_data-&gt;mStartTime)) / dFreq);
+<span class="lineNum">     228 </span>            : #else
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span>            :                 struct timeval currentTime;
+<span class="lineNum">     231 </span><span class="lineCov">     104555 :                 gettimeofday(&amp;currentTime, 0);</span>
+<span class="lineNum">     232 </span><span class="lineCov">     209110 :                 return (currentTime.tv_sec - m_data-&gt;mStartTime.tv_sec) * 1000000 + </span>
+<span class="lineNum">     233 </span><span class="lineCov">     209110 :                         (currentTime.tv_usec - m_data-&gt;mStartTime.tv_usec);</span>
+<span class="lineNum">     234 </span>            : #endif//__CELLOS_LV2__
+<span class="lineNum">     235 </span>            : #endif 
+<span class="lineNum">     236 </span>            : }
+<span class="lineNum">     237 </span>            : 
+<span class="lineNum">     238 </span>            : 
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span>            : 
+<span class="lineNum">     241 </span>            : 
+<span class="lineNum">     242 </span>            : inline void Profile_Get_Ticks(unsigned long int * ticks)
+<span class="lineNum">     243 </span>            : {
+<span class="lineNum">     244 </span><span class="lineCov">     104555 :         *ticks = gProfileClock.getTimeMicroseconds();</span>
+<span class="lineNum">     245 </span>            : }
+<span class="lineNum">     246 </span>            : 
+<span class="lineNum">     247 </span>            : inline float Profile_Get_Tick_Rate(void)
+<span class="lineNum">     248 </span>            : {
+<span class="lineNum">     249 </span>            : //      return 1000000.f;
+<span class="lineNum">     250 </span>            :         return 1000.f;
+<span class="lineNum">     251 </span>            : 
+<span class="lineNum">     252 </span>            : }
+<span class="lineNum">     253 </span>            : 
+<span class="lineNum">     254 </span>            : 
+<span class="lineNum">     255 </span>            : 
+<span class="lineNum">     256 </span>            : /***************************************************************************************************
+<span class="lineNum">     257 </span>            : **
+<span class="lineNum">     258 </span>            : ** CProfileNode
+<span class="lineNum">     259 </span>            : **
+<span class="lineNum">     260 </span>            : ***************************************************************************************************/
+<span class="lineNum">     261 </span>            : 
+<span class="lineNum">     262 </span>            : /***********************************************************************************************
+<span class="lineNum">     263 </span>            :  * INPUT:                                                                                      *
+<span class="lineNum">     264 </span>            :  * name - pointer to a static string which is the name of this profile node                    *
+<span class="lineNum">     265 </span>            :  * parent - parent pointer                                                                     *
+<span class="lineNum">     266 </span>            :  *                                                                                             *
+<span class="lineNum">     267 </span>            :  * WARNINGS:                                                                                   *
+<span class="lineNum">     268 </span>            :  * The name is assumed to be a static pointer, only the pointer is stored and compared for     *
+<a name="269"><span class="lineNum">     269 </span>            :  * efficiency reasons.                                                                         *</a>
+<span class="lineNum">     270 </span>            :  *=============================================================================================*/
+<span class="lineNum">     271 </span><span class="lineCov">         25 : CProfileNode::CProfileNode( const char * name, CProfileNode * parent ) :</span>
+<span class="lineNum">     272 </span>            :         Name( name ),
+<span class="lineNum">     273 </span>            :         TotalCalls( 0 ),
+<span class="lineNum">     274 </span>            :         TotalTime( 0 ),
+<span class="lineNum">     275 </span>            :         StartTime( 0 ),
+<span class="lineNum">     276 </span>            :         RecursionCounter( 0 ),
+<span class="lineNum">     277 </span>            :         Parent( parent ),
+<span class="lineNum">     278 </span>            :         Child( NULL ),
+<span class="lineNum">     279 </span>            :         Sibling( NULL ),
+<span class="lineNum">     280 </span><span class="lineCov">         25 :         m_userPtr(0)</span>
+<span class="lineNum">     281 </span>            : {
+<span class="lineNum">     282 </span><span class="lineCov">         25 :         Reset();</span>
+<span class="lineNum">     283 </span><span class="lineNoCov">          0 : }</span>
+<a name="284"><span class="lineNum">     284 </span>            : </a>
+<span class="lineNum">     285 </span>            : 
+<span class="lineNum">     286 </span><span class="lineNoCov">          0 : void    CProfileNode::CleanupMemory()</span>
+<span class="lineNum">     287 </span>            : {
+<span class="lineNum">     288 </span><span class="lineNoCov">          0 :         delete ( Child);</span>
+<span class="lineNum">     289 </span><span class="lineNoCov">          0 :         Child = NULL;</span>
+<span class="lineNum">     290 </span><span class="lineNoCov">          0 :         delete ( Sibling);</span>
+<span class="lineNum">     291 </span><span class="lineNoCov">          0 :         Sibling = NULL;</span>
+<a name="292"><span class="lineNum">     292 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     293 </span>            : 
+<span class="lineNum">     294 </span><span class="lineCov">         50 : CProfileNode::~CProfileNode( void )</span>
+<span class="lineNum">     295 </span>            : {
+<span class="lineNum">     296 </span><span class="lineCov">         25 :         delete ( Child);</span>
+<span class="lineNum">     297 </span><span class="lineCov">         25 :         delete ( Sibling);</span>
+<span class="lineNum">     298 </span><span class="lineCov">         25 : }</span>
+<span class="lineNum">     299 </span>            : 
+<span class="lineNum">     300 </span>            : 
+<span class="lineNum">     301 </span>            : /***********************************************************************************************
+<span class="lineNum">     302 </span>            :  * INPUT:                                                                                      *
+<span class="lineNum">     303 </span>            :  * name - static string pointer to the name of the node we are searching for                   *
+<span class="lineNum">     304 </span>            :  *                                                                                             *
+<span class="lineNum">     305 </span>            :  * WARNINGS:                                                                                   *
+<span class="lineNum">     306 </span>            :  * All profile names are assumed to be static strings so this function uses pointer compares   *
+<a name="307"><span class="lineNum">     307 </span>            :  * to find the named node.                                                                     *</a>
+<span class="lineNum">     308 </span>            :  *=============================================================================================*/
+<span class="lineNum">     309 </span><span class="lineCov">      49224 : CProfileNode * CProfileNode::Get_Sub_Node( const char * name )</span>
+<span class="lineNum">     310 </span>            : {
+<span class="lineNum">     311 </span>            :         // Try to find this sub node
+<span class="lineNum">     312 </span><span class="lineCov">      49224 :         CProfileNode * child = Child;</span>
+<span class="lineNum">     313 </span><span class="lineCov">     175520 :         while ( child ) {</span>
+<span class="lineNum">     314 </span><span class="lineCov">     112348 :                 if ( child-&gt;Name == name ) {</span>
+<span class="lineNum">     315 </span>            :                         return child;
+<span class="lineNum">     316 </span>            :                 }
+<span class="lineNum">     317 </span><span class="lineCov">      63148 :                 child = child-&gt;Sibling;</span>
+<span class="lineNum">     318 </span>            :         }
+<span class="lineNum">     319 </span>            : 
+<span class="lineNum">     320 </span>            :         // We didn't find it, so add it
+<span class="lineNum">     321 </span>            :         
+<span class="lineNum">     322 </span><span class="lineCov">         48 :         CProfileNode * node = new CProfileNode( name, this );</span>
+<span class="lineNum">     323 </span><span class="lineCov">         24 :         node-&gt;Sibling = Child;</span>
+<span class="lineNum">     324 </span><span class="lineCov">         24 :         Child = node;</span>
+<span class="lineNum">     325 </span><span class="lineCov">         24 :         return node;</span>
+<span class="lineNum">     326 </span>            : }
+<a name="327"><span class="lineNum">     327 </span>            : </a>
+<span class="lineNum">     328 </span>            : 
+<span class="lineNum">     329 </span><span class="lineCov">      61076 : void    CProfileNode::Reset( void )</span>
+<span class="lineNum">     330 </span>            : {
+<span class="lineNum">     331 </span><span class="lineCov">     152651 :         TotalCalls = 0;</span>
+<span class="lineNum">     332 </span><span class="lineCov">     152651 :         TotalTime = 0.0f;</span>
+<span class="lineNum">     333 </span>            :         
+<span class="lineNum">     334 </span>            : 
+<span class="lineNum">     335 </span><span class="lineCov">     152651 :         if ( Child ) {</span>
+<span class="lineNum">     336 </span><span class="lineCov">      54945 :                 Child-&gt;Reset();</span>
+<span class="lineNum">     337 </span>            :         }
+<span class="lineNum">     338 </span><span class="lineCov">     152651 :         if ( Sibling ) {</span>
+<span class="lineNum">     339 </span>            :                 Sibling-&gt;Reset();
+<span class="lineNum">     340 </span>            :         }
+<span class="lineNum">     341 </span><span class="lineCov">      61076 : }</span>
+<a name="342"><span class="lineNum">     342 </span>            : </a>
+<span class="lineNum">     343 </span>            : 
+<span class="lineNum">     344 </span><span class="lineCov">      55330 : void    CProfileNode::Call( void )</span>
+<span class="lineNum">     345 </span>            : {
+<span class="lineNum">     346 </span><span class="lineCov">      55330 :         TotalCalls++;</span>
+<span class="lineNum">     347 </span><span class="lineCov">      55330 :         if (RecursionCounter++ == 0) {</span>
+<span class="lineNum">     348 </span><span class="lineCov">      49225 :                 Profile_Get_Ticks(&amp;StartTime);</span>
+<span class="lineNum">     349 </span>            :         }
+<span class="lineNum">     350 </span><span class="lineCov">      55330 : }</span>
+<a name="351"><span class="lineNum">     351 </span>            : </a>
+<span class="lineNum">     352 </span>            : 
+<span class="lineNum">     353 </span><span class="lineCov">      49224 : bool    CProfileNode::Return( void )</span>
+<span class="lineNum">     354 </span>            : {
+<span class="lineNum">     355 </span><span class="lineCov">      49224 :         if ( --RecursionCounter == 0 &amp;&amp; TotalCalls != 0 ) { </span>
+<span class="lineNum">     356 </span>            :                 unsigned long int time;
+<span class="lineNum">     357 </span><span class="lineCov">      49224 :                 Profile_Get_Ticks(&amp;time);</span>
+<span class="lineNum">     358 </span><span class="lineCov">      49224 :                 time-=StartTime;</span>
+<span class="lineNum">     359 </span><span class="lineCov">      49224 :                 TotalTime += (float)time / Profile_Get_Tick_Rate();</span>
+<span class="lineNum">     360 </span>            :         }
+<span class="lineNum">     361 </span><span class="lineCov">      49224 :         return ( RecursionCounter == 0 );</span>
+<span class="lineNum">     362 </span>            : }
+<span class="lineNum">     363 </span>            : 
+<span class="lineNum">     364 </span>            : 
+<span class="lineNum">     365 </span>            : /***************************************************************************************************
+<span class="lineNum">     366 </span>            : **
+<span class="lineNum">     367 </span>            : ** CProfileIterator
+<a name="368"><span class="lineNum">     368 </span>            : **</a>
+<span class="lineNum">     369 </span>            : ***************************************************************************************************/
+<span class="lineNum">     370 </span><span class="lineNoCov">          0 : CProfileIterator::CProfileIterator( CProfileNode * start )</span>
+<span class="lineNum">     371 </span>            : {
+<span class="lineNum">     372 </span><span class="lineNoCov">          0 :         CurrentParent = start;</span>
+<span class="lineNum">     373 </span><span class="lineNoCov">          0 :         CurrentChild = CurrentParent-&gt;Get_Child();</span>
+<span class="lineNum">     374 </span><span class="lineNoCov">          0 : }</span>
+<a name="375"><span class="lineNum">     375 </span>            : </a>
+<span class="lineNum">     376 </span>            : 
+<span class="lineNum">     377 </span><span class="lineNoCov">          0 : void    CProfileIterator::First(void)</span>
+<span class="lineNum">     378 </span>            : {
+<span class="lineNum">     379 </span><span class="lineNoCov">          0 :         CurrentChild = CurrentParent-&gt;Get_Child();</span>
+<span class="lineNum">     380 </span><span class="lineNoCov">          0 : }</span>
+<a name="381"><span class="lineNum">     381 </span>            : </a>
+<span class="lineNum">     382 </span>            : 
+<span class="lineNum">     383 </span><span class="lineNoCov">          0 : void    CProfileIterator::Next(void)</span>
+<span class="lineNum">     384 </span>            : {
+<span class="lineNum">     385 </span><span class="lineNoCov">          0 :         CurrentChild = CurrentChild-&gt;Get_Sibling();</span>
+<span class="lineNum">     386 </span><span class="lineNoCov">          0 : }</span>
+<a name="387"><span class="lineNum">     387 </span>            : </a>
+<span class="lineNum">     388 </span>            : 
+<span class="lineNum">     389 </span><span class="lineNoCov">          0 : bool    CProfileIterator::Is_Done(void)</span>
+<span class="lineNum">     390 </span>            : {
+<span class="lineNum">     391 </span><span class="lineNoCov">          0 :         return CurrentChild == NULL;</span>
+<span class="lineNum">     392 </span>            : }
+<a name="393"><span class="lineNum">     393 </span>            : </a>
+<span class="lineNum">     394 </span>            : 
+<span class="lineNum">     395 </span><span class="lineNoCov">          0 : void    CProfileIterator::Enter_Child( int index )</span>
+<span class="lineNum">     396 </span>            : {
+<span class="lineNum">     397 </span><span class="lineNoCov">          0 :         CurrentChild = CurrentParent-&gt;Get_Child();</span>
+<span class="lineNum">     398 </span><span class="lineNoCov">          0 :         while ( (CurrentChild != NULL) &amp;&amp; (index != 0) ) {</span>
+<span class="lineNum">     399 </span><span class="lineNoCov">          0 :                 index--;</span>
+<span class="lineNum">     400 </span><span class="lineNoCov">          0 :                 CurrentChild = CurrentChild-&gt;Get_Sibling();</span>
+<span class="lineNum">     401 </span>            :         }
+<span class="lineNum">     402 </span>            : 
+<span class="lineNum">     403 </span><span class="lineNoCov">          0 :         if ( CurrentChild != NULL ) {</span>
+<span class="lineNum">     404 </span><span class="lineNoCov">          0 :                 CurrentParent = CurrentChild;</span>
+<span class="lineNum">     405 </span><span class="lineNoCov">          0 :                 CurrentChild = CurrentParent-&gt;Get_Child();</span>
+<span class="lineNum">     406 </span>            :         }
+<span class="lineNum">     407 </span><span class="lineNoCov">          0 : }</span>
+<a name="408"><span class="lineNum">     408 </span>            : </a>
+<span class="lineNum">     409 </span>            : 
+<span class="lineNum">     410 </span><span class="lineNoCov">          0 : void    CProfileIterator::Enter_Parent( void )</span>
+<span class="lineNum">     411 </span>            : {
+<span class="lineNum">     412 </span><span class="lineNoCov">          0 :         if ( CurrentParent-&gt;Get_Parent() != NULL ) {</span>
+<span class="lineNum">     413 </span><span class="lineNoCov">          0 :                 CurrentParent = CurrentParent-&gt;Get_Parent();</span>
+<span class="lineNum">     414 </span>            :         }
+<span class="lineNum">     415 </span><span class="lineNoCov">          0 :         CurrentChild = CurrentParent-&gt;Get_Child();</span>
+<span class="lineNum">     416 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     417 </span>            : 
+<span class="lineNum">     418 </span>            : 
+<span class="lineNum">     419 </span>            : /***************************************************************************************************
+<span class="lineNum">     420 </span>            : **
+<span class="lineNum">     421 </span>            : ** CProfileManager
+<span class="lineNum">     422 </span>            : **
+<span class="lineNum">     423 </span>            : ***************************************************************************************************/
+<span class="lineNum">     424 </span>            : 
+<span class="lineNum">     425 </span><span class="lineCov">          1 : CProfileNode    CProfileManager::Root( &quot;Root&quot;, NULL );</span>
+<span class="lineNum">     426 </span>            : CProfileNode *  CProfileManager::CurrentNode = &amp;CProfileManager::Root;
+<span class="lineNum">     427 </span>            : int                             CProfileManager::FrameCounter = 0;
+<span class="lineNum">     428 </span>            : unsigned long int                       CProfileManager::ResetTime = 0;
+<span class="lineNum">     429 </span>            : 
+<span class="lineNum">     430 </span>            : 
+<span class="lineNum">     431 </span>            : /***********************************************************************************************
+<span class="lineNum">     432 </span>            :  * CProfileManager::Start_Profile -- Begin a named profile                                    *
+<span class="lineNum">     433 </span>            :  *                                                                                             *
+<span class="lineNum">     434 </span>            :  * Steps one level deeper into the tree, if a child already exists with the specified name     *
+<span class="lineNum">     435 </span>            :  * then it accumulates the profiling; otherwise a new child node is added to the profile tree. *
+<span class="lineNum">     436 </span>            :  *                                                                                             *
+<span class="lineNum">     437 </span>            :  * INPUT:                                                                                      *
+<span class="lineNum">     438 </span>            :  * name - name of this profiling record                                                        *
+<span class="lineNum">     439 </span>            :  *                                                                                             *
+<span class="lineNum">     440 </span>            :  * WARNINGS:                                                                                   *
+<span class="lineNum">     441 </span>            :  * The string used is assumed to be a static string; pointer compares are used throughout      *
+<a name="442"><span class="lineNum">     442 </span>            :  * the profiling code for efficiency.                                                          *</a>
+<span class="lineNum">     443 </span>            :  *=============================================================================================*/
+<span class="lineNum">     444 </span><span class="lineCov">      49224 : void    CProfileManager::Start_Profile( const char * name )</span>
+<span class="lineNum">     445 </span>            : {
+<span class="lineNum">     446 </span><span class="lineCov">      49224 :         if (name != CurrentNode-&gt;Get_Name()) {</span>
+<span class="lineNum">     447 </span><span class="lineCov">      49224 :                 CurrentNode = CurrentNode-&gt;Get_Sub_Node( name );</span>
+<span class="lineNum">     448 </span>            :         } 
+<span class="lineNum">     449 </span>            :         
+<span class="lineNum">     450 </span><span class="lineCov">      49224 :         CurrentNode-&gt;Call();</span>
+<span class="lineNum">     451 </span><span class="lineCov">      49224 : }</span>
+<span class="lineNum">     452 </span>            : 
+<span class="lineNum">     453 </span>            : 
+<span class="lineNum">     454 </span>            : /***********************************************************************************************
+<a name="455"><span class="lineNum">     455 </span>            :  * CProfileManager::Stop_Profile -- Stop timing and record the results.                       *</a>
+<span class="lineNum">     456 </span>            :  *=============================================================================================*/
+<span class="lineNum">     457 </span><span class="lineCov">      49224 : void    CProfileManager::Stop_Profile( void )</span>
+<span class="lineNum">     458 </span>            : {
+<span class="lineNum">     459 </span>            :         // Return will indicate whether we should back up to our parent (we may
+<span class="lineNum">     460 </span>            :         // be profiling a recursive function)
+<span class="lineNum">     461 </span><span class="lineCov">      49224 :         if (CurrentNode-&gt;Return()) {</span>
+<span class="lineNum">     462 </span><span class="lineCov">      49224 :                 CurrentNode = CurrentNode-&gt;Get_Parent();</span>
+<span class="lineNum">     463 </span>            :         }
+<span class="lineNum">     464 </span><span class="lineCov">      49224 : }</span>
+<span class="lineNum">     465 </span>            : 
+<span class="lineNum">     466 </span>            : 
+<span class="lineNum">     467 </span>            : /***********************************************************************************************
+<span class="lineNum">     468 </span>            :  * CProfileManager::Reset -- Reset the contents of the profiling system                       *
+<span class="lineNum">     469 </span>            :  *                                                                                             *
+<a name="470"><span class="lineNum">     470 </span>            :  *    This resets everything except for the tree structure.  All of the timing data is reset.  *</a>
+<span class="lineNum">     471 </span>            :  *=============================================================================================*/
+<span class="lineNum">     472 </span><span class="lineCov">       6106 : void    CProfileManager::Reset( void )</span>
+<span class="lineNum">     473 </span>            : { 
+<span class="lineNum">     474 </span><span class="lineCov">       6106 :         gProfileClock.reset();</span>
+<span class="lineNum">     475 </span><span class="lineCov">       6106 :         Root.Reset();</span>
+<span class="lineNum">     476 </span><span class="lineCov">       6106 :     Root.Call();</span>
+<span class="lineNum">     477 </span><span class="lineCov">       6106 :         FrameCounter = 0;</span>
+<span class="lineNum">     478 </span><span class="lineCov">       6106 :         Profile_Get_Ticks(&amp;ResetTime);</span>
+<span class="lineNum">     479 </span><span class="lineCov">       6106 : }</span>
+<span class="lineNum">     480 </span>            : 
+<span class="lineNum">     481 </span>            : 
+<span class="lineNum">     482 </span>            : /***********************************************************************************************
+<a name="483"><span class="lineNum">     483 </span>            :  * CProfileManager::Increment_Frame_Counter -- Increment the frame counter                    *</a>
+<span class="lineNum">     484 </span>            :  *=============================================================================================*/
+<span class="lineNum">     485 </span><span class="lineCov">       6106 : void CProfileManager::Increment_Frame_Counter( void )</span>
+<span class="lineNum">     486 </span>            : {
+<span class="lineNum">     487 </span><span class="lineCov">       6106 :         FrameCounter++;</span>
+<span class="lineNum">     488 </span><span class="lineCov">       6106 : }</span>
+<span class="lineNum">     489 </span>            : 
+<span class="lineNum">     490 </span>            : 
+<span class="lineNum">     491 </span>            : /***********************************************************************************************
+<a name="492"><span class="lineNum">     492 </span>            :  * CProfileManager::Get_Time_Since_Reset -- returns the elapsed time since last reset         *</a>
+<span class="lineNum">     493 </span>            :  *=============================================================================================*/
+<span class="lineNum">     494 </span><span class="lineNoCov">          0 : float CProfileManager::Get_Time_Since_Reset( void )</span>
+<span class="lineNum">     495 </span>            : {
+<span class="lineNum">     496 </span>            :         unsigned long int time;
+<span class="lineNum">     497 </span><span class="lineNoCov">          0 :         Profile_Get_Ticks(&amp;time);</span>
+<span class="lineNum">     498 </span><span class="lineNoCov">          0 :         time -= ResetTime;</span>
+<span class="lineNum">     499 </span><span class="lineNoCov">          0 :         return (float)time / Profile_Get_Tick_Rate();</span>
+<span class="lineNum">     500 </span>            : }
+<span class="lineNum">     501 </span>            : 
+<a name="502"><span class="lineNum">     502 </span>            : #include &lt;stdio.h&gt;</a>
+<span class="lineNum">     503 </span>            : 
+<span class="lineNum">     504 </span><span class="lineNoCov">          0 : void    CProfileManager::dumpRecursive(CProfileIterator* profileIterator, int spacing)</span>
+<span class="lineNum">     505 </span>            : {
+<span class="lineNum">     506 </span><span class="lineNoCov">          0 :         profileIterator-&gt;First();</span>
+<span class="lineNum">     507 </span><span class="lineNoCov">          0 :         if (profileIterator-&gt;Is_Done())</span>
+<span class="lineNum">     508 </span>            :                 return;
+<span class="lineNum">     509 </span>            : 
+<span class="lineNum">     510 </span><span class="lineNoCov">          0 :         float accumulated_time=0,parent_time = profileIterator-&gt;Is_Root() ? CProfileManager::Get_Time_Since_Reset() : profileIterator-&gt;Get_Current_Parent_Total_Time();</span>
+<span class="lineNum">     511 </span>            :         int i;
+<span class="lineNum">     512 </span><span class="lineNoCov">          0 :         int frames_since_reset = CProfileManager::Get_Frame_Count_Since_Reset();</span>
+<span class="lineNum">     513 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;spacing;i++)      printf(&quot;.&quot;);</span>
+<span class="lineNum">     514 </span><span class="lineNoCov">          0 :         printf(&quot;----------------------------------\n&quot;);</span>
+<span class="lineNum">     515 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;spacing;i++)      printf(&quot;.&quot;);</span>
+<span class="lineNum">     516 </span><span class="lineNoCov">          0 :         printf(&quot;Profiling: %s (total running time: %.3f ms) ---\n&quot;,   profileIterator-&gt;Get_Current_Parent_Name(), parent_time );</span>
+<span class="lineNum">     517 </span><span class="lineNoCov">          0 :         float totalTime = 0.f;</span>
+<span class="lineNum">     518 </span>            : 
+<span class="lineNum">     519 </span>            :         
+<span class="lineNum">     520 </span><span class="lineNoCov">          0 :         int numChildren = 0;</span>
+<span class="lineNum">     521 </span>            :         
+<span class="lineNum">     522 </span><span class="lineNoCov">          0 :         for (i = 0; !profileIterator-&gt;Is_Done(); i++,profileIterator-&gt;Next())</span>
+<span class="lineNum">     523 </span>            :         {
+<span class="lineNum">     524 </span><span class="lineNoCov">          0 :                 numChildren++;</span>
+<span class="lineNum">     525 </span><span class="lineNoCov">          0 :                 float current_total_time = profileIterator-&gt;Get_Current_Total_Time();</span>
+<span class="lineNum">     526 </span><span class="lineNoCov">          0 :                 accumulated_time += current_total_time;</span>
+<span class="lineNum">     527 </span><span class="lineNoCov">          0 :                 float fraction = parent_time &gt; SIMD_EPSILON ? (current_total_time / parent_time) * 100 : 0.f;</span>
+<span class="lineNum">     528 </span>            :                 {
+<span class="lineNum">     529 </span><span class="lineNoCov">          0 :                         int i;  for (i=0;i&lt;spacing;i++)      printf(&quot;.&quot;);</span>
+<span class="lineNum">     530 </span>            :                 }
+<span class="lineNum">     531 </span><span class="lineNoCov">          0 :                 printf(&quot;%d -- %s (%.2f %%) :: %.3f ms / frame (%d calls)\n&quot;,i, profileIterator-&gt;Get_Current_Name(), fraction,(current_total_time / (double)frames_since_reset),profileIterator-&gt;Get_Current_Total_Calls());</span>
+<span class="lineNum">     532 </span><span class="lineNoCov">          0 :                 totalTime += current_total_time;</span>
+<span class="lineNum">     533 </span>            :                 //recurse into children
+<span class="lineNum">     534 </span>            :         }
+<span class="lineNum">     535 </span>            : 
+<span class="lineNum">     536 </span><span class="lineNoCov">          0 :         if (parent_time &lt; accumulated_time)</span>
+<span class="lineNum">     537 </span>            :         {
+<span class="lineNum">     538 </span>            :                 printf(&quot;what's wrong\n&quot;);
+<span class="lineNum">     539 </span>            :         }
+<span class="lineNum">     540 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;spacing;i++)      printf(&quot;.&quot;);</span>
+<span class="lineNum">     541 </span><span class="lineNoCov">          0 :         printf(&quot;%s (%.3f %%) :: %.3f ms\n&quot;, &quot;Unaccounted:&quot;,parent_time &gt; SIMD_EPSILON ? ((parent_time - accumulated_time) / parent_time) * 100 : 0.f, parent_time - accumulated_time);</span>
+<span class="lineNum">     542 </span>            :         
+<span class="lineNum">     543 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;numChildren;i++)</span>
+<span class="lineNum">     544 </span>            :         {
+<span class="lineNum">     545 </span><span class="lineNoCov">          0 :                 profileIterator-&gt;Enter_Child(i);</span>
+<span class="lineNum">     546 </span><span class="lineNoCov">          0 :                 dumpRecursive(profileIterator,spacing+3);</span>
+<span class="lineNum">     547 </span><span class="lineNoCov">          0 :                 profileIterator-&gt;Enter_Parent();</span>
+<span class="lineNum">     548 </span>            :         }
+<span class="lineNum">     549 </span>            : }
+<span class="lineNum">     550 </span>            : 
+<a name="551"><span class="lineNum">     551 </span>            : </a>
+<span class="lineNum">     552 </span>            : 
+<span class="lineNum">     553 </span><span class="lineNoCov">          0 : void    CProfileManager::dumpAll()</span>
+<span class="lineNum">     554 </span>            : {
+<span class="lineNum">     555 </span><span class="lineNoCov">          0 :         CProfileIterator* profileIterator = 0;</span>
+<span class="lineNum">     556 </span><span class="lineNoCov">          0 :         profileIterator = CProfileManager::Get_Iterator();</span>
+<span class="lineNum">     557 </span>            : 
+<span class="lineNum">     558 </span><span class="lineNoCov">          0 :         dumpRecursive(profileIterator,0);</span>
+<a name="559"><span class="lineNum">     559 </span>            : </a>
+<span class="lineNum">     560 </span><span class="lineNoCov">          0 :         CProfileManager::Release_Iterator(profileIterator);</span>
+<span class="lineNum">     561 </span><span class="lineCov">          3 : }</span>
+<span class="lineNum">     562 </span>            : 
+<span class="lineNum">     563 </span>            : 
+<span class="lineNum">     564 </span>            : 
+<span class="lineNum">     565 </span>            : 
+<span class="lineNum">     566 </span>            : #endif //BT_NO_PROFILE
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

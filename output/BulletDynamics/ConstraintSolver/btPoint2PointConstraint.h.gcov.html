@@ -1,0 +1,247 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletDynamics/ConstraintSolver</a> - btPoint2PointConstraint.h<span style="font-size: 80%;"> (source / <a href="btPoint2PointConstraint.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : #ifndef BT_POINT2POINTCONSTRAINT_H
+<span class="lineNum">      17 </span>            : #define BT_POINT2POINTCONSTRAINT_H
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : #include &quot;LinearMath/btVector3.h&quot;
+<span class="lineNum">      20 </span>            : #include &quot;btJacobianEntry.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;btTypedConstraint.h&quot;
+<span class="lineNum">      22 </span>            : 
+<span class="lineNum">      23 </span>            : class btRigidBody;
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span>            : #ifdef BT_USE_DOUBLE_PRECISION
+<span class="lineNum">      27 </span>            : #define btPoint2PointConstraintData     btPoint2PointConstraintDoubleData
+<span class="lineNum">      28 </span>            : #define btPoint2PointConstraintDataName &quot;btPoint2PointConstraintDoubleData&quot;
+<span class="lineNum">      29 </span>            : #else
+<span class="lineNum">      30 </span>            : #define btPoint2PointConstraintData     btPoint2PointConstraintFloatData
+<span class="lineNum">      31 </span>            : #define btPoint2PointConstraintDataName &quot;btPoint2PointConstraintFloatData&quot;
+<span class="lineNum">      32 </span>            : #endif //BT_USE_DOUBLE_PRECISION
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            : struct  btConstraintSetting
+<span class="lineNum">      35 </span>            : {
+<span class="lineNum">      36 </span>            :         btConstraintSetting()   :
+<span class="lineNum">      37 </span>            :                 m_tau(btScalar(0.3)),
+<span class="lineNum">      38 </span>            :                 m_damping(btScalar(1.)),
+<span class="lineNum">      39 </span>            :                 m_impulseClamp(btScalar(0.))
+<span class="lineNum">      40 </span>            :         {
+<span class="lineNum">      41 </span>            :         }
+<span class="lineNum">      42 </span>            :         btScalar                m_tau;
+<span class="lineNum">      43 </span>            :         btScalar                m_damping;
+<span class="lineNum">      44 </span>            :         btScalar                m_impulseClamp;
+<span class="lineNum">      45 </span>            : };
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span>            : enum btPoint2PointFlags
+<span class="lineNum">      48 </span>            : {
+<span class="lineNum">      49 </span>            :         BT_P2P_FLAGS_ERP = 1,
+<span class="lineNum">      50 </span>            :         BT_P2P_FLAGS_CFM = 2
+<span class="lineNum">      51 </span>            : };
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span>            : /// point to point constraint between two rigidbodies each with a pivotpoint that descibes the 'ballsocket' location in local space
+<span class="lineNum">      54 </span>            : ATTRIBUTE_ALIGNED16(class) btPoint2PointConstraint : public btTypedConstraint
+<span class="lineNum">      55 </span>            : {
+<span class="lineNum">      56 </span>            : #ifdef IN_PARALLELL_SOLVER
+<span class="lineNum">      57 </span>            : public:
+<span class="lineNum">      58 </span>            : #endif
+<span class="lineNum">      59 </span>            :         btJacobianEntry m_jac[3]; //3 orthogonal linear constraints
+<span class="lineNum">      60 </span>            :         
+<span class="lineNum">      61 </span>            :         btVector3       m_pivotInA;
+<span class="lineNum">      62 </span>            :         btVector3       m_pivotInB;
+<span class="lineNum">      63 </span>            :         
+<span class="lineNum">      64 </span>            :         int                     m_flags;
+<span class="lineNum">      65 </span>            :         btScalar        m_erp;
+<span class="lineNum">      66 </span>            :         btScalar        m_cfm;
+<span class="lineNum">      67 </span>            :         
+<span class="lineNum">      68 </span>            : public:
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span>            :         BT_DECLARE_ALIGNED_ALLOCATOR();
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            :         ///for backwards compatibility during the transition to 'getInfo/getInfo2'
+<span class="lineNum">      73 </span>            :         bool            m_useSolveConstraintObsolete;
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span>            :         btConstraintSetting     m_setting;
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            :         btPoint2PointConstraint(btRigidBody&amp; rbA,btRigidBody&amp; rbB, const btVector3&amp; pivotInA,const btVector3&amp; pivotInB);
+<span class="lineNum">      78 </span>            : 
+<span class="lineNum">      79 </span>            :         btPoint2PointConstraint(btRigidBody&amp; rbA,const btVector3&amp; pivotInA);
+<span class="lineNum">      80 </span>            : 
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span>            :         virtual void    buildJacobian();
+<span class="lineNum">      83 </span>            : 
+<span class="lineNum">      84 </span>            :         virtual void getInfo1 (btConstraintInfo1* info);
+<span class="lineNum">      85 </span>            : 
+<span class="lineNum">      86 </span>            :         void getInfo1NonVirtual (btConstraintInfo1* info);
+<span class="lineNum">      87 </span>            : 
+<span class="lineNum">      88 </span>            :         virtual void getInfo2 (btConstraintInfo2* info);
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span>            :         void getInfo2NonVirtual (btConstraintInfo2* info, const btTransform&amp; body0_trans, const btTransform&amp; body1_trans);
+<span class="lineNum">      91 </span>            : 
+<span class="lineNum">      92 </span>            :         void    updateRHS(btScalar      timeStep);
+<span class="lineNum">      93 </span>            : 
+<span class="lineNum">      94 </span>            :         void    setPivotA(const btVector3&amp; pivotA)
+<span class="lineNum">      95 </span>            :         {
+<span class="lineNum">      96 </span>            :                 m_pivotInA = pivotA;
+<span class="lineNum">      97 </span>            :         }
+<span class="lineNum">      98 </span>            : 
+<span class="lineNum">      99 </span>            :         void    setPivotB(const btVector3&amp; pivotB)
+<span class="lineNum">     100 </span>            :         {
+<span class="lineNum">     101 </span>            :                 m_pivotInB = pivotB;
+<span class="lineNum">     102 </span>            :         }
+<span class="lineNum">     103 </span>            : 
+<span class="lineNum">     104 </span>            :         const btVector3&amp; getPivotInA() const
+<span class="lineNum">     105 </span>            :         {
+<span class="lineNum">     106 </span>            :                 return m_pivotInA;
+<span class="lineNum">     107 </span>            :         }
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            :         const btVector3&amp; getPivotInB() const
+<span class="lineNum">     110 </span>            :         {
+<span class="lineNum">     111 </span>            :                 return m_pivotInB;
+<span class="lineNum">     112 </span>            :         }
+<span class="lineNum">     113 </span>            : 
+<span class="lineNum">     114 </span>            :         ///override the default global value of a parameter (such as ERP or CFM), optionally provide the axis (0..5). 
+<span class="lineNum">     115 </span>            :         ///If no axis is provided, it uses the default axis for this constraint.
+<span class="lineNum">     116 </span>            :         virtual void    setParam(int num, btScalar value, int axis = -1);
+<span class="lineNum">     117 </span>            :         ///return the local value of parameter
+<span class="lineNum">     118 </span>            :         virtual btScalar getParam(int num, int axis = -1) const;
+<span class="lineNum">     119 </span>            : 
+<span class="lineNum">     120 </span>            :         virtual int     calculateSerializeBufferSize() const;
+<span class="lineNum">     121 </span>            : 
+<span class="lineNum">     122 </span>            :         ///fills the dataBuffer and returns the struct name (and 0 on failure)
+<span class="lineNum">     123 </span>            :         virtual const char*     serialize(void* dataBuffer, btSerializer* serializer) const;
+<span class="lineNum">     124 </span>            : 
+<span class="lineNum">     125 </span>            : 
+<span class="lineNum">     126 </span>            : };
+<span class="lineNum">     127 </span>            : 
+<span class="lineNum">     128 </span>            : ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
+<span class="lineNum">     129 </span>            : struct  btPoint2PointConstraintFloatData
+<span class="lineNum">     130 </span>            : {
+<span class="lineNum">     131 </span>            :         btTypedConstraintData   m_typeConstraintData;
+<span class="lineNum">     132 </span>            :         btVector3FloatData      m_pivotInA;
+<span class="lineNum">     133 </span>            :         btVector3FloatData      m_pivotInB;
+<span class="lineNum">     134 </span>            : };
+<span class="lineNum">     135 </span>            : 
+<span class="lineNum">     136 </span>            : ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
+<span class="lineNum">     137 </span>            : struct  btPoint2PointConstraintDoubleData
+<span class="lineNum">     138 </span>            : {
+<span class="lineNum">     139 </span>            :         btTypedConstraintData   m_typeConstraintData;
+<span class="lineNum">     140 </span>            :         btVector3DoubleData     m_pivotInA;
+<span class="lineNum">     141 </span>            :         btVector3DoubleData     m_pivotInB;
+<span class="lineNum">     142 </span>            : };
+<a name="143"><span class="lineNum">     143 </span>            : </a>
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE       int     btPoint2PointConstraint::calculateSerializeBufferSize() const</span>
+<span class="lineNum">     146 </span>            : {
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :         return sizeof(btPoint2PointConstraintData);</span>
+<span class="lineNum">     148 </span>            : 
+<span class="lineNum">     149 </span>            : }
+<a name="150"><span class="lineNum">     150 </span>            : </a>
+<span class="lineNum">     151 </span>            :         ///fills the dataBuffer and returns the struct name (and 0 on failure)
+<span class="lineNum">     152 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE       const char*     btPoint2PointConstraint::serialize(void* dataBuffer, btSerializer* serializer) const</span>
+<span class="lineNum">     153 </span>            : {
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :         btPoint2PointConstraintData* p2pData = (btPoint2PointConstraintData*)dataBuffer;</span>
+<span class="lineNum">     155 </span>            : 
+<span class="lineNum">     156 </span><span class="lineNoCov">          0 :         btTypedConstraint::serialize(&amp;p2pData-&gt;m_typeConstraintData,serializer);</span>
+<span class="lineNum">     157 </span><span class="lineNoCov">          0 :         m_pivotInA.serialize(p2pData-&gt;m_pivotInA);</span>
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 :         m_pivotInB.serialize(p2pData-&gt;m_pivotInB);</span>
+<span class="lineNum">     159 </span>            : 
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :         return btPoint2PointConstraintDataName;</span>
+<span class="lineNum">     161 </span>            : }
+<span class="lineNum">     162 </span>            : 
+<span class="lineNum">     163 </span>            : #endif //BT_POINT2POINTCONSTRAINT_H
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,450 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/CollisionDispatch/btCompoundCollisionAlgorithm.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/CollisionDispatch</a> - btCompoundCollisionAlgorithm.cpp<span style="font-size: 80%;"> (source / <a href="btCompoundCollisionAlgorithm.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">132</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : #include &quot;BulletCollision/CollisionDispatch/btCompoundCollisionAlgorithm.h&quot;
+<span class="lineNum">      17 </span>            : #include &quot;BulletCollision/CollisionDispatch/btCollisionObject.h&quot;
+<span class="lineNum">      18 </span>            : #include &quot;BulletCollision/CollisionShapes/btCompoundShape.h&quot;
+<span class="lineNum">      19 </span>            : #include &quot;BulletCollision/BroadphaseCollision/btDbvt.h&quot;
+<span class="lineNum">      20 </span>            : #include &quot;LinearMath/btIDebugDraw.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;LinearMath/btAabbUtil2.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;btManifoldResult.h&quot;
+<span class="lineNum">      23 </span>            : #include &quot;BulletCollision/CollisionDispatch/btCollisionObjectWrapper.h&quot;
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span><span class="lineNoCov">          0 : btCompoundCollisionAlgorithm::btCompoundCollisionAlgorithm( const btCollisionAlgorithmConstructionInfo&amp; ci,const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap,bool isSwapped)</span>
+<span class="lineNum">      26 </span>            : :btActivatingCollisionAlgorithm(ci,body0Wrap,body1Wrap),
+<span class="lineNum">      27 </span>            : m_isSwapped(isSwapped),
+<span class="lineNum">      28 </span><span class="lineNoCov">          0 : m_sharedManifold(ci.m_manifold)</span>
+<span class="lineNum">      29 </span>            : {
+<span class="lineNum">      30 </span><span class="lineNoCov">          0 :         m_ownsManifold = false;</span>
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span><span class="lineNoCov">          0 :         const btCollisionObjectWrapper* colObjWrap = m_isSwapped? body1Wrap : body0Wrap;</span>
+<span class="lineNum">      33 </span>            :         btAssert (colObjWrap-&gt;getCollisionShape()-&gt;isCompound());
+<span class="lineNum">      34 </span>            :         
+<span class="lineNum">      35 </span><span class="lineNoCov">          0 :         const btCompoundShape* compoundShape = static_cast&lt;const btCompoundShape*&gt;(colObjWrap-&gt;getCollisionShape());</span>
+<span class="lineNum">      36 </span><span class="lineNoCov">          0 :         m_compoundShapeRevision = compoundShape-&gt;getUpdateRevision();</span>
+<span class="lineNum">      37 </span>            :         
+<span class="lineNum">      38 </span>            :         
+<span class="lineNum">      39 </span><span class="lineNoCov">          0 :         preallocateChildAlgorithms(body0Wrap,body1Wrap);</span>
+<span class="lineNum">      40 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      41 </span>            : 
+<span class="lineNum">      42 </span><span class="lineNoCov">          0 : void    btCompoundCollisionAlgorithm::preallocateChildAlgorithms(const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap)</span>
+<span class="lineNum">      43 </span>            : {
+<span class="lineNum">      44 </span><span class="lineNoCov">          0 :         const btCollisionObjectWrapper* colObjWrap = m_isSwapped? body1Wrap : body0Wrap;</span>
+<span class="lineNum">      45 </span><span class="lineNoCov">          0 :         const btCollisionObjectWrapper* otherObjWrap = m_isSwapped? body0Wrap : body1Wrap;</span>
+<span class="lineNum">      46 </span>            :         btAssert (colObjWrap-&gt;getCollisionShape()-&gt;isCompound());
+<span class="lineNum">      47 </span>            :         
+<span class="lineNum">      48 </span><span class="lineNoCov">          0 :         const btCompoundShape* compoundShape = static_cast&lt;const btCompoundShape*&gt;(colObjWrap-&gt;getCollisionShape());</span>
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span><span class="lineNoCov">          0 :         int numChildren = compoundShape-&gt;getNumChildShapes();</span>
+<span class="lineNum">      51 </span>            :         int i;
+<span class="lineNum">      52 </span>            :         
+<span class="lineNum">      53 </span><span class="lineNoCov">          0 :         m_childCollisionAlgorithms.resize(numChildren);</span>
+<span class="lineNum">      54 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;numChildren;i++)</span>
+<span class="lineNum">      55 </span>            :         {
+<span class="lineNum">      56 </span><span class="lineNoCov">          0 :                 if (compoundShape-&gt;getDynamicAabbTree())</span>
+<span class="lineNum">      57 </span>            :                 {
+<span class="lineNum">      58 </span><span class="lineNoCov">          0 :                         m_childCollisionAlgorithms[i] = 0;</span>
+<span class="lineNum">      59 </span>            :                 } else
+<span class="lineNum">      60 </span>            :                 {
+<span class="lineNum">      61 </span>            :                         
+<span class="lineNum">      62 </span><span class="lineNoCov">          0 :                         const btCollisionShape* childShape = compoundShape-&gt;getChildShape(i);</span>
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span><span class="lineNoCov">          0 :                         btCollisionObjectWrapper childWrap(colObjWrap,childShape,colObjWrap-&gt;getCollisionObject(),colObjWrap-&gt;getWorldTransform());//wrong child trans, but unused (hopefully)</span>
+<span class="lineNum">      65 </span><span class="lineNoCov">          0 :                         m_childCollisionAlgorithms[i] = m_dispatcher-&gt;findAlgorithm(&amp;childWrap,otherObjWrap,m_sharedManifold);</span>
+<span class="lineNum">      66 </span>            :                 }
+<span class="lineNum">      67 </span>            :         }
+<span class="lineNum">      68 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span><span class="lineNoCov">          0 : void    btCompoundCollisionAlgorithm::removeChildAlgorithms()</span>
+<span class="lineNum">      71 </span>            : {
+<span class="lineNum">      72 </span><span class="lineNoCov">          0 :         int numChildren = m_childCollisionAlgorithms.size();</span>
+<span class="lineNum">      73 </span>            :         int i;
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;numChildren;i++)</span>
+<span class="lineNum">      75 </span>            :         {
+<span class="lineNum">      76 </span><span class="lineNoCov">          0 :                 if (m_childCollisionAlgorithms[i])</span>
+<span class="lineNum">      77 </span>            :                 {
+<span class="lineNum">      78 </span><span class="lineNoCov">          0 :                         m_childCollisionAlgorithms[i]-&gt;~btCollisionAlgorithm();</span>
+<span class="lineNum">      79 </span><span class="lineNoCov">          0 :                         m_dispatcher-&gt;freeCollisionAlgorithm(m_childCollisionAlgorithms[i]);</span>
+<span class="lineNum">      80 </span>            :                 }
+<span class="lineNum">      81 </span>            :         }
+<a name="82"><span class="lineNum">      82 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      83 </span>            : 
+<span class="lineNum">      84 </span><span class="lineNoCov">          0 : btCompoundCollisionAlgorithm::~btCompoundCollisionAlgorithm()</span>
+<span class="lineNum">      85 </span>            : {
+<span class="lineNum">      86 </span><span class="lineNoCov">          0 :         removeChildAlgorithms();</span>
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span>            : 
+<a name="90"><span class="lineNum">      90 </span>            : </a>
+<span class="lineNum">      91 </span>            : 
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 : struct  btCompoundLeafCallback : btDbvt::ICollide</span>
+<span class="lineNum">      93 </span>            : {
+<span class="lineNum">      94 </span>            : 
+<span class="lineNum">      95 </span>            : public:
+<span class="lineNum">      96 </span>            : 
+<span class="lineNum">      97 </span>            :         const btCollisionObjectWrapper* m_compoundColObjWrap;
+<span class="lineNum">      98 </span>            :         const btCollisionObjectWrapper* m_otherObjWrap;
+<span class="lineNum">      99 </span>            :         btDispatcher* m_dispatcher;
+<span class="lineNum">     100 </span>            :         const btDispatcherInfo&amp; m_dispatchInfo;
+<span class="lineNum">     101 </span>            :         btManifoldResult*       m_resultOut;
+<span class="lineNum">     102 </span>            :         btCollisionAlgorithm**  m_childCollisionAlgorithms;
+<span class="lineNum">     103 </span>            :         btPersistentManifold*   m_sharedManifold;
+<span class="lineNum">     104 </span>            :         
+<span class="lineNum">     105 </span>            :         btCompoundLeafCallback (const btCollisionObjectWrapper* compoundObjWrap,const btCollisionObjectWrapper* otherObjWrap,btDispatcher* dispatcher,const btDispatcherInfo&amp; dispatchInfo,btManifoldResult*        resultOut,btCollisionAlgorithm**        childCollisionAlgorithms,btPersistentManifold*  sharedManifold)
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 :                 :m_compoundColObjWrap(compoundObjWrap),m_otherObjWrap(otherObjWrap),m_dispatcher(dispatcher),m_dispatchInfo(dispatchInfo),m_resultOut(resultOut),</span>
+<span class="lineNum">     107 </span>            :                 m_childCollisionAlgorithms(childCollisionAlgorithms),
+<span class="lineNum">     108 </span><span class="lineNoCov">          0 :                 m_sharedManifold(sharedManifold)</span>
+<span class="lineNum">     109 </span>            :         {
+<span class="lineNum">     110 </span>            : 
+<span class="lineNum">     111 </span>            :         }
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span>            : 
+<span class="lineNum">     114 </span><span class="lineNoCov">          0 :         void    ProcessChildShape(const btCollisionShape* childShape,int index)</span>
+<span class="lineNum">     115 </span>            :         {
+<span class="lineNum">     116 </span>            :                 btAssert(index&gt;=0);
+<span class="lineNum">     117 </span><span class="lineNoCov">          0 :                 const btCompoundShape* compoundShape = static_cast&lt;const btCompoundShape*&gt;(m_compoundColObjWrap-&gt;getCollisionShape());</span>
+<span class="lineNum">     118 </span>            :                 btAssert(index&lt;compoundShape-&gt;getNumChildShapes());
+<span class="lineNum">     119 </span>            : 
+<span class="lineNum">     120 </span>            : 
+<span class="lineNum">     121 </span>            :                 //backup
+<span class="lineNum">     122 </span><span class="lineNoCov">          0 :                 btTransform     orgTrans = m_compoundColObjWrap-&gt;getWorldTransform();</span>
+<span class="lineNum">     123 </span><span class="lineNoCov">          0 :                 btTransform     orgInterpolationTrans = m_compoundColObjWrap-&gt;getWorldTransform();</span>
+<span class="lineNum">     124 </span><span class="lineNoCov">          0 :                 const btTransform&amp; childTrans = compoundShape-&gt;getChildTransform(index);</span>
+<span class="lineNum">     125 </span><span class="lineNoCov">          0 :                 btTransform     newChildWorldTrans = orgTrans*childTrans ;</span>
+<span class="lineNum">     126 </span>            : 
+<span class="lineNum">     127 </span>            :                 //perform an AABB check first
+<span class="lineNum">     128 </span><span class="lineNoCov">          0 :                 btVector3 aabbMin0,aabbMax0,aabbMin1,aabbMax1;</span>
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :                 childShape-&gt;getAabb(newChildWorldTrans,aabbMin0,aabbMax0);</span>
+<span class="lineNum">     130 </span><span class="lineNoCov">          0 :                 m_otherObjWrap-&gt;getCollisionShape()-&gt;getAabb(m_otherObjWrap-&gt;getWorldTransform(),aabbMin1,aabbMax1);</span>
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span><span class="lineNoCov">          0 :                 if (TestAabbAgainstAabb2(aabbMin0,aabbMax0,aabbMin1,aabbMax1))</span>
+<span class="lineNum">     133 </span>            :                 {
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span><span class="lineNoCov">          0 :                         btCollisionObjectWrapper compoundWrap(this-&gt;m_compoundColObjWrap,childShape,m_compoundColObjWrap-&gt;getCollisionObject(),newChildWorldTrans);</span>
+<span class="lineNum">     136 </span>            : 
+<span class="lineNum">     137 </span>            : 
+<span class="lineNum">     138 </span>            :                         //the contactpoint is still projected back using the original inverted worldtrans
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :                         if (!m_childCollisionAlgorithms[index])</span>
+<span class="lineNum">     140 </span><span class="lineNoCov">          0 :                                 m_childCollisionAlgorithms[index] = m_dispatcher-&gt;findAlgorithm(&amp;compoundWrap,m_otherObjWrap,m_sharedManifold);</span>
+<span class="lineNum">     141 </span>            : 
+<span class="lineNum">     142 </span>            :                         
+<span class="lineNum">     143 </span><span class="lineNoCov">          0 :                         const btCollisionObjectWrapper* tmpWrap = 0;</span>
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span>            :                         ///detect swapping case
+<span class="lineNum">     146 </span><span class="lineNoCov">          0 :                         if (m_resultOut-&gt;getBody0Internal() == m_compoundColObjWrap-&gt;getCollisionObject())</span>
+<span class="lineNum">     147 </span>            :                         {
+<span class="lineNum">     148 </span><span class="lineNoCov">          0 :                                 tmpWrap = m_resultOut-&gt;getBody0Wrap();</span>
+<span class="lineNum">     149 </span><span class="lineNoCov">          0 :                                 m_resultOut-&gt;setBody0Wrap(&amp;compoundWrap);</span>
+<span class="lineNum">     150 </span><span class="lineNoCov">          0 :                                 m_resultOut-&gt;setShapeIdentifiersA(-1,index);</span>
+<span class="lineNum">     151 </span>            :                         } else
+<span class="lineNum">     152 </span>            :                         {
+<span class="lineNum">     153 </span><span class="lineNoCov">          0 :                                 tmpWrap = m_resultOut-&gt;getBody1Wrap();</span>
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :                                 m_resultOut-&gt;setBody1Wrap(&amp;compoundWrap);</span>
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :                                 m_resultOut-&gt;setShapeIdentifiersB(-1,index);</span>
+<span class="lineNum">     156 </span>            :                         }
+<span class="lineNum">     157 </span>            : 
+<span class="lineNum">     158 </span>            : 
+<span class="lineNum">     159 </span><span class="lineNoCov">          0 :                         m_childCollisionAlgorithms[index]-&gt;processCollision(&amp;compoundWrap,m_otherObjWrap,m_dispatchInfo,m_resultOut);</span>
+<span class="lineNum">     160 </span>            : 
+<span class="lineNum">     161 </span>            : #if 0
+<span class="lineNum">     162 </span>            :                         if (m_dispatchInfo.m_debugDraw &amp;&amp; (m_dispatchInfo.m_debugDraw-&gt;getDebugMode() &amp; btIDebugDraw::DBG_DrawAabb))
+<span class="lineNum">     163 </span>            :                         {
+<span class="lineNum">     164 </span>            :                                 btVector3 worldAabbMin,worldAabbMax;
+<span class="lineNum">     165 </span>            :                                 m_dispatchInfo.m_debugDraw-&gt;drawAabb(aabbMin0,aabbMax0,btVector3(1,1,1));
+<span class="lineNum">     166 </span>            :                                 m_dispatchInfo.m_debugDraw-&gt;drawAabb(aabbMin1,aabbMax1,btVector3(1,1,1));
+<span class="lineNum">     167 </span>            :                         }
+<span class="lineNum">     168 </span>            : #endif
+<span class="lineNum">     169 </span>            : 
+<span class="lineNum">     170 </span><span class="lineNoCov">          0 :                         if (m_resultOut-&gt;getBody0Internal() == m_compoundColObjWrap-&gt;getCollisionObject())</span>
+<span class="lineNum">     171 </span>            :                         {
+<span class="lineNum">     172 </span><span class="lineNoCov">          0 :                                 m_resultOut-&gt;setBody0Wrap(tmpWrap);</span>
+<span class="lineNum">     173 </span>            :                         } else
+<span class="lineNum">     174 </span>            :                         {
+<span class="lineNum">     175 </span><span class="lineNoCov">          0 :                                 m_resultOut-&gt;setBody1Wrap(tmpWrap);</span>
+<span class="lineNum">     176 </span>            :                         }
+<span class="lineNum">     177 </span>            :                         
+<span class="lineNum">     178 </span>            :                 }
+<span class="lineNum">     179 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     180 </span><span class="lineNoCov">          0 :         void            Process(const btDbvtNode* leaf)</span>
+<span class="lineNum">     181 </span>            :         {
+<span class="lineNum">     182 </span><span class="lineNoCov">          0 :                 int index = leaf-&gt;dataAsInt;</span>
+<span class="lineNum">     183 </span>            : 
+<span class="lineNum">     184 </span><span class="lineNoCov">          0 :                 const btCompoundShape* compoundShape = static_cast&lt;const btCompoundShape*&gt;(m_compoundColObjWrap-&gt;getCollisionShape());</span>
+<span class="lineNum">     185 </span><span class="lineNoCov">          0 :                 const btCollisionShape* childShape = compoundShape-&gt;getChildShape(index);</span>
+<span class="lineNum">     186 </span>            : 
+<span class="lineNum">     187 </span>            : #if 0
+<span class="lineNum">     188 </span>            :                 if (m_dispatchInfo.m_debugDraw &amp;&amp; (m_dispatchInfo.m_debugDraw-&gt;getDebugMode() &amp; btIDebugDraw::DBG_DrawAabb))
+<span class="lineNum">     189 </span>            :                 {
+<span class="lineNum">     190 </span>            :                         btVector3 worldAabbMin,worldAabbMax;
+<span class="lineNum">     191 </span>            :                         btTransform     orgTrans = m_compoundColObjWrap-&gt;getWorldTransform();
+<span class="lineNum">     192 </span>            :                         btTransformAabb(leaf-&gt;volume.Mins(),leaf-&gt;volume.Maxs(),0.,orgTrans,worldAabbMin,worldAabbMax);
+<span class="lineNum">     193 </span>            :                         m_dispatchInfo.m_debugDraw-&gt;drawAabb(worldAabbMin,worldAabbMax,btVector3(1,0,0));
+<span class="lineNum">     194 </span>            :                 }
+<span class="lineNum">     195 </span>            : #endif
+<span class="lineNum">     196 </span>            : 
+<span class="lineNum">     197 </span><span class="lineNoCov">          0 :                 ProcessChildShape(childShape,index);</span>
+<span class="lineNum">     198 </span>            : 
+<span class="lineNum">     199 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     200 </span>            : };
+<span class="lineNum">     201 </span>            : 
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span>            : 
+<span class="lineNum">     204 </span>            : 
+<span class="lineNum">     205 </span>            : 
+<span class="lineNum">     206 </span>            : 
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 : void btCompoundCollisionAlgorithm::processCollision (const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap,const btDispatcherInfo&amp; dispatchInfo,btManifoldResult* resultOut)</span>
+<span class="lineNum">     208 </span>            : {
+<span class="lineNum">     209 </span><span class="lineNoCov">          0 :         const btCollisionObjectWrapper* colObjWrap = m_isSwapped? body1Wrap : body0Wrap;</span>
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 :         const btCollisionObjectWrapper* otherObjWrap = m_isSwapped? body0Wrap : body1Wrap;</span>
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span>            :         btAssert (colObjWrap-&gt;getCollisionShape()-&gt;isCompound());
+<span class="lineNum">     213 </span><span class="lineNoCov">          0 :         const btCompoundShape* compoundShape = static_cast&lt;const btCompoundShape*&gt;(colObjWrap-&gt;getCollisionShape());</span>
+<span class="lineNum">     214 </span>            : 
+<span class="lineNum">     215 </span>            :         ///btCompoundShape might have changed:
+<span class="lineNum">     216 </span>            :         ////make sure the internal child collision algorithm caches are still valid
+<span class="lineNum">     217 </span><span class="lineNoCov">          0 :         if (compoundShape-&gt;getUpdateRevision() != m_compoundShapeRevision)</span>
+<span class="lineNum">     218 </span>            :         {
+<span class="lineNum">     219 </span>            :                 ///clear and update all
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :                 removeChildAlgorithms();</span>
+<span class="lineNum">     221 </span>            :                 
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :                 preallocateChildAlgorithms(body0Wrap,body1Wrap);</span>
+<span class="lineNum">     223 </span>            :         }
+<span class="lineNum">     224 </span>            : 
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span><span class="lineNoCov">          0 :         const btDbvt* tree = compoundShape-&gt;getDynamicAabbTree();</span>
+<span class="lineNum">     227 </span>            :         //use a dynamic aabb tree to cull potential child-overlaps
+<span class="lineNum">     228 </span><span class="lineNoCov">          0 :         btCompoundLeafCallback  callback(colObjWrap,otherObjWrap,m_dispatcher,dispatchInfo,resultOut,&amp;m_childCollisionAlgorithms[0],m_sharedManifold);</span>
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span>            :         ///we need to refresh all contact manifolds
+<span class="lineNum">     231 </span>            :         ///note that we should actually recursively traverse all children, btCompoundShape can nested more then 1 level deep
+<span class="lineNum">     232 </span>            :         ///so we should add a 'refreshManifolds' in the btCollisionAlgorithm
+<span class="lineNum">     233 </span>            :         {
+<span class="lineNum">     234 </span>            :                 int i;
+<span class="lineNum">     235 </span><span class="lineNoCov">          0 :                 btManifoldArray manifoldArray;</span>
+<span class="lineNum">     236 </span><span class="lineNoCov">          0 :                 for (i=0;i&lt;m_childCollisionAlgorithms.size();i++)</span>
+<span class="lineNum">     237 </span>            :                 {
+<span class="lineNum">     238 </span><span class="lineNoCov">          0 :                         if (m_childCollisionAlgorithms[i])</span>
+<span class="lineNum">     239 </span>            :                         {
+<span class="lineNum">     240 </span><span class="lineNoCov">          0 :                                 m_childCollisionAlgorithms[i]-&gt;getAllContactManifolds(manifoldArray);</span>
+<span class="lineNum">     241 </span><span class="lineNoCov">          0 :                                 for (int m=0;m&lt;manifoldArray.size();m++)</span>
+<span class="lineNum">     242 </span>            :                                 {
+<span class="lineNum">     243 </span><span class="lineNoCov">          0 :                                         if (manifoldArray[m]-&gt;getNumContacts())</span>
+<span class="lineNum">     244 </span>            :                                         {
+<span class="lineNum">     245 </span><span class="lineNoCov">          0 :                                                 resultOut-&gt;setPersistentManifold(manifoldArray[m]);</span>
+<span class="lineNum">     246 </span><span class="lineNoCov">          0 :                                                 resultOut-&gt;refreshContactPoints();</span>
+<span class="lineNum">     247 </span><span class="lineNoCov">          0 :                                                 resultOut-&gt;setPersistentManifold(0);//??necessary?</span>
+<span class="lineNum">     248 </span>            :                                         }
+<span class="lineNum">     249 </span>            :                                 }
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :                                 manifoldArray.resize(0);</span>
+<span class="lineNum">     251 </span>            :                         }
+<span class="lineNum">     252 </span>            :                 }
+<span class="lineNum">     253 </span>            :         }
+<span class="lineNum">     254 </span>            : 
+<span class="lineNum">     255 </span><span class="lineNoCov">          0 :         if (tree)</span>
+<span class="lineNum">     256 </span>            :         {
+<span class="lineNum">     257 </span>            : 
+<span class="lineNum">     258 </span><span class="lineNoCov">          0 :                 btVector3 localAabbMin,localAabbMax;</span>
+<span class="lineNum">     259 </span><span class="lineNoCov">          0 :                 btTransform otherInCompoundSpace;</span>
+<span class="lineNum">     260 </span><span class="lineNoCov">          0 :                 otherInCompoundSpace = colObjWrap-&gt;getWorldTransform().inverse() * otherObjWrap-&gt;getWorldTransform();</span>
+<span class="lineNum">     261 </span><span class="lineNoCov">          0 :                 otherObjWrap-&gt;getCollisionShape()-&gt;getAabb(otherInCompoundSpace,localAabbMin,localAabbMax);</span>
+<span class="lineNum">     262 </span>            : 
+<span class="lineNum">     263 </span><span class="lineNoCov">          0 :                 const ATTRIBUTE_ALIGNED16(btDbvtVolume) bounds=btDbvtVolume::FromMM(localAabbMin,localAabbMax);</span>
+<span class="lineNum">     264 </span>            :                 //process all children, that overlap with  the given AABB bounds
+<span class="lineNum">     265 </span><span class="lineNoCov">          0 :                 tree-&gt;collideTV(tree-&gt;m_root,bounds,callback);</span>
+<span class="lineNum">     266 </span>            : 
+<span class="lineNum">     267 </span>            :         } else
+<span class="lineNum">     268 </span>            :         {
+<span class="lineNum">     269 </span>            :                 //iterate over all children, perform an AABB check inside ProcessChildShape
+<span class="lineNum">     270 </span><span class="lineNoCov">          0 :                 int numChildren = m_childCollisionAlgorithms.size();</span>
+<span class="lineNum">     271 </span>            :                 int i;
+<span class="lineNum">     272 </span><span class="lineNoCov">          0 :                 for (i=0;i&lt;numChildren;i++)</span>
+<span class="lineNum">     273 </span>            :                 {
+<span class="lineNum">     274 </span><span class="lineNoCov">          0 :                         callback.ProcessChildShape(compoundShape-&gt;getChildShape(i),i);</span>
+<span class="lineNum">     275 </span>            :                 }
+<span class="lineNum">     276 </span>            :         }
+<span class="lineNum">     277 </span>            : 
+<span class="lineNum">     278 </span>            :         {
+<span class="lineNum">     279 </span>            :                                 //iterate over all children, perform an AABB check inside ProcessChildShape
+<span class="lineNum">     280 </span><span class="lineNoCov">          0 :                 int numChildren = m_childCollisionAlgorithms.size();</span>
+<span class="lineNum">     281 </span>            :                 int i;
+<span class="lineNum">     282 </span><span class="lineNoCov">          0 :                 btManifoldArray manifoldArray;</span>
+<span class="lineNum">     283 </span><span class="lineNoCov">          0 :         const btCollisionShape* childShape = 0;</span>
+<span class="lineNum">     284 </span><span class="lineNoCov">          0 :         btTransform     orgTrans;</span>
+<span class="lineNum">     285 </span><span class="lineNoCov">          0 :         btTransform     orgInterpolationTrans;</span>
+<span class="lineNum">     286 </span><span class="lineNoCov">          0 :         btTransform     newChildWorldTrans;</span>
+<span class="lineNum">     287 </span><span class="lineNoCov">          0 :         btVector3 aabbMin0,aabbMax0,aabbMin1,aabbMax1;        </span>
+<span class="lineNum">     288 </span>            :         
+<span class="lineNum">     289 </span><span class="lineNoCov">          0 :                 for (i=0;i&lt;numChildren;i++)</span>
+<span class="lineNum">     290 </span>            :                 {
+<span class="lineNum">     291 </span><span class="lineNoCov">          0 :                         if (m_childCollisionAlgorithms[i])</span>
+<span class="lineNum">     292 </span>            :                         {
+<span class="lineNum">     293 </span><span class="lineNoCov">          0 :                                 childShape = compoundShape-&gt;getChildShape(i);</span>
+<span class="lineNum">     294 </span>            :                         //if not longer overlapping, remove the algorithm
+<span class="lineNum">     295 </span><span class="lineNoCov">          0 :                 orgTrans = colObjWrap-&gt;getWorldTransform();</span>
+<span class="lineNum">     296 </span><span class="lineNoCov">          0 :                 orgInterpolationTrans = colObjWrap-&gt;getWorldTransform();</span>
+<span class="lineNum">     297 </span><span class="lineNoCov">          0 :                                 const btTransform&amp; childTrans = compoundShape-&gt;getChildTransform(i);</span>
+<span class="lineNum">     298 </span><span class="lineNoCov">          0 :                 newChildWorldTrans = orgTrans*childTrans ;</span>
+<span class="lineNum">     299 </span>            : 
+<span class="lineNum">     300 </span>            :                                 //perform an AABB check first
+<span class="lineNum">     301 </span><span class="lineNoCov">          0 :                                 childShape-&gt;getAabb(newChildWorldTrans,aabbMin0,aabbMax0);</span>
+<span class="lineNum">     302 </span><span class="lineNoCov">          0 :                                 otherObjWrap-&gt;getCollisionShape()-&gt;getAabb(otherObjWrap-&gt;getWorldTransform(),aabbMin1,aabbMax1);</span>
+<span class="lineNum">     303 </span>            : 
+<span class="lineNum">     304 </span><span class="lineNoCov">          0 :                                 if (!TestAabbAgainstAabb2(aabbMin0,aabbMax0,aabbMin1,aabbMax1))</span>
+<span class="lineNum">     305 </span>            :                                 {
+<span class="lineNum">     306 </span><span class="lineNoCov">          0 :                                         m_childCollisionAlgorithms[i]-&gt;~btCollisionAlgorithm();</span>
+<span class="lineNum">     307 </span><span class="lineNoCov">          0 :                                         m_dispatcher-&gt;freeCollisionAlgorithm(m_childCollisionAlgorithms[i]);</span>
+<span class="lineNum">     308 </span><span class="lineNoCov">          0 :                                         m_childCollisionAlgorithms[i] = 0;</span>
+<span class="lineNum">     309 </span>            :                                 }
+<span class="lineNum">     310 </span>            :                         }
+<span class="lineNum">     311 </span>            :                 }
+<span class="lineNum">     312 </span>            :         }
+<span class="lineNum">     313 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     314 </span>            : 
+<span class="lineNum">     315 </span><span class="lineNoCov">          0 : btScalar        btCompoundCollisionAlgorithm::calculateTimeOfImpact(btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo&amp; dispatchInfo,btManifoldResult* resultOut)</span>
+<span class="lineNum">     316 </span>            : {
+<span class="lineNum">     317 </span>            :         btAssert(0);
+<span class="lineNum">     318 </span>            :         //needs to be fixed, using btCollisionObjectWrapper and NOT modifying internal data structures
+<span class="lineNum">     319 </span><span class="lineNoCov">          0 :         btCollisionObject* colObj = m_isSwapped? body1 : body0;</span>
+<span class="lineNum">     320 </span><span class="lineNoCov">          0 :         btCollisionObject* otherObj = m_isSwapped? body0 : body1;</span>
+<span class="lineNum">     321 </span>            : 
+<span class="lineNum">     322 </span>            :         btAssert (colObj-&gt;getCollisionShape()-&gt;isCompound());
+<span class="lineNum">     323 </span>            :         
+<span class="lineNum">     324 </span><span class="lineNoCov">          0 :         btCompoundShape* compoundShape = static_cast&lt;btCompoundShape*&gt;(colObj-&gt;getCollisionShape());</span>
+<span class="lineNum">     325 </span>            : 
+<span class="lineNum">     326 </span>            :         //We will use the OptimizedBVH, AABB tree to cull potential child-overlaps
+<span class="lineNum">     327 </span>            :         //If both proxies are Compound, we will deal with that directly, by performing sequential/parallel tree traversals
+<span class="lineNum">     328 </span>            :         //given Proxy0 and Proxy1, if both have a tree, Tree0 and Tree1, this means:
+<span class="lineNum">     329 </span>            :         //determine overlapping nodes of Proxy1 using Proxy0 AABB against Tree1
+<span class="lineNum">     330 </span>            :         //then use each overlapping node AABB against Tree0
+<span class="lineNum">     331 </span>            :         //and vise versa.
+<span class="lineNum">     332 </span>            : 
+<span class="lineNum">     333 </span><span class="lineNoCov">          0 :         btScalar hitFraction = btScalar(1.);</span>
+<span class="lineNum">     334 </span>            : 
+<span class="lineNum">     335 </span><span class="lineNoCov">          0 :         int numChildren = m_childCollisionAlgorithms.size();</span>
+<span class="lineNum">     336 </span>            :         int i;
+<span class="lineNum">     337 </span><span class="lineNoCov">          0 :     btTransform orgTrans;</span>
+<span class="lineNum">     338 </span>            :     btScalar frac;
+<span class="lineNum">     339 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;numChildren;i++)</span>
+<span class="lineNum">     340 </span>            :         {
+<span class="lineNum">     341 </span>            :                 //btCollisionShape* childShape = compoundShape-&gt;getChildShape(i);
+<span class="lineNum">     342 </span>            : 
+<span class="lineNum">     343 </span>            :                 //backup
+<span class="lineNum">     344 </span><span class="lineNoCov">          0 :         orgTrans = colObj-&gt;getWorldTransform();</span>
+<span class="lineNum">     345 </span>            :         
+<span class="lineNum">     346 </span><span class="lineNoCov">          0 :                 const btTransform&amp; childTrans = compoundShape-&gt;getChildTransform(i);</span>
+<span class="lineNum">     347 </span>            :                 //btTransform   newChildWorldTrans = orgTrans*childTrans ;
+<span class="lineNum">     348 </span><span class="lineNoCov">          0 :                 colObj-&gt;setWorldTransform( orgTrans*childTrans );</span>
+<span class="lineNum">     349 </span>            : 
+<span class="lineNum">     350 </span>            :                 //btCollisionShape* tmpShape = colObj-&gt;getCollisionShape();
+<span class="lineNum">     351 </span>            :                 //colObj-&gt;internalSetTemporaryCollisionShape( childShape );
+<span class="lineNum">     352 </span><span class="lineNoCov">          0 :         frac = m_childCollisionAlgorithms[i]-&gt;calculateTimeOfImpact(colObj,otherObj,dispatchInfo,resultOut);</span>
+<span class="lineNum">     353 </span><span class="lineNoCov">          0 :                 if (frac&lt;hitFraction)</span>
+<span class="lineNum">     354 </span>            :                 {
+<span class="lineNum">     355 </span><span class="lineNoCov">          0 :                         hitFraction = frac;</span>
+<span class="lineNum">     356 </span>            :                 }
+<span class="lineNum">     357 </span>            :                 //revert back
+<span class="lineNum">     358 </span>            :                 //colObj-&gt;internalSetTemporaryCollisionShape( tmpShape);
+<span class="lineNum">     359 </span><span class="lineNoCov">          0 :                 colObj-&gt;setWorldTransform( orgTrans);</span>
+<span class="lineNum">     360 </span>            :         }
+<span class="lineNum">     361 </span><span class="lineNoCov">          0 :         return hitFraction;</span>
+<span class="lineNum">     362 </span>            : 
+<span class="lineNum">     363 </span>            : }
+<span class="lineNum">     364 </span>            : 
+<span class="lineNum">     365 </span>            : 
+<span class="lineNum">     366 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

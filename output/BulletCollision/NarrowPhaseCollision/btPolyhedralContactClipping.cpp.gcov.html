@@ -1,0 +1,654 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/NarrowPhaseCollision/btPolyhedralContactClipping.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/NarrowPhaseCollision</a> - btPolyhedralContactClipping.cpp<span style="font-size: 80%;"> (source / <a href="btPolyhedralContactClipping.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">256</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2011 Advanced Micro Devices, Inc.  http://bulletphysics.org
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : ///This file was written by Erwin Coumans
+<span class="lineNum">      18 </span>            : ///Separating axis rest based on work from Pierre Terdiman, see
+<span class="lineNum">      19 </span>            : ///And contact clipping based on work from Simon Hobbs
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span>            : 
+<span class="lineNum">      22 </span>            : #include &quot;btPolyhedralContactClipping.h&quot;
+<span class="lineNum">      23 </span>            : #include &quot;BulletCollision/CollisionShapes/btConvexPolyhedron.h&quot;
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : #include &lt;float.h&gt; //for FLT_MAX
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span>            : int gExpectedNbTests=0;
+<span class="lineNum">      28 </span>            : int gActualNbTests = 0;
+<span class="lineNum">      29 </span>            : bool gUseInternalObject = true;
+<span class="lineNum">      30 </span>            : 
+<span class="lineNum">      31 </span>            : // Clips a face to the back of a plane
+<span class="lineNum">      32 </span><span class="lineNoCov">          0 : void btPolyhedralContactClipping::clipFace(const btVertexArray&amp; pVtxIn, btVertexArray&amp; ppVtxOut, const btVector3&amp; planeNormalWS,btScalar planeEqWS)</span>
+<span class="lineNum">      33 </span>            : {
+<span class="lineNum">      34 </span>            :         
+<span class="lineNum">      35 </span>            :         int ve;
+<span class="lineNum">      36 </span>            :         btScalar ds, de;
+<span class="lineNum">      37 </span><span class="lineNoCov">          0 :         int numVerts = pVtxIn.size();</span>
+<span class="lineNum">      38 </span><span class="lineNoCov">          0 :         if (numVerts &lt; 2)</span>
+<span class="lineNum">      39 </span><span class="lineNoCov">          0 :                 return;</span>
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span><span class="lineNoCov">          0 :         btVector3 firstVertex=pVtxIn[pVtxIn.size()-1];</span>
+<span class="lineNum">      42 </span><span class="lineNoCov">          0 :         btVector3 endVertex = pVtxIn[0];</span>
+<span class="lineNum">      43 </span>            :         
+<span class="lineNum">      44 </span><span class="lineNoCov">          0 :         ds = planeNormalWS.dot(firstVertex)+planeEqWS;</span>
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span><span class="lineNoCov">          0 :         for (ve = 0; ve &lt; numVerts; ve++)</span>
+<span class="lineNum">      47 </span>            :         {
+<span class="lineNum">      48 </span><span class="lineNoCov">          0 :                 endVertex=pVtxIn[ve];</span>
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span><span class="lineNoCov">          0 :                 de = planeNormalWS.dot(endVertex)+planeEqWS;</span>
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span><span class="lineNoCov">          0 :                 if (ds&lt;0)</span>
+<span class="lineNum">      53 </span>            :                 {
+<span class="lineNum">      54 </span><span class="lineNoCov">          0 :                         if (de&lt;0)</span>
+<span class="lineNum">      55 </span>            :                         {
+<span class="lineNum">      56 </span>            :                                 // Start &lt; 0, end &lt; 0, so output endVertex
+<span class="lineNum">      57 </span><span class="lineNoCov">          0 :                                 ppVtxOut.push_back(endVertex);</span>
+<span class="lineNum">      58 </span>            :                         }
+<span class="lineNum">      59 </span>            :                         else
+<span class="lineNum">      60 </span>            :                         {
+<span class="lineNum">      61 </span>            :                                 // Start &lt; 0, end &gt;= 0, so output intersection
+<span class="lineNum">      62 </span><span class="lineNoCov">          0 :                                 ppVtxOut.push_back(     firstVertex.lerp(endVertex,btScalar(ds * 1.f/(ds - de))));</span>
+<span class="lineNum">      63 </span>            :                         }
+<span class="lineNum">      64 </span>            :                 }
+<span class="lineNum">      65 </span>            :                 else
+<span class="lineNum">      66 </span>            :                 {
+<span class="lineNum">      67 </span><span class="lineNoCov">          0 :                         if (de&lt;0)</span>
+<span class="lineNum">      68 </span>            :                         {
+<span class="lineNum">      69 </span>            :                                 // Start &gt;= 0, end &lt; 0 so output intersection and end
+<span class="lineNum">      70 </span><span class="lineNoCov">          0 :                                 ppVtxOut.push_back(firstVertex.lerp(endVertex,btScalar(ds * 1.f/(ds - de))));</span>
+<span class="lineNum">      71 </span><span class="lineNoCov">          0 :                                 ppVtxOut.push_back(endVertex);</span>
+<span class="lineNum">      72 </span>            :                         }
+<span class="lineNum">      73 </span>            :                 }
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 :                 firstVertex = endVertex;</span>
+<span class="lineNum">      75 </span><span class="lineNoCov">          0 :                 ds = de;</span>
+<span class="lineNum">      76 </span>            :         }
+<span class="lineNum">      77 </span>            : }
+<span class="lineNum">      78 </span>            : 
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span><span class="lineNoCov">          0 : static bool TestSepAxis(const btConvexPolyhedron&amp; hullA, const btConvexPolyhedron&amp; hullB, const btTransform&amp; transA,const btTransform&amp; transB, const btVector3&amp; sep_axis, btScalar&amp; depth, btVector3&amp; witnessPointA, btVector3&amp; witnessPointB)</span>
+<span class="lineNum">      81 </span>            : {
+<span class="lineNum">      82 </span>            :         btScalar Min0,Max0;
+<span class="lineNum">      83 </span>            :         btScalar Min1,Max1;
+<span class="lineNum">      84 </span><span class="lineNoCov">          0 :         btVector3 witnesPtMinA,witnesPtMaxA;</span>
+<span class="lineNum">      85 </span><span class="lineNoCov">          0 :         btVector3 witnesPtMinB,witnesPtMaxB;</span>
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :         hullA.project(transA,sep_axis, Min0, Max0,witnesPtMinA,witnesPtMaxA);</span>
+<span class="lineNum">      88 </span><span class="lineNoCov">          0 :         hullB.project(transB, sep_axis, Min1, Max1,witnesPtMinB,witnesPtMaxB);</span>
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span><span class="lineNoCov">          0 :         if(Max0&lt;Min1 || Max1&lt;Min0)</span>
+<span class="lineNum">      91 </span>            :                 return false;
+<span class="lineNum">      92 </span>            : 
+<span class="lineNum">      93 </span><span class="lineNoCov">          0 :         btScalar d0 = Max0 - Min1;</span>
+<span class="lineNum">      94 </span>            :         btAssert(d0&gt;=0.0f);
+<span class="lineNum">      95 </span><span class="lineNoCov">          0 :         btScalar d1 = Max1 - Min0;</span>
+<span class="lineNum">      96 </span>            :         btAssert(d1&gt;=0.0f);
+<span class="lineNum">      97 </span><span class="lineNoCov">          0 :         if (d0&lt;d1)</span>
+<span class="lineNum">      98 </span>            :         {
+<span class="lineNum">      99 </span><span class="lineNoCov">          0 :                 depth = d0;</span>
+<span class="lineNum">     100 </span><span class="lineNoCov">          0 :                 witnessPointA = witnesPtMaxA;</span>
+<span class="lineNum">     101 </span><span class="lineNoCov">          0 :                 witnessPointB = witnesPtMinB;</span>
+<span class="lineNum">     102 </span>            : 
+<span class="lineNum">     103 </span>            :         } else
+<span class="lineNum">     104 </span>            :         {
+<span class="lineNum">     105 </span><span class="lineNoCov">          0 :                 depth = d1;</span>
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 :                 witnessPointA = witnesPtMinA;</span>
+<span class="lineNum">     107 </span><span class="lineNoCov">          0 :                 witnessPointB = witnesPtMaxB;</span>
+<span class="lineNum">     108 </span>            :         }
+<span class="lineNum">     109 </span>            :         
+<span class="lineNum">     110 </span>            :         return true;
+<span class="lineNum">     111 </span>            : }
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span>            : 
+<span class="lineNum">     114 </span>            : 
+<span class="lineNum">     115 </span>            : static int gActualSATPairTests=0;
+<span class="lineNum">     116 </span>            : 
+<span class="lineNum">     117 </span>            : inline bool IsAlmostZero(const btVector3&amp; v)
+<span class="lineNum">     118 </span>            : {
+<span class="lineNum">     119 </span><span class="lineNoCov">          0 :         if(fabsf(v.x())&gt;1e-6 || fabsf(v.y())&gt;1e-6 || fabsf(v.z())&gt;1e-6)        return false;</span>
+<span class="lineNum">     120 </span>            :         return true;
+<span class="lineNum">     121 </span>            : }
+<span class="lineNum">     122 </span>            : 
+<span class="lineNum">     123 </span>            : #ifdef TEST_INTERNAL_OBJECTS
+<span class="lineNum">     124 </span>            : 
+<span class="lineNum">     125 </span>            : inline void BoxSupport(const btScalar extents[3], const btScalar sv[3], btScalar p[3])
+<span class="lineNum">     126 </span>            : {
+<span class="lineNum">     127 </span>            :         // This version is ~11.000 cycles (4%) faster overall in one of the tests.
+<span class="lineNum">     128 </span>            : //      IR(p[0]) = IR(extents[0])|(IR(sv[0])&amp;SIGN_BITMASK);
+<span class="lineNum">     129 </span>            : //      IR(p[1]) = IR(extents[1])|(IR(sv[1])&amp;SIGN_BITMASK);
+<span class="lineNum">     130 </span>            : //      IR(p[2]) = IR(extents[2])|(IR(sv[2])&amp;SIGN_BITMASK);
+<span class="lineNum">     131 </span><span class="lineNoCov">          0 :         p[0] = sv[0] &lt; 0.0f ? -extents[0] : extents[0];</span>
+<span class="lineNum">     132 </span><span class="lineNoCov">          0 :         p[1] = sv[1] &lt; 0.0f ? -extents[1] : extents[1];</span>
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :         p[2] = sv[2] &lt; 0.0f ? -extents[2] : extents[2];</span>
+<span class="lineNum">     134 </span>            : }
+<span class="lineNum">     135 </span>            : 
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 : void InverseTransformPoint3x3(btVector3&amp; out, const btVector3&amp; in, const btTransform&amp; tr)</span>
+<span class="lineNum">     137 </span>            : {
+<span class="lineNum">     138 </span><span class="lineNoCov">          0 :         const btMatrix3x3&amp; rot = tr.getBasis();</span>
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :         const btVector3&amp; r0 = rot[0];</span>
+<span class="lineNum">     140 </span><span class="lineNoCov">          0 :         const btVector3&amp; r1 = rot[1];</span>
+<span class="lineNum">     141 </span><span class="lineNoCov">          0 :         const btVector3&amp; r2 = rot[2];</span>
+<span class="lineNum">     142 </span>            : 
+<span class="lineNum">     143 </span><span class="lineNoCov">          0 :         const btScalar x = r0.x()*in.x() + r1.x()*in.y() + r2.x()*in.z();</span>
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :         const btScalar y = r0.y()*in.x() + r1.y()*in.y() + r2.y()*in.z();</span>
+<span class="lineNum">     145 </span><span class="lineNoCov">          0 :         const btScalar z = r0.z()*in.x() + r1.z()*in.y() + r2.z()*in.z();</span>
+<span class="lineNum">     146 </span>            : 
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :         out.setValue(x, y, z);</span>
+<span class="lineNum">     148 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span><span class="lineNoCov">          0 :  bool TestInternalObjects( const btTransform&amp; trans0, const btTransform&amp; trans1, const btVector3&amp; delta_c, const btVector3&amp; axis, const btConvexPolyhedron&amp; convex0, const btConvexPolyhedron&amp; convex1, btScalar dmin)</span>
+<span class="lineNum">     151 </span>            : {
+<span class="lineNum">     152 </span><span class="lineNoCov">          0 :         const btScalar dp = delta_c.dot(axis);</span>
+<span class="lineNum">     153 </span>            : 
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :         btVector3 localAxis0;</span>
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :         InverseTransformPoint3x3(localAxis0, axis,trans0);</span>
+<span class="lineNum">     156 </span><span class="lineNoCov">          0 :         btVector3 localAxis1;</span>
+<span class="lineNum">     157 </span><span class="lineNoCov">          0 :         InverseTransformPoint3x3(localAxis1, axis,trans1);</span>
+<span class="lineNum">     158 </span>            : 
+<span class="lineNum">     159 </span>            :         btScalar p0[3];
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :         BoxSupport(convex0.m_extents, localAxis0, p0);</span>
+<span class="lineNum">     161 </span>            :         btScalar p1[3];
+<span class="lineNum">     162 </span><span class="lineNoCov">          0 :         BoxSupport(convex1.m_extents, localAxis1, p1);</span>
+<span class="lineNum">     163 </span>            : 
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :         const btScalar Radius0 = p0[0]*localAxis0.x() + p0[1]*localAxis0.y() + p0[2]*localAxis0.z();</span>
+<span class="lineNum">     165 </span><span class="lineNoCov">          0 :         const btScalar Radius1 = p1[0]*localAxis1.x() + p1[1]*localAxis1.y() + p1[2]*localAxis1.z();</span>
+<span class="lineNum">     166 </span>            : 
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :         const btScalar MinRadius = Radius0&gt;convex0.m_radius ? Radius0 : convex0.m_radius;</span>
+<span class="lineNum">     168 </span><span class="lineNoCov">          0 :         const btScalar MaxRadius = Radius1&gt;convex1.m_radius ? Radius1 : convex1.m_radius;</span>
+<span class="lineNum">     169 </span>            : 
+<span class="lineNum">     170 </span><span class="lineNoCov">          0 :         const btScalar MinMaxRadius = MaxRadius + MinRadius;</span>
+<span class="lineNum">     171 </span><span class="lineNoCov">          0 :         const btScalar d0 = MinMaxRadius + dp;</span>
+<span class="lineNum">     172 </span><span class="lineNoCov">          0 :         const btScalar d1 = MinMaxRadius - dp;</span>
+<span class="lineNum">     173 </span>            : 
+<span class="lineNum">     174 </span><span class="lineNoCov">          0 :         const btScalar depth = d0&lt;d1 ? d0:d1;</span>
+<span class="lineNum">     175 </span><span class="lineNoCov">          0 :         if(depth&gt;dmin)</span>
+<span class="lineNum">     176 </span>            :                 return false;
+<span class="lineNum">     177 </span><span class="lineNoCov">          0 :         return true;</span>
+<span class="lineNum">     178 </span>            : }
+<span class="lineNum">     179 </span>            : #endif //TEST_INTERNAL_OBJECTS
+<span class="lineNum">     180 </span>            : 
+<span class="lineNum">     181 </span>            :  
+<span class="lineNum">     182 </span>            :  
+<span class="lineNum">     183 </span><span class="lineNoCov">          0 :  SIMD_FORCE_INLINE void btSegmentsClosestPoints(</span>
+<span class="lineNum">     184 </span>            :         btVector3&amp; ptsVector,
+<span class="lineNum">     185 </span>            :         btVector3&amp; offsetA,
+<span class="lineNum">     186 </span>            :         btVector3&amp; offsetB,
+<span class="lineNum">     187 </span>            :         btScalar&amp; tA, btScalar&amp; tB,
+<span class="lineNum">     188 </span>            :         const btVector3&amp; translation,
+<span class="lineNum">     189 </span>            :         const btVector3&amp; dirA, btScalar hlenA,
+<span class="lineNum">     190 </span>            :         const btVector3&amp; dirB, btScalar hlenB )
+<span class="lineNum">     191 </span>            : {
+<span class="lineNum">     192 </span>            :         // compute the parameters of the closest points on each line segment
+<span class="lineNum">     193 </span>            : 
+<span class="lineNum">     194 </span><span class="lineNoCov">          0 :         btScalar dirA_dot_dirB = btDot(dirA,dirB);</span>
+<span class="lineNum">     195 </span><span class="lineNoCov">          0 :         btScalar dirA_dot_trans = btDot(dirA,translation);</span>
+<span class="lineNum">     196 </span><span class="lineNoCov">          0 :         btScalar dirB_dot_trans = btDot(dirB,translation);</span>
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :         btScalar denom = 1.0f - dirA_dot_dirB * dirA_dot_dirB;</span>
+<span class="lineNum">     199 </span>            : 
+<span class="lineNum">     200 </span><span class="lineNoCov">          0 :         if ( denom == 0.0f ) {</span>
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 :                 tA = 0.0f;</span>
+<span class="lineNum">     202 </span>            :         } else {
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :                 tA = ( dirA_dot_trans - dirB_dot_trans * dirA_dot_dirB ) / denom;</span>
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :                 if ( tA &lt; -hlenA )</span>
+<span class="lineNum">     205 </span><span class="lineNoCov">          0 :                         tA = -hlenA;</span>
+<span class="lineNum">     206 </span><span class="lineNoCov">          0 :                 else if ( tA &gt; hlenA )</span>
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 :                         tA = hlenA;</span>
+<span class="lineNum">     208 </span>            :         }
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 :         tB = tA * dirA_dot_dirB - dirB_dot_trans;</span>
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :         if ( tB &lt; -hlenB ) {</span>
+<span class="lineNum">     213 </span><span class="lineNoCov">          0 :                 tB = -hlenB;</span>
+<span class="lineNum">     214 </span><span class="lineNoCov">          0 :                 tA = tB * dirA_dot_dirB + dirA_dot_trans;</span>
+<span class="lineNum">     215 </span>            : 
+<span class="lineNum">     216 </span><span class="lineNoCov">          0 :                 if ( tA &lt; -hlenA )</span>
+<span class="lineNum">     217 </span><span class="lineNoCov">          0 :                         tA = -hlenA;</span>
+<span class="lineNum">     218 </span><span class="lineNoCov">          0 :                 else if ( tA &gt; hlenA )</span>
+<span class="lineNum">     219 </span><span class="lineNoCov">          0 :                         tA = hlenA;</span>
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :         } else if ( tB &gt; hlenB ) {</span>
+<span class="lineNum">     221 </span><span class="lineNoCov">          0 :                 tB = hlenB;</span>
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :                 tA = tB * dirA_dot_dirB + dirA_dot_trans;</span>
+<span class="lineNum">     223 </span>            : 
+<span class="lineNum">     224 </span><span class="lineNoCov">          0 :                 if ( tA &lt; -hlenA )</span>
+<span class="lineNum">     225 </span><span class="lineNoCov">          0 :                         tA = -hlenA;</span>
+<span class="lineNum">     226 </span><span class="lineNoCov">          0 :                 else if ( tA &gt; hlenA )</span>
+<span class="lineNum">     227 </span><span class="lineNoCov">          0 :                         tA = hlenA;</span>
+<span class="lineNum">     228 </span>            :         }
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span>            :         // compute the closest points relative to segment centers.
+<span class="lineNum">     231 </span>            : 
+<span class="lineNum">     232 </span><span class="lineNoCov">          0 :         offsetA = dirA * tA;</span>
+<span class="lineNum">     233 </span><span class="lineNoCov">          0 :         offsetB = dirB * tB;</span>
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span><span class="lineNoCov">          0 :         ptsVector = translation - offsetA + offsetB;</span>
+<span class="lineNum">     236 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     237 </span>            : 
+<span class="lineNum">     238 </span>            : 
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span><span class="lineNoCov">          0 : bool btPolyhedralContactClipping::findSeparatingAxis(   const btConvexPolyhedron&amp; hullA, const btConvexPolyhedron&amp; hullB, const btTransform&amp; transA,const btTransform&amp; transB, btVector3&amp; sep, btDiscreteCollisionDetectorInterface::Result&amp; resultOut)</span>
+<span class="lineNum">     241 </span>            : {
+<span class="lineNum">     242 </span><span class="lineNoCov">          0 :         gActualSATPairTests++;</span>
+<span class="lineNum">     243 </span>            : 
+<span class="lineNum">     244 </span>            : //#ifdef TEST_INTERNAL_OBJECTS
+<span class="lineNum">     245 </span><span class="lineNoCov">          0 :         const btVector3 c0 = transA * hullA.m_localCenter;</span>
+<span class="lineNum">     246 </span><span class="lineNoCov">          0 :         const btVector3 c1 = transB * hullB.m_localCenter;</span>
+<span class="lineNum">     247 </span><span class="lineNoCov">          0 :         const btVector3 DeltaC2 = c0 - c1;</span>
+<span class="lineNum">     248 </span>            : //#endif
+<span class="lineNum">     249 </span>            : 
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :         btScalar dmin = FLT_MAX;</span>
+<span class="lineNum">     251 </span><span class="lineNoCov">          0 :         int curPlaneTests=0;</span>
+<span class="lineNum">     252 </span>            : 
+<span class="lineNum">     253 </span><span class="lineNoCov">          0 :         int numFacesA = hullA.m_faces.size();</span>
+<span class="lineNum">     254 </span>            :         // Test normals from hullA
+<span class="lineNum">     255 </span><span class="lineNoCov">          0 :         for(int i=0;i&lt;numFacesA;i++)</span>
+<span class="lineNum">     256 </span>            :         {
+<span class="lineNum">     257 </span><span class="lineNoCov">          0 :                 const btVector3 Normal(hullA.m_faces[i].m_plane[0], hullA.m_faces[i].m_plane[1], hullA.m_faces[i].m_plane[2]);</span>
+<span class="lineNum">     258 </span><span class="lineNoCov">          0 :                 btVector3 faceANormalWS = transA.getBasis() * Normal;</span>
+<span class="lineNum">     259 </span><span class="lineNoCov">          0 :                 if (DeltaC2.dot(faceANormalWS)&lt;0)</span>
+<span class="lineNum">     260 </span><span class="lineNoCov">          0 :                         faceANormalWS*=-1.f;</span>
+<span class="lineNum">     261 </span>            : 
+<span class="lineNum">     262 </span><span class="lineNoCov">          0 :                 curPlaneTests++;</span>
+<span class="lineNum">     263 </span>            : #ifdef TEST_INTERNAL_OBJECTS
+<span class="lineNum">     264 </span><span class="lineNoCov">          0 :                 gExpectedNbTests++;</span>
+<span class="lineNum">     265 </span><span class="lineNoCov">          0 :                 if(gUseInternalObject &amp;&amp; !TestInternalObjects(transA,transB, DeltaC2, faceANormalWS, hullA, hullB, dmin))</span>
+<span class="lineNum">     266 </span><span class="lineNoCov">          0 :                         continue;</span>
+<span class="lineNum">     267 </span><span class="lineNoCov">          0 :                 gActualNbTests++;</span>
+<span class="lineNum">     268 </span>            : #endif
+<span class="lineNum">     269 </span>            : 
+<span class="lineNum">     270 </span>            :                 btScalar d;
+<span class="lineNum">     271 </span><span class="lineNoCov">          0 :                 btVector3 wA,wB;</span>
+<span class="lineNum">     272 </span><span class="lineNoCov">          0 :                 if(!TestSepAxis( hullA, hullB, transA,transB, faceANormalWS, d,wA,wB))</span>
+<span class="lineNum">     273 </span><span class="lineNoCov">          0 :                         return false;</span>
+<span class="lineNum">     274 </span>            : 
+<span class="lineNum">     275 </span><span class="lineNoCov">          0 :                 if(d&lt;dmin)</span>
+<span class="lineNum">     276 </span>            :                 {
+<span class="lineNum">     277 </span><span class="lineNoCov">          0 :                         dmin = d;</span>
+<span class="lineNum">     278 </span><span class="lineNoCov">          0 :                         sep = faceANormalWS;</span>
+<span class="lineNum">     279 </span>            :                 }
+<span class="lineNum">     280 </span>            :         }
+<span class="lineNum">     281 </span>            : 
+<span class="lineNum">     282 </span><span class="lineNoCov">          0 :         int numFacesB = hullB.m_faces.size();</span>
+<span class="lineNum">     283 </span>            :         // Test normals from hullB
+<span class="lineNum">     284 </span><span class="lineNoCov">          0 :         for(int i=0;i&lt;numFacesB;i++)</span>
+<span class="lineNum">     285 </span>            :         {
+<span class="lineNum">     286 </span><span class="lineNoCov">          0 :                 const btVector3 Normal(hullB.m_faces[i].m_plane[0], hullB.m_faces[i].m_plane[1], hullB.m_faces[i].m_plane[2]);</span>
+<span class="lineNum">     287 </span><span class="lineNoCov">          0 :                 btVector3 WorldNormal = transB.getBasis() * Normal;</span>
+<span class="lineNum">     288 </span><span class="lineNoCov">          0 :                 if (DeltaC2.dot(WorldNormal)&lt;0)</span>
+<span class="lineNum">     289 </span><span class="lineNoCov">          0 :                         WorldNormal *=-1.f;</span>
+<span class="lineNum">     290 </span>            : 
+<span class="lineNum">     291 </span><span class="lineNoCov">          0 :                 curPlaneTests++;</span>
+<span class="lineNum">     292 </span>            : #ifdef TEST_INTERNAL_OBJECTS
+<span class="lineNum">     293 </span><span class="lineNoCov">          0 :                 gExpectedNbTests++;</span>
+<span class="lineNum">     294 </span><span class="lineNoCov">          0 :                 if(gUseInternalObject &amp;&amp; !TestInternalObjects(transA,transB,DeltaC2, WorldNormal, hullA, hullB, dmin))</span>
+<span class="lineNum">     295 </span><span class="lineNoCov">          0 :                         continue;</span>
+<span class="lineNum">     296 </span><span class="lineNoCov">          0 :                 gActualNbTests++;</span>
+<span class="lineNum">     297 </span>            : #endif
+<span class="lineNum">     298 </span>            : 
+<span class="lineNum">     299 </span>            :                 btScalar d;
+<span class="lineNum">     300 </span><span class="lineNoCov">          0 :                 btVector3 wA,wB;</span>
+<span class="lineNum">     301 </span><span class="lineNoCov">          0 :                 if(!TestSepAxis(hullA, hullB,transA,transB, WorldNormal,d,wA,wB))</span>
+<span class="lineNum">     302 </span><span class="lineNoCov">          0 :                         return false;</span>
+<span class="lineNum">     303 </span>            : 
+<span class="lineNum">     304 </span><span class="lineNoCov">          0 :                 if(d&lt;dmin)</span>
+<span class="lineNum">     305 </span>            :                 {
+<span class="lineNum">     306 </span><span class="lineNoCov">          0 :                         dmin = d;</span>
+<span class="lineNum">     307 </span><span class="lineNoCov">          0 :                         sep = WorldNormal;</span>
+<span class="lineNum">     308 </span>            :                 }
+<span class="lineNum">     309 </span>            :         }
+<span class="lineNum">     310 </span>            : 
+<span class="lineNum">     311 </span><span class="lineNoCov">          0 :         btVector3 edgeAstart,edgeAend,edgeBstart,edgeBend;</span>
+<span class="lineNum">     312 </span><span class="lineNoCov">          0 :         int edgeA=-1;</span>
+<span class="lineNum">     313 </span><span class="lineNoCov">          0 :         int edgeB=-1;</span>
+<span class="lineNum">     314 </span><span class="lineNoCov">          0 :         btVector3 worldEdgeA;</span>
+<span class="lineNum">     315 </span><span class="lineNoCov">          0 :         btVector3 worldEdgeB;</span>
+<span class="lineNum">     316 </span><span class="lineNoCov">          0 :         btVector3 witnessPointA,witnessPointB;</span>
+<span class="lineNum">     317 </span>            :         
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span><span class="lineNoCov">          0 :         int curEdgeEdge = 0;</span>
+<span class="lineNum">     320 </span>            :         // Test edges
+<span class="lineNum">     321 </span><span class="lineNoCov">          0 :         for(int e0=0;e0&lt;hullA.m_uniqueEdges.size();e0++)</span>
+<span class="lineNum">     322 </span>            :         {
+<span class="lineNum">     323 </span><span class="lineNoCov">          0 :                 const btVector3 edge0 = hullA.m_uniqueEdges[e0];</span>
+<span class="lineNum">     324 </span><span class="lineNoCov">          0 :                 const btVector3 WorldEdge0 = transA.getBasis() * edge0;</span>
+<span class="lineNum">     325 </span><span class="lineNoCov">          0 :                 for(int e1=0;e1&lt;hullB.m_uniqueEdges.size();e1++)</span>
+<span class="lineNum">     326 </span>            :                 {
+<span class="lineNum">     327 </span><span class="lineNoCov">          0 :                         const btVector3 edge1 = hullB.m_uniqueEdges[e1];</span>
+<span class="lineNum">     328 </span><span class="lineNoCov">          0 :                         const btVector3 WorldEdge1 = transB.getBasis() * edge1;</span>
+<span class="lineNum">     329 </span>            : 
+<span class="lineNum">     330 </span><span class="lineNoCov">          0 :                         btVector3 Cross = WorldEdge0.cross(WorldEdge1);</span>
+<span class="lineNum">     331 </span><span class="lineNoCov">          0 :                         curEdgeEdge++;</span>
+<span class="lineNum">     332 </span>            :                         if(!IsAlmostZero(Cross))
+<span class="lineNum">     333 </span>            :                         {
+<span class="lineNum">     334 </span><span class="lineNoCov">          0 :                                 Cross = Cross.normalize();</span>
+<span class="lineNum">     335 </span><span class="lineNoCov">          0 :                                 if (DeltaC2.dot(Cross)&lt;0)</span>
+<span class="lineNum">     336 </span><span class="lineNoCov">          0 :                                         Cross *= -1.f;</span>
+<span class="lineNum">     337 </span>            : 
+<span class="lineNum">     338 </span>            : 
+<span class="lineNum">     339 </span>            : #ifdef TEST_INTERNAL_OBJECTS
+<span class="lineNum">     340 </span><span class="lineNoCov">          0 :                                 gExpectedNbTests++;</span>
+<span class="lineNum">     341 </span><span class="lineNoCov">          0 :                                 if(gUseInternalObject &amp;&amp; !TestInternalObjects(transA,transB,DeltaC2, Cross, hullA, hullB, dmin))</span>
+<span class="lineNum">     342 </span><span class="lineNoCov">          0 :                                         continue;</span>
+<span class="lineNum">     343 </span><span class="lineNoCov">          0 :                                 gActualNbTests++;</span>
+<span class="lineNum">     344 </span>            : #endif
+<span class="lineNum">     345 </span>            : 
+<span class="lineNum">     346 </span>            :                                 btScalar dist;
+<span class="lineNum">     347 </span><span class="lineNoCov">          0 :                                 btVector3 wA,wB;</span>
+<span class="lineNum">     348 </span><span class="lineNoCov">          0 :                                 if(!TestSepAxis( hullA, hullB, transA,transB, Cross, dist,wA,wB))</span>
+<span class="lineNum">     349 </span><span class="lineNoCov">          0 :                                         return false;</span>
+<span class="lineNum">     350 </span>            : 
+<span class="lineNum">     351 </span><span class="lineNoCov">          0 :                                 if(dist&lt;dmin)</span>
+<span class="lineNum">     352 </span>            :                                 {
+<span class="lineNum">     353 </span><span class="lineNoCov">          0 :                                         dmin = dist;</span>
+<span class="lineNum">     354 </span><span class="lineNoCov">          0 :                                         sep = Cross;</span>
+<span class="lineNum">     355 </span><span class="lineNoCov">          0 :                                         edgeA=e0;</span>
+<span class="lineNum">     356 </span><span class="lineNoCov">          0 :                                         edgeB=e1;</span>
+<span class="lineNum">     357 </span><span class="lineNoCov">          0 :                                         worldEdgeA = WorldEdge0;</span>
+<span class="lineNum">     358 </span><span class="lineNoCov">          0 :                                         worldEdgeB = WorldEdge1;</span>
+<span class="lineNum">     359 </span><span class="lineNoCov">          0 :                                         witnessPointA=wA;</span>
+<span class="lineNum">     360 </span><span class="lineNoCov">          0 :                                         witnessPointB=wB;</span>
+<span class="lineNum">     361 </span>            :                                 }
+<span class="lineNum">     362 </span>            :                         }
+<span class="lineNum">     363 </span>            :                 }
+<span class="lineNum">     364 </span>            : 
+<span class="lineNum">     365 </span>            :         }
+<span class="lineNum">     366 </span>            : 
+<span class="lineNum">     367 </span><span class="lineNoCov">          0 :         if (edgeA&gt;=0&amp;&amp;edgeB&gt;=0)</span>
+<span class="lineNum">     368 </span>            :         {
+<span class="lineNum">     369 </span>            : //              printf(&quot;edge-edge\n&quot;);
+<span class="lineNum">     370 </span>            :                 //add an edge-edge contact
+<span class="lineNum">     371 </span>            : 
+<span class="lineNum">     372 </span><span class="lineNoCov">          0 :                 btVector3 ptsVector;</span>
+<span class="lineNum">     373 </span><span class="lineNoCov">          0 :                 btVector3 offsetA;</span>
+<span class="lineNum">     374 </span><span class="lineNoCov">          0 :                 btVector3 offsetB;</span>
+<span class="lineNum">     375 </span>            :                 btScalar tA;
+<span class="lineNum">     376 </span>            :                 btScalar tB;
+<span class="lineNum">     377 </span>            : 
+<span class="lineNum">     378 </span><span class="lineNoCov">          0 :                 btVector3 translation = witnessPointB-witnessPointA;</span>
+<span class="lineNum">     379 </span>            : 
+<span class="lineNum">     380 </span><span class="lineNoCov">          0 :                 btVector3 dirA = worldEdgeA;</span>
+<span class="lineNum">     381 </span><span class="lineNoCov">          0 :                 btVector3 dirB = worldEdgeB;</span>
+<span class="lineNum">     382 </span>            :                 
+<span class="lineNum">     383 </span><span class="lineNoCov">          0 :                 btScalar hlenB = 1e30f;</span>
+<span class="lineNum">     384 </span><span class="lineNoCov">          0 :                 btScalar hlenA = 1e30f;</span>
+<span class="lineNum">     385 </span>            : 
+<span class="lineNum">     386 </span><span class="lineNoCov">          0 :                 btSegmentsClosestPoints(ptsVector,offsetA,offsetB,tA,tB,</span>
+<span class="lineNum">     387 </span>            :                         translation,
+<span class="lineNum">     388 </span>            :                         dirA, hlenA,
+<span class="lineNum">     389 </span>            :                         dirB,hlenB);
+<span class="lineNum">     390 </span>            : 
+<span class="lineNum">     391 </span><span class="lineNoCov">          0 :                 btScalar nlSqrt = ptsVector.length2();</span>
+<span class="lineNum">     392 </span><span class="lineNoCov">          0 :                 if (nlSqrt&gt;SIMD_EPSILON)</span>
+<span class="lineNum">     393 </span>            :                 {
+<span class="lineNum">     394 </span><span class="lineNoCov">          0 :                         btScalar nl = btSqrt(nlSqrt);</span>
+<span class="lineNum">     395 </span><span class="lineNoCov">          0 :                         ptsVector *= 1.f/nl;</span>
+<span class="lineNum">     396 </span><span class="lineNoCov">          0 :                         if (ptsVector.dot(DeltaC2)&lt;0.f)</span>
+<span class="lineNum">     397 </span>            :                         {
+<span class="lineNum">     398 </span><span class="lineNoCov">          0 :                                 ptsVector*=-1.f;</span>
+<span class="lineNum">     399 </span>            :                         }
+<span class="lineNum">     400 </span><span class="lineNoCov">          0 :                         btVector3 ptOnB = witnessPointB + offsetB;</span>
+<span class="lineNum">     401 </span><span class="lineNoCov">          0 :                         btScalar distance = nl;</span>
+<span class="lineNum">     402 </span><span class="lineNoCov">          0 :                         resultOut.addContactPoint(ptsVector, ptOnB,-distance);</span>
+<span class="lineNum">     403 </span>            :                 }
+<span class="lineNum">     404 </span>            : 
+<span class="lineNum">     405 </span>            :         }
+<span class="lineNum">     406 </span>            : 
+<span class="lineNum">     407 </span>            : 
+<span class="lineNum">     408 </span><span class="lineNoCov">          0 :         if((DeltaC2.dot(sep))&lt;0.0f)</span>
+<span class="lineNum">     409 </span><span class="lineNoCov">          0 :                 sep = -sep;</span>
+<span class="lineNum">     410 </span>            : 
+<span class="lineNum">     411 </span>            :         return true;
+<span class="lineNum">     412 </span>            : }
+<span class="lineNum">     413 </span>            : 
+<span class="lineNum">     414 </span><span class="lineNoCov">          0 : void    btPolyhedralContactClipping::clipFaceAgainstHull(const btVector3&amp; separatingNormal, const btConvexPolyhedron&amp; hullA,  const btTransform&amp; transA, btVertexArray&amp; worldVertsB1, const btScalar minDist, btScalar maxDist,btDiscreteCollisionDetectorInterface::Result&amp; resultOut)</span>
+<span class="lineNum">     415 </span>            : {
+<span class="lineNum">     416 </span><span class="lineNoCov">          0 :         btVertexArray worldVertsB2;</span>
+<span class="lineNum">     417 </span><span class="lineNoCov">          0 :         btVertexArray* pVtxIn = &amp;worldVertsB1;</span>
+<span class="lineNum">     418 </span><span class="lineNoCov">          0 :         btVertexArray* pVtxOut = &amp;worldVertsB2;</span>
+<span class="lineNum">     419 </span><span class="lineNoCov">          0 :         pVtxOut-&gt;reserve(pVtxIn-&gt;size());</span>
+<span class="lineNum">     420 </span>            : 
+<span class="lineNum">     421 </span>            :         int closestFaceA=-1;
+<span class="lineNum">     422 </span>            :         {
+<span class="lineNum">     423 </span>            :                 btScalar dmin = FLT_MAX;
+<span class="lineNum">     424 </span><span class="lineNoCov">          0 :                 for(int face=0;face&lt;hullA.m_faces.size();face++)</span>
+<span class="lineNum">     425 </span>            :                 {
+<span class="lineNum">     426 </span><span class="lineNoCov">          0 :                         const btVector3 Normal(hullA.m_faces[face].m_plane[0], hullA.m_faces[face].m_plane[1], hullA.m_faces[face].m_plane[2]);</span>
+<span class="lineNum">     427 </span><span class="lineNoCov">          0 :                         const btVector3 faceANormalWS = transA.getBasis() * Normal;</span>
+<span class="lineNum">     428 </span>            :                 
+<span class="lineNum">     429 </span><span class="lineNoCov">          0 :                         btScalar d = faceANormalWS.dot(separatingNormal);</span>
+<span class="lineNum">     430 </span><span class="lineNoCov">          0 :                         if (d &lt; dmin)</span>
+<span class="lineNum">     431 </span>            :                         {
+<span class="lineNum">     432 </span><span class="lineNoCov">          0 :                                 dmin = d;</span>
+<span class="lineNum">     433 </span><span class="lineNoCov">          0 :                                 closestFaceA = face;</span>
+<span class="lineNum">     434 </span>            :                         }
+<span class="lineNum">     435 </span>            :                 }
+<span class="lineNum">     436 </span>            :         }
+<span class="lineNum">     437 </span><span class="lineNoCov">          0 :         if (closestFaceA&lt;0)</span>
+<span class="lineNum">     438 </span><span class="lineNoCov">          0 :                 return;</span>
+<span class="lineNum">     439 </span>            : 
+<span class="lineNum">     440 </span><span class="lineNoCov">          0 :         const btFace&amp; polyA = hullA.m_faces[closestFaceA];</span>
+<span class="lineNum">     441 </span>            : 
+<span class="lineNum">     442 </span>            :                 // clip polygon to back of planes of all faces of hull A that are adjacent to witness face
+<span class="lineNum">     443 </span><span class="lineNoCov">          0 :         int numVerticesA = polyA.m_indices.size();</span>
+<span class="lineNum">     444 </span><span class="lineNoCov">          0 :         for(int e0=0;e0&lt;numVerticesA;e0++)</span>
+<span class="lineNum">     445 </span>            :         {
+<span class="lineNum">     446 </span><span class="lineNoCov">          0 :                 const btVector3&amp; a = hullA.m_vertices[polyA.m_indices[e0]];</span>
+<span class="lineNum">     447 </span><span class="lineNoCov">          0 :                 const btVector3&amp; b = hullA.m_vertices[polyA.m_indices[(e0+1)%numVerticesA]];</span>
+<span class="lineNum">     448 </span><span class="lineNoCov">          0 :                 const btVector3 edge0 = a - b;</span>
+<span class="lineNum">     449 </span><span class="lineNoCov">          0 :                 const btVector3 WorldEdge0 = transA.getBasis() * edge0;</span>
+<span class="lineNum">     450 </span><span class="lineNoCov">          0 :                 btVector3 worldPlaneAnormal1 = transA.getBasis()* btVector3(polyA.m_plane[0],polyA.m_plane[1],polyA.m_plane[2]);</span>
+<span class="lineNum">     451 </span>            : 
+<span class="lineNum">     452 </span><span class="lineNoCov">          0 :                 btVector3 planeNormalWS1 = -WorldEdge0.cross(worldPlaneAnormal1);//.cross(WorldEdge0);</span>
+<span class="lineNum">     453 </span><span class="lineNoCov">          0 :                 btVector3 worldA1 = transA*a;</span>
+<span class="lineNum">     454 </span><span class="lineNoCov">          0 :                 btScalar planeEqWS1 = -worldA1.dot(planeNormalWS1);</span>
+<span class="lineNum">     455 </span>            :                 
+<span class="lineNum">     456 </span>            : //int otherFace=0;
+<span class="lineNum">     457 </span>            : #ifdef BLA1
+<span class="lineNum">     458 </span>            :                 int otherFace = polyA.m_connectedFaces[e0];
+<span class="lineNum">     459 </span>            :                 btVector3 localPlaneNormal (hullA.m_faces[otherFace].m_plane[0],hullA.m_faces[otherFace].m_plane[1],hullA.m_faces[otherFace].m_plane[2]);
+<span class="lineNum">     460 </span>            :                 btScalar localPlaneEq = hullA.m_faces[otherFace].m_plane[3];
+<span class="lineNum">     461 </span>            : 
+<span class="lineNum">     462 </span>            :                 btVector3 planeNormalWS = transA.getBasis()*localPlaneNormal;
+<span class="lineNum">     463 </span>            :                 btScalar planeEqWS=localPlaneEq-planeNormalWS.dot(transA.getOrigin());
+<span class="lineNum">     464 </span>            : #else 
+<span class="lineNum">     465 </span><span class="lineNoCov">          0 :                 btVector3 planeNormalWS = planeNormalWS1;</span>
+<span class="lineNum">     466 </span><span class="lineNoCov">          0 :                 btScalar planeEqWS=planeEqWS1;</span>
+<span class="lineNum">     467 </span>            :                 
+<span class="lineNum">     468 </span>            : #endif
+<span class="lineNum">     469 </span>            :                 //clip face
+<span class="lineNum">     470 </span>            : 
+<span class="lineNum">     471 </span><span class="lineNoCov">          0 :                 clipFace(*pVtxIn, *pVtxOut,planeNormalWS,planeEqWS);</span>
+<span class="lineNum">     472 </span><span class="lineNoCov">          0 :                 btSwap(pVtxIn,pVtxOut);</span>
+<span class="lineNum">     473 </span><span class="lineNoCov">          0 :                 pVtxOut-&gt;resize(0);</span>
+<span class="lineNum">     474 </span>            :         }
+<span class="lineNum">     475 </span>            : 
+<span class="lineNum">     476 </span>            : 
+<span class="lineNum">     477 </span>            : 
+<span class="lineNum">     478 </span>            : //#define ONLY_REPORT_DEEPEST_POINT
+<span class="lineNum">     479 </span>            : 
+<span class="lineNum">     480 </span><span class="lineNoCov">          0 :         btVector3 point;</span>
+<span class="lineNum">     481 </span>            :         
+<span class="lineNum">     482 </span>            : 
+<span class="lineNum">     483 </span>            :         // only keep points that are behind the witness face
+<span class="lineNum">     484 </span>            :         {
+<span class="lineNum">     485 </span><span class="lineNoCov">          0 :                 btVector3 localPlaneNormal (polyA.m_plane[0],polyA.m_plane[1],polyA.m_plane[2]);</span>
+<span class="lineNum">     486 </span><span class="lineNoCov">          0 :                 btScalar localPlaneEq = polyA.m_plane[3];</span>
+<span class="lineNum">     487 </span><span class="lineNoCov">          0 :                 btVector3 planeNormalWS = transA.getBasis()*localPlaneNormal;</span>
+<span class="lineNum">     488 </span><span class="lineNoCov">          0 :                 btScalar planeEqWS=localPlaneEq-planeNormalWS.dot(transA.getOrigin());</span>
+<span class="lineNum">     489 </span><span class="lineNoCov">          0 :                 for (int i=0;i&lt;pVtxIn-&gt;size();i++)</span>
+<span class="lineNum">     490 </span>            :                 {
+<span class="lineNum">     491 </span><span class="lineNoCov">          0 :                         btVector3 vtx = pVtxIn-&gt;at(i);</span>
+<span class="lineNum">     492 </span><span class="lineNoCov">          0 :                         btScalar depth = planeNormalWS.dot(vtx)+planeEqWS;</span>
+<span class="lineNum">     493 </span><span class="lineNoCov">          0 :                         if (depth &lt;=minDist)</span>
+<span class="lineNum">     494 </span>            :                         {
+<span class="lineNum">     495 </span>            : //                              printf(&quot;clamped: depth=%f to minDist=%f\n&quot;,depth,minDist);
+<span class="lineNum">     496 </span><span class="lineNoCov">          0 :                                 depth = minDist;</span>
+<span class="lineNum">     497 </span>            :                         }
+<span class="lineNum">     498 </span>            : 
+<span class="lineNum">     499 </span><span class="lineNoCov">          0 :                         if (depth &lt;=maxDist)</span>
+<span class="lineNum">     500 </span>            :                         {
+<span class="lineNum">     501 </span><span class="lineNoCov">          0 :                                 btVector3 point = pVtxIn-&gt;at(i);</span>
+<span class="lineNum">     502 </span>            : #ifdef ONLY_REPORT_DEEPEST_POINT
+<span class="lineNum">     503 </span>            :                                 curMaxDist = depth;
+<span class="lineNum">     504 </span>            : #else
+<span class="lineNum">     505 </span>            : #if 0
+<span class="lineNum">     506 </span>            :                                 if (depth&lt;-3)
+<span class="lineNum">     507 </span>            :                                 {
+<span class="lineNum">     508 </span>            :                                         printf(&quot;error in btPolyhedralContactClipping depth = %f\n&quot;, depth);
+<span class="lineNum">     509 </span>            :                                         printf(&quot;likely wrong separatingNormal passed in\n&quot;);
+<span class="lineNum">     510 </span>            :                                 } 
+<span class="lineNum">     511 </span>            : #endif                          
+<span class="lineNum">     512 </span><span class="lineNoCov">          0 :                                 resultOut.addContactPoint(separatingNormal,point,depth);</span>
+<span class="lineNum">     513 </span>            : #endif
+<span class="lineNum">     514 </span>            :                         }
+<span class="lineNum">     515 </span>            :                 }
+<span class="lineNum">     516 </span>            :         }
+<span class="lineNum">     517 </span>            : #ifdef ONLY_REPORT_DEEPEST_POINT
+<span class="lineNum">     518 </span>            :         if (curMaxDist&lt;maxDist)
+<span class="lineNum">     519 </span>            :         {
+<span class="lineNum">     520 </span>            :                 resultOut.addContactPoint(separatingNormal,point,curMaxDist);
+<span class="lineNum">     521 </span>            :         }
+<span class="lineNum">     522 </span>            : #endif //ONLY_REPORT_DEEPEST_POINT
+<span class="lineNum">     523 </span>            : 
+<span class="lineNum">     524 </span>            : }
+<span class="lineNum">     525 </span>            : 
+<span class="lineNum">     526 </span>            : 
+<span class="lineNum">     527 </span>            : 
+<span class="lineNum">     528 </span>            : 
+<span class="lineNum">     529 </span>            : 
+<span class="lineNum">     530 </span><span class="lineNoCov">          0 : void    btPolyhedralContactClipping::clipHullAgainstHull(const btVector3&amp; separatingNormal1, const btConvexPolyhedron&amp; hullA, const btConvexPolyhedron&amp; hullB, const btTransform&amp; transA,const btTransform&amp; transB, const btScalar minDist, btScalar maxDist,btDiscreteCollisionDetectorInterface::Result&amp; resultOut)</span>
+<span class="lineNum">     531 </span>            : {
+<span class="lineNum">     532 </span>            : 
+<span class="lineNum">     533 </span><span class="lineNoCov">          0 :         btVector3 separatingNormal = separatingNormal1.normalized();</span>
+<span class="lineNum">     534 </span>            : //      const btVector3 c0 = transA * hullA.m_localCenter;
+<span class="lineNum">     535 </span>            : //      const btVector3 c1 = transB * hullB.m_localCenter;
+<span class="lineNum">     536 </span>            :         //const btVector3 DeltaC2 = c0 - c1;
+<span class="lineNum">     537 </span>            : 
+<span class="lineNum">     538 </span>            : 
+<span class="lineNum">     539 </span>            : 
+<span class="lineNum">     540 </span><span class="lineNoCov">          0 :         int closestFaceB=-1;</span>
+<span class="lineNum">     541 </span><span class="lineNoCov">          0 :         btScalar dmax = -FLT_MAX;</span>
+<span class="lineNum">     542 </span>            :         {
+<span class="lineNum">     543 </span><span class="lineNoCov">          0 :                 for(int face=0;face&lt;hullB.m_faces.size();face++)</span>
+<span class="lineNum">     544 </span>            :                 {
+<span class="lineNum">     545 </span><span class="lineNoCov">          0 :                         const btVector3 Normal(hullB.m_faces[face].m_plane[0], hullB.m_faces[face].m_plane[1], hullB.m_faces[face].m_plane[2]);</span>
+<span class="lineNum">     546 </span><span class="lineNoCov">          0 :                         const btVector3 WorldNormal = transB.getBasis() * Normal;</span>
+<span class="lineNum">     547 </span><span class="lineNoCov">          0 :                         btScalar d = WorldNormal.dot(separatingNormal);</span>
+<span class="lineNum">     548 </span><span class="lineNoCov">          0 :                         if (d &gt; dmax)</span>
+<span class="lineNum">     549 </span>            :                         {
+<span class="lineNum">     550 </span><span class="lineNoCov">          0 :                                 dmax = d;</span>
+<span class="lineNum">     551 </span><span class="lineNoCov">          0 :                                 closestFaceB = face;</span>
+<span class="lineNum">     552 </span>            :                         }
+<span class="lineNum">     553 </span>            :                 }
+<span class="lineNum">     554 </span>            :         }
+<span class="lineNum">     555 </span><span class="lineNoCov">          0 :                                 btVertexArray worldVertsB1;</span>
+<span class="lineNum">     556 </span>            :                                 {
+<span class="lineNum">     557 </span><span class="lineNoCov">          0 :                                         const btFace&amp; polyB = hullB.m_faces[closestFaceB];</span>
+<span class="lineNum">     558 </span><span class="lineNoCov">          0 :                                         const int numVertices = polyB.m_indices.size();</span>
+<span class="lineNum">     559 </span><span class="lineNoCov">          0 :                                         for(int e0=0;e0&lt;numVertices;e0++)</span>
+<span class="lineNum">     560 </span>            :                                         {
+<span class="lineNum">     561 </span><span class="lineNoCov">          0 :                                                 const btVector3&amp; b = hullB.m_vertices[polyB.m_indices[e0]];</span>
+<span class="lineNum">     562 </span><span class="lineNoCov">          0 :                                                 worldVertsB1.push_back(transB*b);</span>
+<span class="lineNum">     563 </span>            :                                         }
+<span class="lineNum">     564 </span>            :                                 }
+<span class="lineNum">     565 </span>            : 
+<span class="lineNum">     566 </span>            :         
+<span class="lineNum">     567 </span><span class="lineNoCov">          0 :         if (closestFaceB&gt;=0)</span>
+<span class="lineNum">     568 </span><span class="lineNoCov">          0 :                 clipFaceAgainstHull(separatingNormal, hullA, transA,worldVertsB1, minDist, maxDist,resultOut);</span>
+<span class="lineNum">     569 </span>            : 
+<span class="lineNum">     570 </span><span class="lineNoCov">          0 : }</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

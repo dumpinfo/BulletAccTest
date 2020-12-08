@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/BroadphaseCollision/btBroadphaseInterface.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/BroadphaseCollision</a> - btBroadphaseInterface.h<span style="font-size: 80%;"> (source / <a href="btBroadphaseInterface.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntryHi">-</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : #ifndef         BT_BROADPHASE_INTERFACE_H
+<span class="lineNum">      17 </span>            : #define         BT_BROADPHASE_INTERFACE_H
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span>            : struct btDispatcherInfo;
+<span class="lineNum">      22 </span>            : class btDispatcher;
+<span class="lineNum">      23 </span>            : #include &quot;btBroadphaseProxy.h&quot;
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : class btOverlappingPairCache;
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span>            : 
+<span class="lineNum">      28 </span>            : 
+<span class="lineNum">      29 </span>            : struct  btBroadphaseAabbCallback
+<span class="lineNum">      30 </span>            : {
+<span class="lineNum">      31 </span>            :         virtual ~btBroadphaseAabbCallback() {}
+<span class="lineNum">      32 </span>            :         virtual bool    process(const btBroadphaseProxy* proxy) = 0;
+<span class="lineNum">      33 </span>            : };
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span><span class="lineCov">          6 : struct  btBroadphaseRayCallback : public btBroadphaseAabbCallback</span>
+<span class="lineNum">      37 </span>            : {
+<span class="lineNum">      38 </span>            :         ///added some cached data to accelerate ray-AABB tests
+<span class="lineNum">      39 </span>            :         btVector3               m_rayDirectionInverse;
+<span class="lineNum">      40 </span>            :         unsigned int    m_signs[3];
+<span class="lineNum">      41 </span>            :         btScalar                m_lambda_max;
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span><span class="lineCov">          3 :         virtual ~btBroadphaseRayCallback() {}</span>
+<span class="lineNum">      44 </span>            : };
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            : #include &quot;LinearMath/btVector3.h&quot;
+<span class="lineNum">      47 </span>            : 
+<span class="lineNum">      48 </span>            : ///The btBroadphaseInterface class provides an interface to detect aabb-overlapping object pairs.
+<span class="lineNum">      49 </span>            : ///Some implementations for this broadphase interface include btAxisSweep3, bt32BitAxisSweep3 and btDbvtBroadphase.
+<span class="lineNum">      50 </span>            : ///The actual overlapping pair management, storage, adding and removing of pairs is dealt by the btOverlappingPairCache class.
+<span class="lineNum">      51 </span>            : class btBroadphaseInterface
+<span class="lineNum">      52 </span>            : {
+<span class="lineNum">      53 </span>            : public:
+<span class="lineNum">      54 </span>            :         virtual ~btBroadphaseInterface() {}
+<span class="lineNum">      55 </span>            : 
+<span class="lineNum">      56 </span>            :         virtual btBroadphaseProxy*      createProxy(  const btVector3&amp; aabbMin,  const btVector3&amp; aabbMax,int shapeType,void* userPtr, short int collisionFilterGroup,short int collisionFilterMask, btDispatcher* dispatcher,void* multiSapProxy) =0;
+<span class="lineNum">      57 </span>            :         virtual void    destroyProxy(btBroadphaseProxy* proxy,btDispatcher* dispatcher)=0;
+<span class="lineNum">      58 </span>            :         virtual void    setAabb(btBroadphaseProxy* proxy,const btVector3&amp; aabbMin,const btVector3&amp; aabbMax, btDispatcher* dispatcher)=0;
+<span class="lineNum">      59 </span>            :         virtual void    getAabb(btBroadphaseProxy* proxy,btVector3&amp; aabbMin, btVector3&amp; aabbMax ) const =0;
+<span class="lineNum">      60 </span>            : 
+<span class="lineNum">      61 </span>            :         virtual void    rayTest(const btVector3&amp; rayFrom,const btVector3&amp; rayTo, btBroadphaseRayCallback&amp; rayCallback, const btVector3&amp; aabbMin=btVector3(0,0,0), const btVector3&amp; aabbMax = btVector3(0,0,0)) = 0;
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span>            :         virtual void    aabbTest(const btVector3&amp; aabbMin, const btVector3&amp; aabbMax, btBroadphaseAabbCallback&amp; callback) = 0;
+<span class="lineNum">      64 </span>            : 
+<span class="lineNum">      65 </span>            :         ///calculateOverlappingPairs is optional: incremental algorithms (sweep and prune) might do it during the set aabb
+<span class="lineNum">      66 </span>            :         virtual void    calculateOverlappingPairs(btDispatcher* dispatcher)=0;
+<span class="lineNum">      67 </span>            : 
+<span class="lineNum">      68 </span>            :         virtual btOverlappingPairCache* getOverlappingPairCache()=0;
+<span class="lineNum">      69 </span>            :         virtual const btOverlappingPairCache*   getOverlappingPairCache() const =0;
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span>            :         ///getAabb returns the axis aligned bounding box in the 'global' coordinate frame
+<span class="lineNum">      72 </span>            :         ///will add some transform later
+<span class="lineNum">      73 </span>            :         virtual void getBroadphaseAabb(btVector3&amp; aabbMin,btVector3&amp; aabbMax) const =0;
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span>            :         ///reset broadphase internal structures, to ensure determinism/reproducability
+<span class="lineNum">      76 </span>            :         virtual void resetPool(btDispatcher* dispatcher) { (void) dispatcher; };
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            :         virtual void    printStats() = 0;
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span>            : };
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span>            : #endif //BT_BROADPHASE_INTERFACE_H
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

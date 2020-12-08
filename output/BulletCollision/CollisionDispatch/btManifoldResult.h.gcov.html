@@ -1,0 +1,234 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/CollisionDispatch/btManifoldResult.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/CollisionDispatch</a> - btManifoldResult.h<span style="font-size: 80%;"> (source / <a href="btManifoldResult.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntry">20</td>
+            <td class="headerCovTableEntryLo">40.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntryLo">20.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : #ifndef BT_MANIFOLD_RESULT_H
+<span class="lineNum">      18 </span>            : #define BT_MANIFOLD_RESULT_H
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : class btCollisionObject;
+<span class="lineNum">      21 </span>            : struct btCollisionObjectWrapper;
+<span class="lineNum">      22 </span>            : 
+<span class="lineNum">      23 </span>            : #include &quot;BulletCollision/NarrowPhaseCollision/btPersistentManifold.h&quot;
+<span class="lineNum">      24 </span>            : class btManifoldPoint;
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span>            : #include &quot;BulletCollision/NarrowPhaseCollision/btDiscreteCollisionDetectorInterface.h&quot;
+<span class="lineNum">      27 </span>            : 
+<span class="lineNum">      28 </span>            : #include &quot;LinearMath/btTransform.h&quot;
+<span class="lineNum">      29 </span>            : #include &quot;BulletCollision/CollisionDispatch/btCollisionObjectWrapper.h&quot;
+<span class="lineNum">      30 </span>            : #include &quot;BulletCollision/CollisionDispatch/btCollisionObject.h&quot;
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span>            : typedef bool (*ContactAddedCallback)(btManifoldPoint&amp; cp,   const btCollisionObjectWrapper* colObj0Wrap,int partId0,int index0,const btCollisionObjectWrapper* colObj1Wrap,int partId1,int index1);
+<span class="lineNum">      33 </span>            : extern ContactAddedCallback             gContactAddedCallback;
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : //#define DEBUG_PART_INDEX 1
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : ///btManifoldResult is a helper class to manage  contact results.
+<span class="lineNum">      39 </span>            : class btManifoldResult : public btDiscreteCollisionDetectorInterface::Result
+<span class="lineNum">      40 </span>            : {
+<span class="lineNum">      41 </span>            : protected:
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            :         btPersistentManifold* m_manifoldPtr;
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            :         const btCollisionObjectWrapper* m_body0Wrap;
+<span class="lineNum">      46 </span>            :         const btCollisionObjectWrapper* m_body1Wrap;
+<span class="lineNum">      47 </span>            :         int     m_partId0;
+<span class="lineNum">      48 </span>            :         int m_partId1;
+<span class="lineNum">      49 </span>            :         int m_index0;
+<span class="lineNum">      50 </span>            :         int m_index1;
+<span class="lineNum">      51 </span>            :         
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span>            : public:
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            :         btManifoldResult()
+<span class="lineNum">      56 </span>            : #ifdef DEBUG_PART_INDEX
+<span class="lineNum">      57 </span>            :                 :
+<span class="lineNum">      58 </span>            :         m_partId0(-1),
+<span class="lineNum">      59 </span>            :         m_partId1(-1),
+<span class="lineNum">      60 </span>            :         m_index0(-1),
+<span class="lineNum">      61 </span>            :         m_index1(-1)
+<span class="lineNum">      62 </span>            : #endif //DEBUG_PART_INDEX
+<span class="lineNum">      63 </span><span class="lineCov">          1 :         {</span>
+<span class="lineNum">      64 </span>            :         }
+<span class="lineNum">      65 </span>            : 
+<a name="66"><span class="lineNum">      66 </span>            :         btManifoldResult(const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap);</a>
+<span class="lineNum">      67 </span>            : 
+<span class="lineNum">      68 </span><span class="lineCov">     211659 :         virtual ~btManifoldResult() {};</span>
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span>            :         void    setPersistentManifold(btPersistentManifold* manifoldPtr)
+<span class="lineNum">      71 </span>            :         {
+<span class="lineNum">      72 </span><span class="lineCov">     211659 :                 m_manifoldPtr = manifoldPtr;</span>
+<span class="lineNum">      73 </span>            :         }
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span>            :         const btPersistentManifold*     getPersistentManifold() const
+<span class="lineNum">      76 </span>            :         {
+<span class="lineNum">      77 </span>            :                 return m_manifoldPtr;
+<span class="lineNum">      78 </span>            :         }
+<span class="lineNum">      79 </span>            :         btPersistentManifold*   getPersistentManifold()
+<span class="lineNum">      80 </span>            :         {
+<span class="lineNum">      81 </span>            :                 return m_manifoldPtr;
+<a name="82"><span class="lineNum">      82 </span>            :         }</a>
+<span class="lineNum">      83 </span>            : 
+<span class="lineNum">      84 </span><span class="lineNoCov">          0 :         virtual void setShapeIdentifiersA(int partId0,int index0)</span>
+<span class="lineNum">      85 </span>            :         {
+<span class="lineNum">      86 </span><span class="lineNoCov">          0 :                 m_partId0=partId0;</span>
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :                 m_index0=index0;</span>
+<a name="88"><span class="lineNum">      88 </span><span class="lineNoCov">          0 :         }</span></a>
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span><span class="lineNoCov">          0 :         virtual void setShapeIdentifiersB(      int partId1,int index1)</span>
+<span class="lineNum">      91 </span>            :         {
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :                 m_partId1=partId1;</span>
+<span class="lineNum">      93 </span><span class="lineNoCov">          0 :                 m_index1=index1;</span>
+<span class="lineNum">      94 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">      95 </span>            : 
+<span class="lineNum">      96 </span>            : 
+<a name="97"><span class="lineNum">      97 </span>            :         virtual void addContactPoint(const btVector3&amp; normalOnBInWorld,const btVector3&amp; pointInWorld,btScalar depth);</a>
+<span class="lineNum">      98 </span>            : 
+<span class="lineNum">      99 </span><span class="lineCov">     211659 :         SIMD_FORCE_INLINE       void refreshContactPoints()</span>
+<span class="lineNum">     100 </span>            :         {
+<span class="lineNum">     101 </span>            :                 btAssert(m_manifoldPtr);
+<span class="lineNum">     102 </span><span class="lineCov">     211659 :                 if (!m_manifoldPtr-&gt;getNumContacts())</span>
+<span class="lineNum">     103 </span>            :                         return;
+<span class="lineNum">     104 </span>            : 
+<span class="lineNum">     105 </span><span class="lineCov">     137253 :                 bool isSwapped = m_manifoldPtr-&gt;getBody0() != m_body0Wrap-&gt;getCollisionObject();</span>
+<span class="lineNum">     106 </span>            : 
+<span class="lineNum">     107 </span><span class="lineCov">     137253 :                 if (isSwapped)</span>
+<span class="lineNum">     108 </span>            :                 {
+<span class="lineNum">     109 </span><span class="lineNoCov">          0 :                         m_manifoldPtr-&gt;refreshContactPoints(m_body1Wrap-&gt;getCollisionObject()-&gt;getWorldTransform(),m_body0Wrap-&gt;getCollisionObject()-&gt;getWorldTransform());</span>
+<span class="lineNum">     110 </span>            :                 } else
+<span class="lineNum">     111 </span>            :                 {
+<span class="lineNum">     112 </span><span class="lineCov">     411759 :                         m_manifoldPtr-&gt;refreshContactPoints(m_body0Wrap-&gt;getCollisionObject()-&gt;getWorldTransform(),m_body1Wrap-&gt;getCollisionObject()-&gt;getWorldTransform());</span>
+<span class="lineNum">     113 </span>            :                 }
+<span class="lineNum">     114 </span>            :         }
+<span class="lineNum">     115 </span>            : 
+<span class="lineNum">     116 </span>            :         const btCollisionObjectWrapper* getBody0Wrap() const
+<span class="lineNum">     117 </span>            :         {
+<span class="lineNum">     118 </span>            :                 return m_body0Wrap;
+<span class="lineNum">     119 </span>            :         }
+<span class="lineNum">     120 </span>            :         const btCollisionObjectWrapper* getBody1Wrap() const
+<span class="lineNum">     121 </span>            :         {
+<span class="lineNum">     122 </span>            :                 return m_body1Wrap;
+<span class="lineNum">     123 </span>            :         }
+<span class="lineNum">     124 </span>            : 
+<span class="lineNum">     125 </span>            :         void setBody0Wrap(const btCollisionObjectWrapper* obj0Wrap)
+<span class="lineNum">     126 </span>            :         {
+<span class="lineNum">     127 </span><span class="lineNoCov">          0 :                 m_body0Wrap = obj0Wrap;</span>
+<span class="lineNum">     128 </span>            :         }
+<span class="lineNum">     129 </span>            : 
+<span class="lineNum">     130 </span>            :         void setBody1Wrap(const btCollisionObjectWrapper* obj1Wrap)
+<span class="lineNum">     131 </span>            :         {
+<span class="lineNum">     132 </span><span class="lineNoCov">          0 :                 m_body1Wrap = obj1Wrap;</span>
+<span class="lineNum">     133 </span>            :         }
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span>            :         const btCollisionObject* getBody0Internal() const
+<span class="lineNum">     136 </span>            :         {
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 :                 return m_body0Wrap-&gt;getCollisionObject();</span>
+<span class="lineNum">     138 </span>            :         }
+<span class="lineNum">     139 </span>            : 
+<span class="lineNum">     140 </span>            :         const btCollisionObject* getBody1Internal() const
+<span class="lineNum">     141 </span>            :         {
+<span class="lineNum">     142 </span>            :                 return m_body1Wrap-&gt;getCollisionObject();
+<span class="lineNum">     143 </span>            :         }
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span>            :         /// in the future we can let the user override the methods to combine restitution and friction
+<span class="lineNum">     146 </span>            :         static btScalar calculateCombinedRestitution(const btCollisionObject* body0,const btCollisionObject* body1);
+<span class="lineNum">     147 </span>            :         static btScalar calculateCombinedFriction(const btCollisionObject* body0,const btCollisionObject* body1);
+<span class="lineNum">     148 </span>            : };
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span>            : #endif //BT_MANIFOLD_RESULT_H
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

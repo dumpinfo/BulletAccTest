@@ -1,0 +1,389 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/NarrowPhaseCollision/btPersistentManifold.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/NarrowPhaseCollision</a> - btPersistentManifold.cpp<span style="font-size: 80%;"> (source / <a href="btPersistentManifold.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">78</td>
+            <td class="headerCovTableEntry">105</td>
+            <td class="headerCovTableEntryLo">74.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntryMed">75.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : #include &quot;btPersistentManifold.h&quot;
+<span class="lineNum">      18 </span>            : #include &quot;LinearMath/btTransform.h&quot;
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span>            : btScalar                                        gContactBreakingThreshold = btScalar(0.02);
+<span class="lineNum">      22 </span>            : ContactDestroyedCallback        gContactDestroyedCallback = 0;
+<span class="lineNum">      23 </span>            : ContactProcessedCallback        gContactProcessedCallback = 0;
+<span class="lineNum">      24 </span>            : ///gContactCalcArea3Points will approximate the convex hull area using 3 points
+<span class="lineNum">      25 </span>            : ///when setting it to false, it will use 4 points to compute the area: it is more accurate but slower
+<span class="lineNum">      26 </span>            : bool                                            gContactCalcArea3Points = true;
+<a name="27"><span class="lineNum">      27 </span>            : </a>
+<span class="lineNum">      28 </span>            : 
+<span class="lineNum">      29 </span><span class="lineNoCov">          0 : btPersistentManifold::btPersistentManifold()</span>
+<span class="lineNum">      30 </span>            : :btTypedObject(BT_PERSISTENT_MANIFOLD_TYPE),
+<span class="lineNum">      31 </span>            : m_body0(0),
+<span class="lineNum">      32 </span>            : m_body1(0),
+<span class="lineNum">      33 </span>            : m_cachedPoints (0),
+<span class="lineNum">      34 </span><span class="lineNoCov">          0 : m_index1a(0)</span>
+<span class="lineNum">      35 </span>            : {
+<span class="lineNum">      36 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            : #ifdef DEBUG_PERSISTENCY
+<span class="lineNum">      42 </span>            : #include &lt;stdio.h&gt;
+<span class="lineNum">      43 </span>            : void    btPersistentManifold::DebugPersistency()
+<span class="lineNum">      44 </span>            : {
+<span class="lineNum">      45 </span>            :         int i;
+<span class="lineNum">      46 </span>            :         printf(&quot;DebugPersistency : numPoints %d\n&quot;,m_cachedPoints);
+<span class="lineNum">      47 </span>            :         for (i=0;i&lt;m_cachedPoints;i++)
+<span class="lineNum">      48 </span>            :         {
+<span class="lineNum">      49 </span>            :                 printf(&quot;m_pointCache[%d].m_userPersistentData = %x\n&quot;,i,m_pointCache[i].m_userPersistentData);
+<span class="lineNum">      50 </span>            :         }
+<span class="lineNum">      51 </span>            : }
+<a name="52"><span class="lineNum">      52 </span>            : #endif //DEBUG_PERSISTENCY</a>
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span><span class="lineCov">          1 : void btPersistentManifold::clearUserCache(btManifoldPoint&amp; pt)</span>
+<span class="lineNum">      55 </span>            : {
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span><span class="lineCov">      47016 :         void* oldPtr = pt.m_userPersistentData;</span>
+<span class="lineNum">      58 </span><span class="lineCov">      47016 :         if (oldPtr)</span>
+<span class="lineNum">      59 </span>            :         {
+<span class="lineNum">      60 </span>            : #ifdef DEBUG_PERSISTENCY
+<span class="lineNum">      61 </span>            :                 int i;
+<span class="lineNum">      62 </span>            :                 int occurance = 0;
+<span class="lineNum">      63 </span>            :                 for (i=0;i&lt;m_cachedPoints;i++)
+<span class="lineNum">      64 </span>            :                 {
+<span class="lineNum">      65 </span>            :                         if (m_pointCache[i].m_userPersistentData == oldPtr)
+<span class="lineNum">      66 </span>            :                         {
+<span class="lineNum">      67 </span>            :                                 occurance++;
+<span class="lineNum">      68 </span>            :                                 if (occurance&gt;1)
+<span class="lineNum">      69 </span>            :                                         printf(&quot;error in clearUserCache\n&quot;);
+<span class="lineNum">      70 </span>            :                         }
+<span class="lineNum">      71 </span>            :                 }
+<span class="lineNum">      72 </span>            :                 btAssert(occurance&lt;=0);
+<span class="lineNum">      73 </span>            : #endif //DEBUG_PERSISTENCY
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span><span class="lineNoCov">          0 :                 if (pt.m_userPersistentData &amp;&amp; gContactDestroyedCallback)</span>
+<span class="lineNum">      76 </span>            :                 {
+<span class="lineNum">      77 </span><span class="lineNoCov">          0 :                         (*gContactDestroyedCallback)(pt.m_userPersistentData);</span>
+<span class="lineNum">      78 </span><span class="lineNoCov">          0 :                         pt.m_userPersistentData = 0;</span>
+<span class="lineNum">      79 </span>            :                 }
+<span class="lineNum">      80 </span>            :                 
+<span class="lineNum">      81 </span>            : #ifdef DEBUG_PERSISTENCY
+<span class="lineNum">      82 </span>            :                 DebugPersistency();
+<span class="lineNum">      83 </span>            : #endif
+<span class="lineNum">      84 </span>            :         }
+<span class="lineNum">      85 </span>            : 
+<span class="lineNum">      86 </span>            :         
+<a name="87"><span class="lineNum">      87 </span><span class="lineCov">          1 : }</span></a>
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span><span class="lineNoCov">          0 : static inline btScalar calcArea4Points(const btVector3 &amp;p0,const btVector3 &amp;p1,const btVector3 &amp;p2,const btVector3 &amp;p3)</span>
+<span class="lineNum">      90 </span>            : {
+<span class="lineNum">      91 </span>            :         // It calculates possible 3 area constructed from random 4 points and returns the biggest one.
+<span class="lineNum">      92 </span>            : 
+<span class="lineNum">      93 </span>            :         btVector3 a[3],b[3];
+<span class="lineNum">      94 </span><span class="lineNoCov">          0 :         a[0] = p0 - p1;</span>
+<span class="lineNum">      95 </span><span class="lineNoCov">          0 :         a[1] = p0 - p2;</span>
+<span class="lineNum">      96 </span><span class="lineNoCov">          0 :         a[2] = p0 - p3;</span>
+<span class="lineNum">      97 </span><span class="lineNoCov">          0 :         b[0] = p2 - p3;</span>
+<span class="lineNum">      98 </span><span class="lineNoCov">          0 :         b[1] = p1 - p3;</span>
+<span class="lineNum">      99 </span><span class="lineNoCov">          0 :         b[2] = p1 - p2;</span>
+<span class="lineNum">     100 </span>            : 
+<span class="lineNum">     101 </span>            :         //todo: Following 3 cross production can be easily optimized by SIMD.
+<span class="lineNum">     102 </span><span class="lineNoCov">          0 :         btVector3 tmp0 = a[0].cross(b[0]);</span>
+<span class="lineNum">     103 </span><span class="lineNoCov">          0 :         btVector3 tmp1 = a[1].cross(b[1]);</span>
+<span class="lineNum">     104 </span><span class="lineNoCov">          0 :         btVector3 tmp2 = a[2].cross(b[2]);</span>
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 :         return btMax(btMax(tmp0.length2(),tmp1.length2()),tmp2.length2());</span>
+<a name="107"><span class="lineNum">     107 </span>            : }</a>
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span><span class="lineCov">      23965 : int btPersistentManifold::sortCachedPoints(const btManifoldPoint&amp; pt) </span>
+<span class="lineNum">     110 </span>            : {
+<span class="lineNum">     111 </span>            :                 //calculate 4 possible cases areas, and take biggest area
+<span class="lineNum">     112 </span>            :                 //also need to keep 'deepest'
+<span class="lineNum">     113 </span>            :                 
+<span class="lineNum">     114 </span><span class="lineCov">      23965 :                 int maxPenetrationIndex = -1;</span>
+<span class="lineNum">     115 </span>            : #define KEEP_DEEPEST_POINT 1
+<span class="lineNum">     116 </span>            : #ifdef KEEP_DEEPEST_POINT
+<span class="lineNum">     117 </span><span class="lineCov">      23965 :                 btScalar maxPenetration = pt.getDistance();</span>
+<span class="lineNum">     118 </span><span class="lineCov">     119825 :                 for (int i=0;i&lt;4;i++)</span>
+<span class="lineNum">     119 </span>            :                 {
+<span class="lineNum">     120 </span><span class="lineCov">      95860 :                         if (m_pointCache[i].getDistance() &lt; maxPenetration)</span>
+<span class="lineNum">     121 </span>            :                         {
+<span class="lineNum">     122 </span><span class="lineCov">      34851 :                                 maxPenetrationIndex = i;</span>
+<span class="lineNum">     123 </span><span class="lineCov">      34851 :                                 maxPenetration = m_pointCache[i].getDistance();</span>
+<span class="lineNum">     124 </span>            :                         }
+<span class="lineNum">     125 </span>            :                 }
+<span class="lineNum">     126 </span>            : #endif //KEEP_DEEPEST_POINT
+<span class="lineNum">     127 </span>            :                 
+<span class="lineNum">     128 </span><span class="lineCov">      23965 :                 btScalar res0(btScalar(0.)),res1(btScalar(0.)),res2(btScalar(0.)),res3(btScalar(0.));</span>
+<span class="lineNum">     129 </span>            : 
+<span class="lineNum">     130 </span><span class="lineCov">      23965 :         if (gContactCalcArea3Points)</span>
+<span class="lineNum">     131 </span>            :         {
+<span class="lineNum">     132 </span><span class="lineCov">      23965 :                 if (maxPenetrationIndex != 0)</span>
+<span class="lineNum">     133 </span>            :                 {
+<span class="lineNum">     134 </span><span class="lineCov">      40946 :                         btVector3 a0 = pt.m_localPointA-m_pointCache[1].m_localPointA;</span>
+<span class="lineNum">     135 </span><span class="lineCov">      40946 :                         btVector3 b0 = m_pointCache[3].m_localPointA-m_pointCache[2].m_localPointA;</span>
+<span class="lineNum">     136 </span><span class="lineCov">      40946 :                         btVector3 cross = a0.cross(b0);</span>
+<span class="lineNum">     137 </span><span class="lineCov">      20473 :                         res0 = cross.length2();</span>
+<span class="lineNum">     138 </span>            :                 }
+<span class="lineNum">     139 </span><span class="lineCov">      23965 :                 if (maxPenetrationIndex != 1)</span>
+<span class="lineNum">     140 </span>            :                 {
+<span class="lineNum">     141 </span><span class="lineCov">      35092 :                         btVector3 a1 = pt.m_localPointA-m_pointCache[0].m_localPointA;</span>
+<span class="lineNum">     142 </span><span class="lineCov">      35092 :                         btVector3 b1 = m_pointCache[3].m_localPointA-m_pointCache[2].m_localPointA;</span>
+<span class="lineNum">     143 </span><span class="lineCov">      35092 :                         btVector3 cross = a1.cross(b1);</span>
+<span class="lineNum">     144 </span><span class="lineCov">      17546 :                         res1 = cross.length2();</span>
+<span class="lineNum">     145 </span>            :                 }
+<span class="lineNum">     146 </span>            : 
+<span class="lineNum">     147 </span><span class="lineCov">      23965 :                 if (maxPenetrationIndex != 2)</span>
+<span class="lineNum">     148 </span>            :                 {
+<span class="lineNum">     149 </span><span class="lineCov">      32794 :                         btVector3 a2 = pt.m_localPointA-m_pointCache[0].m_localPointA;</span>
+<span class="lineNum">     150 </span><span class="lineCov">      32794 :                         btVector3 b2 = m_pointCache[3].m_localPointA-m_pointCache[1].m_localPointA;</span>
+<span class="lineNum">     151 </span><span class="lineCov">      32794 :                         btVector3 cross = a2.cross(b2);</span>
+<span class="lineNum">     152 </span><span class="lineCov">      16397 :                         res2 = cross.length2();</span>
+<span class="lineNum">     153 </span>            :                 }
+<span class="lineNum">     154 </span>            : 
+<span class="lineNum">     155 </span><span class="lineCov">      23965 :                 if (maxPenetrationIndex != 3)</span>
+<span class="lineNum">     156 </span>            :                 {
+<span class="lineNum">     157 </span><span class="lineCov">      40500 :                         btVector3 a3 = pt.m_localPointA-m_pointCache[0].m_localPointA;</span>
+<span class="lineNum">     158 </span><span class="lineCov">      40500 :                         btVector3 b3 = m_pointCache[2].m_localPointA-m_pointCache[1].m_localPointA;</span>
+<span class="lineNum">     159 </span><span class="lineCov">      40500 :                         btVector3 cross = a3.cross(b3);</span>
+<span class="lineNum">     160 </span><span class="lineCov">      20250 :                         res3 = cross.length2();</span>
+<span class="lineNum">     161 </span>            :                 }
+<span class="lineNum">     162 </span>            :         } 
+<span class="lineNum">     163 </span>            :         else
+<span class="lineNum">     164 </span>            :         {
+<span class="lineNum">     165 </span><span class="lineNoCov">          0 :                 if(maxPenetrationIndex != 0) {</span>
+<span class="lineNum">     166 </span><span class="lineNoCov">          0 :                         res0 = calcArea4Points(pt.m_localPointA,m_pointCache[1].m_localPointA,m_pointCache[2].m_localPointA,m_pointCache[3].m_localPointA);</span>
+<span class="lineNum">     167 </span>            :                 }
+<span class="lineNum">     168 </span>            : 
+<span class="lineNum">     169 </span><span class="lineNoCov">          0 :                 if(maxPenetrationIndex != 1) {</span>
+<span class="lineNum">     170 </span><span class="lineNoCov">          0 :                         res1 = calcArea4Points(pt.m_localPointA,m_pointCache[0].m_localPointA,m_pointCache[2].m_localPointA,m_pointCache[3].m_localPointA);</span>
+<span class="lineNum">     171 </span>            :                 }
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span><span class="lineNoCov">          0 :                 if(maxPenetrationIndex != 2) {</span>
+<span class="lineNum">     174 </span><span class="lineNoCov">          0 :                         res2 = calcArea4Points(pt.m_localPointA,m_pointCache[0].m_localPointA,m_pointCache[1].m_localPointA,m_pointCache[3].m_localPointA);</span>
+<span class="lineNum">     175 </span>            :                 }
+<span class="lineNum">     176 </span>            : 
+<span class="lineNum">     177 </span><span class="lineNoCov">          0 :                 if(maxPenetrationIndex != 3) {</span>
+<span class="lineNum">     178 </span><span class="lineNoCov">          0 :                         res3 = calcArea4Points(pt.m_localPointA,m_pointCache[0].m_localPointA,m_pointCache[1].m_localPointA,m_pointCache[2].m_localPointA);</span>
+<span class="lineNum">     179 </span>            :                 }
+<span class="lineNum">     180 </span>            :         }
+<span class="lineNum">     181 </span><span class="lineCov">      23965 :         btVector4 maxvec(res0,res1,res2,res3);</span>
+<span class="lineNum">     182 </span><span class="lineCov">      23965 :         int biggestarea = maxvec.closestAxis4();</span>
+<span class="lineNum">     183 </span><span class="lineCov">      23965 :         return biggestarea;</span>
+<span class="lineNum">     184 </span>            :         
+<span class="lineNum">     185 </span>            : }
+<a name="186"><span class="lineNum">     186 </span>            : </a>
+<span class="lineNum">     187 </span>            : 
+<span class="lineNum">     188 </span><span class="lineCov">     245566 : int btPersistentManifold::getCacheEntry(const btManifoldPoint&amp; newPoint) const</span>
+<span class="lineNum">     189 </span>            : {
+<span class="lineNum">     190 </span><span class="lineCov">     245566 :         btScalar shortestDist =  getContactBreakingThreshold() * getContactBreakingThreshold();</span>
+<span class="lineNum">     191 </span><span class="lineCov">     245566 :         int size = getNumContacts();</span>
+<span class="lineNum">     192 </span><span class="lineCov">     245566 :         int nearestPoint = -1;</span>
+<span class="lineNum">     193 </span><span class="lineCov">    1067604 :         for( int i = 0; i &lt; size; i++ )</span>
+<span class="lineNum">     194 </span>            :         {
+<span class="lineNum">     195 </span><span class="lineCov">     822038 :                 const btManifoldPoint &amp;mp = m_pointCache[i];</span>
+<span class="lineNum">     196 </span>            : 
+<span class="lineNum">     197 </span><span class="lineCov">    1644076 :                 btVector3 diffA =  mp.m_localPointA- newPoint.m_localPointA;</span>
+<span class="lineNum">     198 </span><span class="lineCov">    1644076 :                 const btScalar distToManiPoint = diffA.dot(diffA);</span>
+<span class="lineNum">     199 </span><span class="lineCov">     822038 :                 if( distToManiPoint &lt; shortestDist )</span>
+<span class="lineNum">     200 </span>            :                 {
+<span class="lineNum">     201 </span><span class="lineCov">     198270 :                         shortestDist = distToManiPoint;</span>
+<span class="lineNum">     202 </span><span class="lineCov">     198270 :                         nearestPoint = i;</span>
+<span class="lineNum">     203 </span>            :                 }
+<span class="lineNum">     204 </span>            :         }
+<span class="lineNum">     205 </span><span class="lineCov">     245566 :         return nearestPoint;</span>
+<a name="206"><span class="lineNum">     206 </span>            : }</a>
+<span class="lineNum">     207 </span>            : 
+<span class="lineNum">     208 </span><span class="lineCov">      47356 : int btPersistentManifold::addManifoldPoint(const btManifoldPoint&amp; newPoint, bool isPredictive)</span>
+<span class="lineNum">     209 </span>            : {
+<span class="lineNum">     210 </span>            :         if (!isPredictive)
+<span class="lineNum">     211 </span>            :         {
+<span class="lineNum">     212 </span>            :                 btAssert(validContactDistance(newPoint));
+<span class="lineNum">     213 </span>            :         }
+<span class="lineNum">     214 </span>            :         
+<span class="lineNum">     215 </span><span class="lineCov">      47356 :         int insertIndex = getNumContacts();</span>
+<span class="lineNum">     216 </span><span class="lineCov">      47356 :         if (insertIndex == MANIFOLD_CACHE_SIZE)</span>
+<span class="lineNum">     217 </span>            :         {
+<span class="lineNum">     218 </span>            : #if MANIFOLD_CACHE_SIZE &gt;= 4
+<span class="lineNum">     219 </span>            :                 //sort cache so best points come first, based on area
+<span class="lineNum">     220 </span><span class="lineCov">      23965 :                 insertIndex = sortCachedPoints(newPoint);</span>
+<span class="lineNum">     221 </span>            : #else
+<span class="lineNum">     222 </span>            :                 insertIndex = 0;
+<span class="lineNum">     223 </span>            : #endif
+<span class="lineNum">     224 </span><span class="lineCov">      23965 :                 clearUserCache(m_pointCache[insertIndex]);</span>
+<span class="lineNum">     225 </span>            :                 
+<span class="lineNum">     226 </span>            :         } else
+<span class="lineNum">     227 </span>            :         {
+<span class="lineNum">     228 </span><span class="lineCov">      23391 :                 m_cachedPoints++;</span>
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span>            :                 
+<span class="lineNum">     231 </span>            :         }
+<span class="lineNum">     232 </span><span class="lineCov">      47356 :         if (insertIndex&lt;0)</span>
+<span class="lineNum">     233 </span><span class="lineNoCov">          0 :                 insertIndex=0;</span>
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span>            :         btAssert(m_pointCache[insertIndex].m_userPersistentData==0);
+<span class="lineNum">     236 </span><span class="lineCov">      47356 :         m_pointCache[insertIndex] = newPoint;</span>
+<span class="lineNum">     237 </span><span class="lineCov">      47356 :         return insertIndex;</span>
+<a name="238"><span class="lineNum">     238 </span>            : }</a>
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span><span class="lineCov">     285775 : btScalar        btPersistentManifold::getContactBreakingThreshold() const</span>
+<span class="lineNum">     241 </span>            : {
+<span class="lineNum">     242 </span><span class="lineCov">     531341 :         return m_contactBreakingThreshold;</span>
+<span class="lineNum">     243 </span>            : }
+<span class="lineNum">     244 </span>            : 
+<a name="245"><span class="lineNum">     245 </span>            : </a>
+<span class="lineNum">     246 </span>            : 
+<span class="lineNum">     247 </span><span class="lineCov">     137253 : void btPersistentManifold::refreshContactPoints(const btTransform&amp; trA,const btTransform&amp; trB)</span>
+<span class="lineNum">     248 </span>            : {
+<span class="lineNum">     249 </span>            :         int i;
+<span class="lineNum">     250 </span>            : #ifdef DEBUG_PERSISTENCY
+<span class="lineNum">     251 </span>            :         printf(&quot;refreshContactPoints posA = (%f,%f,%f) posB = (%f,%f,%f)\n&quot;,
+<span class="lineNum">     252 </span>            :                 trA.getOrigin().getX(),
+<span class="lineNum">     253 </span>            :                 trA.getOrigin().getY(),
+<span class="lineNum">     254 </span>            :                 trA.getOrigin().getZ(),
+<span class="lineNum">     255 </span>            :                 trB.getOrigin().getX(),
+<span class="lineNum">     256 </span>            :                 trB.getOrigin().getY(),
+<span class="lineNum">     257 </span>            :                 trB.getOrigin().getZ());
+<span class="lineNum">     258 </span>            : #endif //DEBUG_PERSISTENCY
+<span class="lineNum">     259 </span>            :         /// first refresh worldspace positions and distance
+<span class="lineNum">     260 </span><span class="lineCov">     527250 :         for (i=getNumContacts()-1;i&gt;=0;i--)</span>
+<span class="lineNum">     261 </span>            :         {
+<span class="lineNum">     262 </span><span class="lineCov">     389997 :                 btManifoldPoint &amp;manifoldPoint = m_pointCache[i];</span>
+<span class="lineNum">     263 </span><span class="lineCov">     389997 :                 manifoldPoint.m_positionWorldOnA = trA( manifoldPoint.m_localPointA );</span>
+<span class="lineNum">     264 </span><span class="lineCov">     389997 :                 manifoldPoint.m_positionWorldOnB = trB( manifoldPoint.m_localPointB );</span>
+<span class="lineNum">     265 </span><span class="lineCov">    1169991 :                 manifoldPoint.m_distance1 = (manifoldPoint.m_positionWorldOnA -  manifoldPoint.m_positionWorldOnB).dot(manifoldPoint.m_normalWorldOnB);</span>
+<span class="lineNum">     266 </span><span class="lineCov">     389997 :                 manifoldPoint.m_lifeTime++;</span>
+<span class="lineNum">     267 </span>            :         }
+<span class="lineNum">     268 </span>            : 
+<span class="lineNum">     269 </span>            :         /// then 
+<span class="lineNum">     270 </span>            :         btScalar distance2d;
+<span class="lineNum">     271 </span><span class="lineCov">     274506 :         btVector3 projectedDifference,projectedPoint;</span>
+<span class="lineNum">     272 </span><span class="lineCov">     527250 :         for (i=getNumContacts()-1;i&gt;=0;i--)</span>
+<span class="lineNum">     273 </span>            :         {
+<span class="lineNum">     274 </span>            :                 
+<span class="lineNum">     275 </span><span class="lineCov">     389997 :                 btManifoldPoint &amp;manifoldPoint = m_pointCache[i];</span>
+<span class="lineNum">     276 </span>            :                 //contact becomes invalid when signed distance exceeds margin (projected on contactnormal direction)
+<span class="lineNum">     277 </span><span class="lineCov">     779994 :                 if (!validContactDistance(manifoldPoint))</span>
+<span class="lineNum">     278 </span>            :                 {
+<span class="lineNum">     279 </span><span class="lineCov">       2993 :                         removeContactPoint(i);</span>
+<span class="lineNum">     280 </span>            :                 } else
+<span class="lineNum">     281 </span>            :                 {
+<span class="lineNum">     282 </span>            :                         //contact also becomes invalid when relative movement orthogonal to normal exceeds margin
+<span class="lineNum">     283 </span><span class="lineCov">    1161012 :                         projectedPoint = manifoldPoint.m_positionWorldOnA - manifoldPoint.m_normalWorldOnB * manifoldPoint.m_distance1;</span>
+<span class="lineNum">     284 </span><span class="lineCov">     774008 :                         projectedDifference = manifoldPoint.m_positionWorldOnB - projectedPoint;</span>
+<span class="lineNum">     285 </span><span class="lineCov">     774008 :                         distance2d = projectedDifference.dot(projectedDifference);</span>
+<span class="lineNum">     286 </span><span class="lineCov">     387004 :                         if (distance2d  &gt; getContactBreakingThreshold()*getContactBreakingThreshold() )</span>
+<span class="lineNum">     287 </span>            :                         {
+<span class="lineNum">     288 </span><span class="lineCov">      20057 :                                 removeContactPoint(i);</span>
+<span class="lineNum">     289 </span>            :                         } else
+<span class="lineNum">     290 </span>            :                         {
+<span class="lineNum">     291 </span>            :                                 //contact point processed callback
+<span class="lineNum">     292 </span><span class="lineCov">     366947 :                                 if (gContactProcessedCallback)</span>
+<span class="lineNum">     293 </span><span class="lineNoCov">          0 :                                         (*gContactProcessedCallback)(manifoldPoint,(void*)m_body0,(void*)m_body1);</span>
+<span class="lineNum">     294 </span>            :                         }
+<span class="lineNum">     295 </span>            :                 }
+<span class="lineNum">     296 </span>            :         }
+<span class="lineNum">     297 </span>            : #ifdef DEBUG_PERSISTENCY
+<span class="lineNum">     298 </span>            :         DebugPersistency();
+<span class="lineNum">     299 </span>            : #endif //
+<span class="lineNum">     300 </span><span class="lineCov">     137253 : }</span>
+<span class="lineNum">     301 </span>            : 
+<span class="lineNum">     302 </span>            : 
+<span class="lineNum">     303 </span>            : 
+<span class="lineNum">     304 </span>            : 
+<span class="lineNum">     305 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

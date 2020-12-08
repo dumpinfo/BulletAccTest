@@ -1,0 +1,717 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/BroadphaseCollision/btOverlappingPairCache.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/BroadphaseCollision</a> - btOverlappingPairCache.cpp<span style="font-size: 80%;"> (source / <a href="btOverlappingPairCache.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">94</td>
+            <td class="headerCovTableEntry">222</td>
+            <td class="headerCovTableEntryLo">42.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">35</td>
+            <td class="headerCovTableEntryLo">17.1 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span>            : #include &quot;btOverlappingPairCache.h&quot;
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : #include &quot;btDispatcher.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;btCollisionAlgorithm.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;LinearMath/btAabbUtil2.h&quot;
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : #include &lt;stdio.h&gt;
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span>            : int     gOverlappingPairs = 0;
+<span class="lineNum">      27 </span>            : 
+<span class="lineNum">      28 </span>            : int gRemovePairs =0;
+<span class="lineNum">      29 </span>            : int gAddedPairs =0;
+<span class="lineNum">      30 </span>            : int gFindPairs =0;
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span>            : 
+<a name="33"><span class="lineNum">      33 </span>            : </a>
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span><span class="lineCov">          1 : btHashedOverlappingPairCache::btHashedOverlappingPairCache():</span>
+<span class="lineNum">      36 </span>            :         m_overlapFilterCallback(0),
+<span class="lineNum">      37 </span>            :         m_blockedForChanges(false),
+<span class="lineNum">      38 </span><span class="lineCov">          5 :         m_ghostPairCallback(0)</span>
+<span class="lineNum">      39 </span>            : {
+<span class="lineNum">      40 </span><span class="lineCov">          1 :         int initialAllocatedSize= 2;</span>
+<span class="lineNum">      41 </span><span class="lineCov">          1 :         m_overlappingPairArray.reserve(initialAllocatedSize);</span>
+<span class="lineNum">      42 </span><span class="lineCov">          1 :         growTables();</span>
+<span class="lineNum">      43 </span><span class="lineCov">          1 : }</span>
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            : 
+<a name="46"><span class="lineNum">      46 </span>            : </a>
+<span class="lineNum">      47 </span>            : 
+<span class="lineNum">      48 </span><span class="lineNoCov">          0 : btHashedOverlappingPairCache::~btHashedOverlappingPairCache()</span>
+<span class="lineNum">      49 </span>            : {
+<span class="lineNum">      50 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      51 </span>            : 
+<a name="52"><span class="lineNum">      52 </span>            : </a>
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span><span class="lineCov">       1122 : void    btHashedOverlappingPairCache::cleanOverlappingPair(btBroadphasePair&amp; pair,btDispatcher* dispatcher)</span>
+<span class="lineNum">      55 </span>            : {
+<span class="lineNum">      56 </span><span class="lineCov">       1122 :         if (pair.m_algorithm)</span>
+<span class="lineNum">      57 </span>            :         {
+<span class="lineNum">      58 </span>            :                 {
+<span class="lineNum">      59 </span><span class="lineCov">       1036 :                         pair.m_algorithm-&gt;~btCollisionAlgorithm();</span>
+<span class="lineNum">      60 </span><span class="lineCov">       1036 :                         dispatcher-&gt;freeCollisionAlgorithm(pair.m_algorithm);</span>
+<span class="lineNum">      61 </span><span class="lineCov">       1036 :                         pair.m_algorithm=0;</span>
+<span class="lineNum">      62 </span>            :                 }
+<span class="lineNum">      63 </span>            :         }
+<span class="lineNum">      64 </span><span class="lineCov">       1122 : }</span>
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            : 
+<a name="67"><span class="lineNum">      67 </span>            : </a>
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span><span class="lineNoCov">          0 : void    btHashedOverlappingPairCache::cleanProxyFromPairs(btBroadphaseProxy* proxy,btDispatcher* dispatcher)</span>
+<a name="70"><span class="lineNum">      70 </span>            : {</a>
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span><span class="lineNoCov">          0 :         class   CleanPairCallback : public btOverlapCallback</span>
+<span class="lineNum">      73 </span>            :         {
+<span class="lineNum">      74 </span>            :                 btBroadphaseProxy* m_cleanProxy;
+<span class="lineNum">      75 </span>            :                 btOverlappingPairCache* m_pairCache;
+<span class="lineNum">      76 </span>            :                 btDispatcher* m_dispatcher;
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            :         public:
+<span class="lineNum">      79 </span>            :                 CleanPairCallback(btBroadphaseProxy* cleanProxy,btOverlappingPairCache* pairCache,btDispatcher* dispatcher)
+<span class="lineNum">      80 </span><span class="lineNoCov">          0 :                         :m_cleanProxy(cleanProxy),</span>
+<span class="lineNum">      81 </span>            :                         m_pairCache(pairCache),
+<span class="lineNum">      82 </span><span class="lineNoCov">          0 :                         m_dispatcher(dispatcher)</span>
+<a name="83"><span class="lineNum">      83 </span>            :                 {</a>
+<span class="lineNum">      84 </span>            :                 }
+<span class="lineNum">      85 </span><span class="lineNoCov">          0 :                 virtual bool    processOverlap(btBroadphasePair&amp; pair)</span>
+<span class="lineNum">      86 </span>            :                 {
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :                         if ((pair.m_pProxy0 == m_cleanProxy) ||</span>
+<span class="lineNum">      88 </span><span class="lineNoCov">          0 :                                 (pair.m_pProxy1 == m_cleanProxy))</span>
+<span class="lineNum">      89 </span>            :                         {
+<span class="lineNum">      90 </span><span class="lineNoCov">          0 :                                 m_pairCache-&gt;cleanOverlappingPair(pair,m_dispatcher);</span>
+<span class="lineNum">      91 </span>            :                         }
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :                         return false;</span>
+<span class="lineNum">      93 </span>            :                 }
+<span class="lineNum">      94 </span>            :                 
+<span class="lineNum">      95 </span>            :         };
+<span class="lineNum">      96 </span>            : 
+<span class="lineNum">      97 </span><span class="lineNoCov">          0 :         CleanPairCallback cleanPairs(proxy,this,dispatcher);</span>
+<span class="lineNum">      98 </span>            : 
+<span class="lineNum">      99 </span><span class="lineNoCov">          0 :         processAllOverlappingPairs(&amp;cleanPairs,dispatcher);</span>
+<span class="lineNum">     100 </span>            : 
+<span class="lineNum">     101 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     102 </span>            : 
+<span class="lineNum">     103 </span>            : 
+<a name="104"><span class="lineNum">     104 </span>            : </a>
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 : void    btHashedOverlappingPairCache::removeOverlappingPairsContainingProxy(btBroadphaseProxy* proxy,btDispatcher* dispatcher)</span>
+<a name="107"><span class="lineNum">     107 </span>            : {</a>
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span><span class="lineNoCov">          0 :         class   RemovePairCallback : public btOverlapCallback</span>
+<span class="lineNum">     110 </span>            :         {
+<span class="lineNum">     111 </span>            :                 btBroadphaseProxy* m_obsoleteProxy;
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span>            :         public:
+<span class="lineNum">     114 </span>            :                 RemovePairCallback(btBroadphaseProxy* obsoleteProxy)
+<span class="lineNum">     115 </span><span class="lineNoCov">          0 :                         :m_obsoleteProxy(obsoleteProxy)</span>
+<a name="116"><span class="lineNum">     116 </span>            :                 {</a>
+<span class="lineNum">     117 </span>            :                 }
+<span class="lineNum">     118 </span><span class="lineNoCov">          0 :                 virtual bool    processOverlap(btBroadphasePair&amp; pair)</span>
+<span class="lineNum">     119 </span>            :                 {
+<span class="lineNum">     120 </span><span class="lineNoCov">          0 :                         return ((pair.m_pProxy0 == m_obsoleteProxy) ||</span>
+<span class="lineNum">     121 </span><span class="lineNoCov">          0 :                                 (pair.m_pProxy1 == m_obsoleteProxy));</span>
+<span class="lineNum">     122 </span>            :                 }
+<span class="lineNum">     123 </span>            :                 
+<span class="lineNum">     124 </span>            :         };
+<span class="lineNum">     125 </span>            : 
+<span class="lineNum">     126 </span>            : 
+<span class="lineNum">     127 </span><span class="lineNoCov">          0 :         RemovePairCallback removeCallback(proxy);</span>
+<span class="lineNum">     128 </span>            : 
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :         processAllOverlappingPairs(&amp;removeCallback,dispatcher);</span>
+<span class="lineNum">     130 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span>            : 
+<a name="134"><span class="lineNum">     134 </span>            : </a>
+<span class="lineNum">     135 </span>            : 
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 : btBroadphasePair* btHashedOverlappingPairCache::findPair(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1)</span>
+<span class="lineNum">     137 </span>            : {
+<span class="lineNum">     138 </span><span class="lineNoCov">          0 :         gFindPairs++;</span>
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :         if(proxy0-&gt;m_uniqueId&gt;proxy1-&gt;m_uniqueId) </span>
+<span class="lineNum">     140 </span>            :                 btSwap(proxy0,proxy1);
+<span class="lineNum">     141 </span><span class="lineNoCov">          0 :         int proxyId1 = proxy0-&gt;getUid();</span>
+<span class="lineNum">     142 </span><span class="lineNoCov">          0 :         int proxyId2 = proxy1-&gt;getUid();</span>
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span>            :         /*if (proxyId1 &gt; proxyId2) 
+<span class="lineNum">     145 </span>            :                 btSwap(proxyId1, proxyId2);*/
+<span class="lineNum">     146 </span>            : 
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :         int hash = static_cast&lt;int&gt;(getHash(static_cast&lt;unsigned int&gt;(proxyId1), static_cast&lt;unsigned int&gt;(proxyId2)) &amp; (m_overlappingPairArray.capacity()-1));</span>
+<span class="lineNum">     148 </span>            : 
+<span class="lineNum">     149 </span><span class="lineNoCov">          0 :         if (hash &gt;= m_hashTable.size())</span>
+<span class="lineNum">     150 </span>            :         {
+<span class="lineNum">     151 </span>            :                 return NULL;
+<span class="lineNum">     152 </span>            :         }
+<span class="lineNum">     153 </span>            : 
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :         int index = m_hashTable[hash];</span>
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :         while (index != BT_NULL_PAIR &amp;&amp; equalsPair(m_overlappingPairArray[index], proxyId1, proxyId2) == false)</span>
+<span class="lineNum">     156 </span>            :         {
+<span class="lineNum">     157 </span><span class="lineNoCov">          0 :                 index = m_next[index];</span>
+<span class="lineNum">     158 </span>            :         }
+<span class="lineNum">     159 </span>            : 
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :         if (index == BT_NULL_PAIR)</span>
+<span class="lineNum">     161 </span>            :         {
+<span class="lineNum">     162 </span>            :                 return NULL;
+<span class="lineNum">     163 </span>            :         }
+<span class="lineNum">     164 </span>            : 
+<span class="lineNum">     165 </span>            :         btAssert(index &lt; m_overlappingPairArray.size());
+<span class="lineNum">     166 </span>            : 
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :         return &amp;m_overlappingPairArray[index];</span>
+<span class="lineNum">     168 </span>            : }
+<span class="lineNum">     169 </span>            : 
+<a name="170"><span class="lineNum">     170 </span>            : //#include &lt;stdio.h&gt;</a>
+<span class="lineNum">     171 </span>            : 
+<span class="lineNum">     172 </span><span class="lineCov">          8 : void    btHashedOverlappingPairCache::growTables()</span>
+<span class="lineNum">     173 </span>            : {
+<span class="lineNum">     174 </span>            : 
+<span class="lineNum">     175 </span><span class="lineCov">          8 :         int newCapacity = m_overlappingPairArray.capacity();</span>
+<span class="lineNum">     176 </span>            : 
+<span class="lineNum">     177 </span><span class="lineCov">          8 :         if (m_hashTable.size() &lt; newCapacity)</span>
+<span class="lineNum">     178 </span>            :         {
+<span class="lineNum">     179 </span>            :                 //grow hashtable and next table
+<span class="lineNum">     180 </span><span class="lineCov">          8 :                 int curHashtableSize = m_hashTable.size();</span>
+<span class="lineNum">     181 </span>            : 
+<span class="lineNum">     182 </span><span class="lineCov">          8 :                 m_hashTable.resize(newCapacity);</span>
+<span class="lineNum">     183 </span><span class="lineCov">          8 :                 m_next.resize(newCapacity);</span>
+<span class="lineNum">     184 </span>            : 
+<span class="lineNum">     185 </span>            : 
+<span class="lineNum">     186 </span>            :                 int i;
+<span class="lineNum">     187 </span>            : 
+<span class="lineNum">     188 </span><span class="lineCov">        518 :                 for (i= 0; i &lt; newCapacity; ++i)</span>
+<span class="lineNum">     189 </span>            :                 {
+<span class="lineNum">     190 </span><span class="lineCov">       1020 :                         m_hashTable[i] = BT_NULL_PAIR;</span>
+<span class="lineNum">     191 </span>            :                 }
+<span class="lineNum">     192 </span><span class="lineCov">       1028 :                 for (i = 0; i &lt; newCapacity; ++i)</span>
+<span class="lineNum">     193 </span>            :                 {
+<span class="lineNum">     194 </span><span class="lineCov">       1020 :                         m_next[i] = BT_NULL_PAIR;</span>
+<span class="lineNum">     195 </span>            :                 }
+<span class="lineNum">     196 </span>            : 
+<span class="lineNum">     197 </span><span class="lineCov">        516 :                 for(i=0;i&lt;curHashtableSize;i++)</span>
+<span class="lineNum">     198 </span>            :                 {
+<span class="lineNum">     199 </span>            :         
+<span class="lineNum">     200 </span><span class="lineCov">        508 :                         const btBroadphasePair&amp; pair = m_overlappingPairArray[i];</span>
+<span class="lineNum">     201 </span><span class="lineCov">        254 :                         int proxyId1 = pair.m_pProxy0-&gt;getUid();</span>
+<span class="lineNum">     202 </span><span class="lineCov">        254 :                         int proxyId2 = pair.m_pProxy1-&gt;getUid();</span>
+<span class="lineNum">     203 </span>            :                         /*if (proxyId1 &gt; proxyId2) 
+<span class="lineNum">     204 </span>            :                                 btSwap(proxyId1, proxyId2);*/
+<span class="lineNum">     205 </span><span class="lineCov">        508 :                         int     hashValue = static_cast&lt;int&gt;(getHash(static_cast&lt;unsigned int&gt;(proxyId1),static_cast&lt;unsigned int&gt;(proxyId2)) &amp; (m_overlappingPairArray.capacity()-1));   // New hash value with new mask</span>
+<span class="lineNum">     206 </span><span class="lineCov">        762 :                         m_next[i] = m_hashTable[hashValue];</span>
+<span class="lineNum">     207 </span><span class="lineCov">        254 :                         m_hashTable[hashValue] = i;</span>
+<span class="lineNum">     208 </span>            :                 }
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span>            : 
+<span class="lineNum">     211 </span>            :         }
+<a name="212"><span class="lineNum">     212 </span><span class="lineCov">          8 : }</span></a>
+<span class="lineNum">     213 </span>            : 
+<span class="lineNum">     214 </span><span class="lineCov">      75008 : btBroadphasePair* btHashedOverlappingPairCache::internalAddPair(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1)</span>
+<span class="lineNum">     215 </span>            : {
+<span class="lineNum">     216 </span><span class="lineCov">      75008 :         if(proxy0-&gt;m_uniqueId&gt;proxy1-&gt;m_uniqueId) </span>
+<span class="lineNum">     217 </span>            :                 btSwap(proxy0,proxy1);
+<span class="lineNum">     218 </span><span class="lineCov">      75008 :         int proxyId1 = proxy0-&gt;getUid();</span>
+<span class="lineNum">     219 </span><span class="lineCov">      75008 :         int proxyId2 = proxy1-&gt;getUid();</span>
+<span class="lineNum">     220 </span>            : 
+<span class="lineNum">     221 </span>            :         /*if (proxyId1 &gt; proxyId2) 
+<span class="lineNum">     222 </span>            :                 btSwap(proxyId1, proxyId2);*/
+<span class="lineNum">     223 </span>            : 
+<span class="lineNum">     224 </span><span class="lineCov">     150016 :         int     hash = static_cast&lt;int&gt;(getHash(static_cast&lt;unsigned int&gt;(proxyId1),static_cast&lt;unsigned int&gt;(proxyId2)) &amp; (m_overlappingPairArray.capacity()-1));        // New hash value with new mask</span>
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span>            : 
+<span class="lineNum">     227 </span><span class="lineCov">      75008 :         btBroadphasePair* pair = internalFindPair(proxy0, proxy1, hash);</span>
+<span class="lineNum">     228 </span><span class="lineCov">      75008 :         if (pair != NULL)</span>
+<span class="lineNum">     229 </span>            :         {
+<span class="lineNum">     230 </span>            :                 return pair;
+<span class="lineNum">     231 </span>            :         }
+<span class="lineNum">     232 </span>            :         /*for(int i=0;i&lt;m_overlappingPairArray.size();++i)
+<span class="lineNum">     233 </span>            :                 {
+<span class="lineNum">     234 </span>            :                 if(     (m_overlappingPairArray[i].m_pProxy0==proxy0)&amp;&amp;
+<span class="lineNum">     235 </span>            :                         (m_overlappingPairArray[i].m_pProxy1==proxy1))
+<span class="lineNum">     236 </span>            :                         {
+<span class="lineNum">     237 </span>            :                         printf(&quot;Adding duplicated %u&lt;&gt;%u\r\n&quot;,proxyId1,proxyId2);
+<span class="lineNum">     238 </span>            :                         internalFindPair(proxy0, proxy1, hash);
+<span class="lineNum">     239 </span>            :                         }
+<span class="lineNum">     240 </span>            :                 }*/
+<span class="lineNum">     241 </span><span class="lineCov">       1273 :         int count = m_overlappingPairArray.size();</span>
+<span class="lineNum">     242 </span><span class="lineCov">       1273 :         int oldCapacity = m_overlappingPairArray.capacity();</span>
+<span class="lineNum">     243 </span><span class="lineCov">       1273 :         void* mem = &amp;m_overlappingPairArray.expandNonInitializing();</span>
+<span class="lineNum">     244 </span>            : 
+<span class="lineNum">     245 </span>            :         //this is where we add an actual pair, so also call the 'ghost'
+<span class="lineNum">     246 </span><span class="lineCov">       1273 :         if (m_ghostPairCallback)</span>
+<span class="lineNum">     247 </span><span class="lineNoCov">          0 :                 m_ghostPairCallback-&gt;addOverlappingPair(proxy0,proxy1);</span>
+<span class="lineNum">     248 </span>            : 
+<span class="lineNum">     249 </span><span class="lineCov">       1273 :         int newCapacity = m_overlappingPairArray.capacity();</span>
+<span class="lineNum">     250 </span>            : 
+<span class="lineNum">     251 </span><span class="lineCov">       1273 :         if (oldCapacity &lt; newCapacity)</span>
+<span class="lineNum">     252 </span>            :         {
+<span class="lineNum">     253 </span><span class="lineCov">          7 :                 growTables();</span>
+<span class="lineNum">     254 </span>            :                 //hash with new capacity
+<span class="lineNum">     255 </span><span class="lineCov">         14 :                 hash = static_cast&lt;int&gt;(getHash(static_cast&lt;unsigned int&gt;(proxyId1),static_cast&lt;unsigned int&gt;(proxyId2)) &amp; (m_overlappingPairArray.capacity()-1));</span>
+<span class="lineNum">     256 </span>            :         }
+<span class="lineNum">     257 </span>            :         
+<span class="lineNum">     258 </span><span class="lineCov">       2546 :         pair = new (mem) btBroadphasePair(*proxy0,*proxy1);</span>
+<span class="lineNum">     259 </span>            : //      pair-&gt;m_pProxy0 = proxy0;
+<span class="lineNum">     260 </span>            : //      pair-&gt;m_pProxy1 = proxy1;
+<span class="lineNum">     261 </span>            :         pair-&gt;m_algorithm = 0;
+<span class="lineNum">     262 </span>            :         pair-&gt;m_internalTmpValue = 0;
+<span class="lineNum">     263 </span>            :         
+<span class="lineNum">     264 </span>            : 
+<span class="lineNum">     265 </span><span class="lineCov">       3819 :         m_next[count] = m_hashTable[hash];</span>
+<span class="lineNum">     266 </span><span class="lineCov">       1273 :         m_hashTable[hash] = count;</span>
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span><span class="lineCov">       1273 :         return pair;</span>
+<span class="lineNum">     269 </span>            : }
+<span class="lineNum">     270 </span>            : 
+<a name="271"><span class="lineNum">     271 </span>            : </a>
+<span class="lineNum">     272 </span>            : 
+<span class="lineNum">     273 </span><span class="lineCov">       1122 : void* btHashedOverlappingPairCache::removeOverlappingPair(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1,btDispatcher* dispatcher)</span>
+<span class="lineNum">     274 </span>            : {
+<span class="lineNum">     275 </span><span class="lineCov">       1122 :         gRemovePairs++;</span>
+<span class="lineNum">     276 </span><span class="lineCov">       1122 :         if(proxy0-&gt;m_uniqueId&gt;proxy1-&gt;m_uniqueId) </span>
+<span class="lineNum">     277 </span>            :                 btSwap(proxy0,proxy1);
+<span class="lineNum">     278 </span><span class="lineCov">       1122 :         int proxyId1 = proxy0-&gt;getUid();</span>
+<span class="lineNum">     279 </span><span class="lineCov">       1122 :         int proxyId2 = proxy1-&gt;getUid();</span>
+<span class="lineNum">     280 </span>            : 
+<span class="lineNum">     281 </span>            :         /*if (proxyId1 &gt; proxyId2) 
+<span class="lineNum">     282 </span>            :                 btSwap(proxyId1, proxyId2);*/
+<span class="lineNum">     283 </span>            : 
+<span class="lineNum">     284 </span><span class="lineCov">       2244 :         int     hash = static_cast&lt;int&gt;(getHash(static_cast&lt;unsigned int&gt;(proxyId1),static_cast&lt;unsigned int&gt;(proxyId2)) &amp; (m_overlappingPairArray.capacity()-1));</span>
+<span class="lineNum">     285 </span>            : 
+<span class="lineNum">     286 </span><span class="lineCov">       1122 :         btBroadphasePair* pair = internalFindPair(proxy0, proxy1, hash);</span>
+<span class="lineNum">     287 </span><span class="lineCov">       1122 :         if (pair == NULL)</span>
+<span class="lineNum">     288 </span>            :         {
+<span class="lineNum">     289 </span>            :                 return 0;
+<span class="lineNum">     290 </span>            :         }
+<span class="lineNum">     291 </span>            : 
+<span class="lineNum">     292 </span><span class="lineCov">       1122 :         cleanOverlappingPair(*pair,dispatcher);</span>
+<span class="lineNum">     293 </span>            : 
+<span class="lineNum">     294 </span><span class="lineCov">       1122 :         void* userData = pair-&gt;m_internalInfo1;</span>
+<span class="lineNum">     295 </span>            : 
+<span class="lineNum">     296 </span>            :         btAssert(pair-&gt;m_pProxy0-&gt;getUid() == proxyId1);
+<span class="lineNum">     297 </span>            :         btAssert(pair-&gt;m_pProxy1-&gt;getUid() == proxyId2);
+<span class="lineNum">     298 </span>            : 
+<span class="lineNum">     299 </span><span class="lineCov">       1122 :         int pairIndex = int(pair - &amp;m_overlappingPairArray[0]);</span>
+<span class="lineNum">     300 </span>            :         btAssert(pairIndex &lt; m_overlappingPairArray.size());
+<span class="lineNum">     301 </span>            : 
+<span class="lineNum">     302 </span>            :         // Remove the pair from the hash table.
+<span class="lineNum">     303 </span><span class="lineCov">       2244 :         int index = m_hashTable[hash];</span>
+<span class="lineNum">     304 </span>            :         btAssert(index != BT_NULL_PAIR);
+<span class="lineNum">     305 </span>            : 
+<span class="lineNum">     306 </span><span class="lineCov">       1122 :         int previous = BT_NULL_PAIR;</span>
+<span class="lineNum">     307 </span><span class="lineCov">       1358 :         while (index != pairIndex)</span>
+<span class="lineNum">     308 </span>            :         {
+<span class="lineNum">     309 </span><span class="lineCov">        118 :                 previous = index;</span>
+<span class="lineNum">     310 </span><span class="lineCov">        236 :                 index = m_next[index];</span>
+<span class="lineNum">     311 </span>            :         }
+<span class="lineNum">     312 </span>            : 
+<span class="lineNum">     313 </span><span class="lineCov">       1122 :         if (previous != BT_NULL_PAIR)</span>
+<span class="lineNum">     314 </span>            :         {
+<span class="lineNum">     315 </span>            :                 btAssert(m_next[previous] == pairIndex);
+<span class="lineNum">     316 </span><span class="lineCov">        312 :                 m_next[previous] = m_next[pairIndex];</span>
+<span class="lineNum">     317 </span>            :         }
+<span class="lineNum">     318 </span>            :         else
+<span class="lineNum">     319 </span>            :         {
+<span class="lineNum">     320 </span><span class="lineCov">       2036 :                 m_hashTable[hash] = m_next[pairIndex];</span>
+<span class="lineNum">     321 </span>            :         }
+<span class="lineNum">     322 </span>            : 
+<span class="lineNum">     323 </span>            :         // We now move the last pair into spot of the
+<span class="lineNum">     324 </span>            :         // pair being removed. We need to fix the hash
+<span class="lineNum">     325 </span>            :         // table indices to support the move.
+<span class="lineNum">     326 </span>            : 
+<span class="lineNum">     327 </span><span class="lineCov">       1122 :         int lastPairIndex = m_overlappingPairArray.size() - 1;</span>
+<span class="lineNum">     328 </span>            : 
+<span class="lineNum">     329 </span><span class="lineCov">       1122 :         if (m_ghostPairCallback)</span>
+<span class="lineNum">     330 </span><span class="lineNoCov">          0 :                 m_ghostPairCallback-&gt;removeOverlappingPair(proxy0, proxy1,dispatcher);</span>
+<span class="lineNum">     331 </span>            : 
+<span class="lineNum">     332 </span>            :         // If the removed pair is the last pair, we are done.
+<span class="lineNum">     333 </span><span class="lineCov">       1122 :         if (lastPairIndex == pairIndex)</span>
+<span class="lineNum">     334 </span>            :         {
+<span class="lineNum">     335 </span><span class="lineCov">         77 :                 m_overlappingPairArray.pop_back();</span>
+<span class="lineNum">     336 </span><span class="lineCov">         77 :                 return userData;</span>
+<span class="lineNum">     337 </span>            :         }
+<span class="lineNum">     338 </span>            : 
+<span class="lineNum">     339 </span>            :         // Remove the last pair from the hash table.
+<span class="lineNum">     340 </span><span class="lineCov">       2090 :         const btBroadphasePair* last = &amp;m_overlappingPairArray[lastPairIndex];</span>
+<span class="lineNum">     341 </span>            :                 /* missing swap here too, Nat. */ 
+<span class="lineNum">     342 </span><span class="lineCov">       2090 :         int lastHash = static_cast&lt;int&gt;(getHash(static_cast&lt;unsigned int&gt;(last-&gt;m_pProxy0-&gt;getUid()), static_cast&lt;unsigned int&gt;(last-&gt;m_pProxy1-&gt;getUid())) &amp; (m_overlappingPairArray.capacity()-1));</span>
+<span class="lineNum">     343 </span>            : 
+<span class="lineNum">     344 </span><span class="lineCov">       2090 :         index = m_hashTable[lastHash];</span>
+<span class="lineNum">     345 </span>            :         btAssert(index != BT_NULL_PAIR);
+<span class="lineNum">     346 </span>            : 
+<span class="lineNum">     347 </span><span class="lineCov">       1045 :         previous = BT_NULL_PAIR;</span>
+<span class="lineNum">     348 </span><span class="lineCov">       1093 :         while (index != lastPairIndex)</span>
+<span class="lineNum">     349 </span>            :         {
+<span class="lineNum">     350 </span><span class="lineCov">         24 :                 previous = index;</span>
+<span class="lineNum">     351 </span><span class="lineCov">         48 :                 index = m_next[index];</span>
+<span class="lineNum">     352 </span>            :         }
+<span class="lineNum">     353 </span>            : 
+<span class="lineNum">     354 </span><span class="lineCov">       1045 :         if (previous != BT_NULL_PAIR)</span>
+<span class="lineNum">     355 </span>            :         {
+<span class="lineNum">     356 </span>            :                 btAssert(m_next[previous] == lastPairIndex);
+<span class="lineNum">     357 </span><span class="lineCov">         66 :                 m_next[previous] = m_next[lastPairIndex];</span>
+<span class="lineNum">     358 </span>            :         }
+<span class="lineNum">     359 </span>            :         else
+<span class="lineNum">     360 </span>            :         {
+<span class="lineNum">     361 </span><span class="lineCov">       2046 :                 m_hashTable[lastHash] = m_next[lastPairIndex];</span>
+<span class="lineNum">     362 </span>            :         }
+<span class="lineNum">     363 </span>            : 
+<span class="lineNum">     364 </span>            :         // Copy the last pair into the remove pair's spot.
+<span class="lineNum">     365 </span><span class="lineCov">       2090 :         m_overlappingPairArray[pairIndex] = m_overlappingPairArray[lastPairIndex];</span>
+<span class="lineNum">     366 </span>            : 
+<span class="lineNum">     367 </span>            :         // Insert the last pair into the hash table
+<span class="lineNum">     368 </span><span class="lineCov">       3135 :         m_next[pairIndex] = m_hashTable[lastHash];</span>
+<span class="lineNum">     369 </span><span class="lineCov">       1045 :         m_hashTable[lastHash] = pairIndex;</span>
+<span class="lineNum">     370 </span>            : 
+<span class="lineNum">     371 </span><span class="lineCov">       1045 :         m_overlappingPairArray.pop_back();</span>
+<span class="lineNum">     372 </span>            : 
+<span class="lineNum">     373 </span><span class="lineCov">       1045 :         return userData;</span>
+<span class="lineNum">     374 </span>            : }
+<a name="375"><span class="lineNum">     375 </span>            : //#include &lt;stdio.h&gt;</a>
+<span class="lineNum">     376 </span>            : 
+<span class="lineNum">     377 </span><span class="lineCov">       1558 : void    btHashedOverlappingPairCache::processAllOverlappingPairs(btOverlapCallback* callback,btDispatcher* dispatcher)</span>
+<span class="lineNum">     378 </span>            : {
+<span class="lineNum">     379 </span>            : 
+<span class="lineNum">     380 </span>            :         int i;
+<span class="lineNum">     381 </span>            : 
+<span class="lineNum">     382 </span>            : //      printf(&quot;m_overlappingPairArray.size()=%d\n&quot;,m_overlappingPairArray.size());
+<span class="lineNum">     383 </span><span class="lineCov">       1558 :         for (i=0;i&lt;m_overlappingPairArray.size();)</span>
+<span class="lineNum">     384 </span>            :         {
+<span class="lineNum">     385 </span>            :         
+<span class="lineNum">     386 </span><span class="lineCov">     450356 :                 btBroadphasePair* pair = &amp;m_overlappingPairArray[i];</span>
+<span class="lineNum">     387 </span><span class="lineCov">     225178 :                 if (callback-&gt;processOverlap(*pair))</span>
+<span class="lineNum">     388 </span>            :                 {
+<span class="lineNum">     389 </span><span class="lineNoCov">          0 :                         removeOverlappingPair(pair-&gt;m_pProxy0,pair-&gt;m_pProxy1,dispatcher);</span>
+<span class="lineNum">     390 </span>            : 
+<span class="lineNum">     391 </span><span class="lineNoCov">          0 :                         gOverlappingPairs--;</span>
+<span class="lineNum">     392 </span>            :                 } else
+<span class="lineNum">     393 </span>            :                 {
+<span class="lineNum">     394 </span><span class="lineCov">     225178 :                         i++;</span>
+<span class="lineNum">     395 </span>            :                 }
+<span class="lineNum">     396 </span>            :         }
+<a name="397"><span class="lineNum">     397 </span><span class="lineCov">       1558 : }</span></a>
+<span class="lineNum">     398 </span>            : 
+<span class="lineNum">     399 </span><span class="lineNoCov">          0 : void    btHashedOverlappingPairCache::sortOverlappingPairs(btDispatcher* dispatcher)</span>
+<span class="lineNum">     400 </span>            : {
+<span class="lineNum">     401 </span>            :         ///need to keep hashmap in sync with pair address, so rebuild all
+<span class="lineNum">     402 </span><span class="lineNoCov">          0 :         btBroadphasePairArray tmpPairs;</span>
+<span class="lineNum">     403 </span>            :         int i;
+<span class="lineNum">     404 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;m_overlappingPairArray.size();i++)</span>
+<span class="lineNum">     405 </span>            :         {
+<span class="lineNum">     406 </span><span class="lineNoCov">          0 :                 tmpPairs.push_back(m_overlappingPairArray[i]);</span>
+<span class="lineNum">     407 </span>            :         }
+<span class="lineNum">     408 </span>            : 
+<span class="lineNum">     409 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;tmpPairs.size();i++)</span>
+<span class="lineNum">     410 </span>            :         {
+<span class="lineNum">     411 </span><span class="lineNoCov">          0 :                 removeOverlappingPair(tmpPairs[i].m_pProxy0,tmpPairs[i].m_pProxy1,dispatcher);</span>
+<span class="lineNum">     412 </span>            :         }
+<span class="lineNum">     413 </span>            :         
+<span class="lineNum">     414 </span><span class="lineNoCov">          0 :         for (i = 0; i &lt; m_next.size(); i++)</span>
+<span class="lineNum">     415 </span>            :         {
+<span class="lineNum">     416 </span><span class="lineNoCov">          0 :                 m_next[i] = BT_NULL_PAIR;</span>
+<span class="lineNum">     417 </span>            :         }
+<span class="lineNum">     418 </span>            : 
+<span class="lineNum">     419 </span><span class="lineNoCov">          0 :         tmpPairs.quickSort(btBroadphasePairSortPredicate());</span>
+<span class="lineNum">     420 </span>            : 
+<span class="lineNum">     421 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;tmpPairs.size();i++)</span>
+<span class="lineNum">     422 </span>            :         {
+<span class="lineNum">     423 </span><span class="lineNoCov">          0 :                 addOverlappingPair(tmpPairs[i].m_pProxy0,tmpPairs[i].m_pProxy1);</span>
+<span class="lineNum">     424 </span>            :         }
+<span class="lineNum">     425 </span>            : 
+<span class="lineNum">     426 </span>            :         
+<span class="lineNum">     427 </span><span class="lineNoCov">          0 : }</span>
+<a name="428"><span class="lineNum">     428 </span>            : </a>
+<span class="lineNum">     429 </span>            : 
+<span class="lineNum">     430 </span><span class="lineNoCov">          0 : void*   btSortedOverlappingPairCache::removeOverlappingPair(btBroadphaseProxy* proxy0,btBroadphaseProxy* proxy1, btDispatcher* dispatcher )</span>
+<span class="lineNum">     431 </span>            : {
+<span class="lineNum">     432 </span><span class="lineNoCov">          0 :         if (!hasDeferredRemoval())</span>
+<span class="lineNum">     433 </span>            :         {
+<span class="lineNum">     434 </span><span class="lineNoCov">          0 :                 btBroadphasePair findPair(*proxy0,*proxy1);</span>
+<span class="lineNum">     435 </span>            : 
+<span class="lineNum">     436 </span><span class="lineNoCov">          0 :                 int findIndex = m_overlappingPairArray.findLinearSearch(findPair);</span>
+<span class="lineNum">     437 </span><span class="lineNoCov">          0 :                 if (findIndex &lt; m_overlappingPairArray.size())</span>
+<span class="lineNum">     438 </span>            :                 {
+<span class="lineNum">     439 </span><span class="lineNoCov">          0 :                         gOverlappingPairs--;</span>
+<span class="lineNum">     440 </span><span class="lineNoCov">          0 :                         btBroadphasePair&amp; pair = m_overlappingPairArray[findIndex];</span>
+<span class="lineNum">     441 </span><span class="lineNoCov">          0 :                         void* userData = pair.m_internalInfo1;</span>
+<span class="lineNum">     442 </span><span class="lineNoCov">          0 :                         cleanOverlappingPair(pair,dispatcher);</span>
+<span class="lineNum">     443 </span><span class="lineNoCov">          0 :                         if (m_ghostPairCallback)</span>
+<span class="lineNum">     444 </span><span class="lineNoCov">          0 :                                 m_ghostPairCallback-&gt;removeOverlappingPair(proxy0, proxy1,dispatcher);</span>
+<span class="lineNum">     445 </span>            :                         
+<span class="lineNum">     446 </span><span class="lineNoCov">          0 :                         m_overlappingPairArray.swap(findIndex,m_overlappingPairArray.capacity()-1);</span>
+<span class="lineNum">     447 </span><span class="lineNoCov">          0 :                         m_overlappingPairArray.pop_back();</span>
+<span class="lineNum">     448 </span>            :                         return userData;
+<span class="lineNum">     449 </span>            :                 }
+<span class="lineNum">     450 </span>            :         }
+<span class="lineNum">     451 </span>            : 
+<span class="lineNum">     452 </span>            :         return 0;
+<span class="lineNum">     453 </span>            : }
+<span class="lineNum">     454 </span>            : 
+<span class="lineNum">     455 </span>            : 
+<span class="lineNum">     456 </span>            : 
+<span class="lineNum">     457 </span>            : 
+<span class="lineNum">     458 </span>            : 
+<span class="lineNum">     459 </span>            : 
+<a name="460"><span class="lineNum">     460 </span>            : </a>
+<span class="lineNum">     461 </span>            : 
+<span class="lineNum">     462 </span><span class="lineNoCov">          0 : btBroadphasePair*       btSortedOverlappingPairCache::addOverlappingPair(btBroadphaseProxy* proxy0,btBroadphaseProxy* proxy1)</span>
+<span class="lineNum">     463 </span>            : {
+<span class="lineNum">     464 </span>            :         //don't add overlap with own
+<span class="lineNum">     465 </span>            :         btAssert(proxy0 != proxy1);
+<span class="lineNum">     466 </span>            : 
+<span class="lineNum">     467 </span><span class="lineNoCov">          0 :         if (!needsBroadphaseCollision(proxy0,proxy1))</span>
+<span class="lineNum">     468 </span>            :                 return 0;
+<span class="lineNum">     469 </span>            :         
+<span class="lineNum">     470 </span><span class="lineNoCov">          0 :         void* mem = &amp;m_overlappingPairArray.expandNonInitializing();</span>
+<span class="lineNum">     471 </span><span class="lineNoCov">          0 :         btBroadphasePair* pair = new (mem) btBroadphasePair(*proxy0,*proxy1);</span>
+<span class="lineNum">     472 </span>            :         
+<span class="lineNum">     473 </span><span class="lineNoCov">          0 :         gOverlappingPairs++;</span>
+<span class="lineNum">     474 </span><span class="lineNoCov">          0 :         gAddedPairs++;</span>
+<span class="lineNum">     475 </span>            :         
+<span class="lineNum">     476 </span><span class="lineNoCov">          0 :         if (m_ghostPairCallback)</span>
+<span class="lineNum">     477 </span><span class="lineNoCov">          0 :                 m_ghostPairCallback-&gt;addOverlappingPair(proxy0, proxy1);</span>
+<span class="lineNum">     478 </span>            :         return pair;
+<span class="lineNum">     479 </span>            :         
+<span class="lineNum">     480 </span>            : }
+<span class="lineNum">     481 </span>            : 
+<span class="lineNum">     482 </span>            : ///this findPair becomes really slow. Either sort the list to speedup the query, or
+<span class="lineNum">     483 </span>            : ///use a different solution. It is mainly used for Removing overlapping pairs. Removal could be delayed.
+<a name="484"><span class="lineNum">     484 </span>            : ///we could keep a linked list in each proxy, and store pair in one of the proxies (with lowest memory address)</a>
+<span class="lineNum">     485 </span>            : ///Also we can use a 2D bitmap, which can be useful for a future GPU implementation
+<span class="lineNum">     486 </span><span class="lineNoCov">          0 :  btBroadphasePair*      btSortedOverlappingPairCache::findPair(btBroadphaseProxy* proxy0,btBroadphaseProxy* proxy1)</span>
+<span class="lineNum">     487 </span>            : {
+<span class="lineNum">     488 </span><span class="lineNoCov">          0 :         if (!needsBroadphaseCollision(proxy0,proxy1))</span>
+<span class="lineNum">     489 </span>            :                 return 0;
+<span class="lineNum">     490 </span>            : 
+<span class="lineNum">     491 </span><span class="lineNoCov">          0 :         btBroadphasePair tmpPair(*proxy0,*proxy1);</span>
+<span class="lineNum">     492 </span><span class="lineNoCov">          0 :         int findIndex = m_overlappingPairArray.findLinearSearch(tmpPair);</span>
+<span class="lineNum">     493 </span>            : 
+<span class="lineNum">     494 </span><span class="lineNoCov">          0 :         if (findIndex &lt; m_overlappingPairArray.size())</span>
+<span class="lineNum">     495 </span>            :         {
+<span class="lineNum">     496 </span>            :                 //btAssert(it != m_overlappingPairSet.end());
+<span class="lineNum">     497 </span><span class="lineNoCov">          0 :                  btBroadphasePair* pair = &amp;m_overlappingPairArray[findIndex];</span>
+<span class="lineNum">     498 </span><span class="lineNoCov">          0 :                 return pair;</span>
+<span class="lineNum">     499 </span>            :         }
+<span class="lineNum">     500 </span>            :         return 0;
+<span class="lineNum">     501 </span>            : }
+<span class="lineNum">     502 </span>            : 
+<span class="lineNum">     503 </span>            : 
+<span class="lineNum">     504 </span>            : 
+<span class="lineNum">     505 </span>            : 
+<span class="lineNum">     506 </span>            : 
+<span class="lineNum">     507 </span>            : 
+<span class="lineNum">     508 </span>            : 
+<span class="lineNum">     509 </span>            : 
+<span class="lineNum">     510 </span>            : 
+<span class="lineNum">     511 </span>            : 
+<a name="512"><span class="lineNum">     512 </span>            : //#include &lt;stdio.h&gt;</a>
+<span class="lineNum">     513 </span>            : 
+<span class="lineNum">     514 </span><span class="lineNoCov">          0 : void    btSortedOverlappingPairCache::processAllOverlappingPairs(btOverlapCallback* callback,btDispatcher* dispatcher)</span>
+<span class="lineNum">     515 </span>            : {
+<span class="lineNum">     516 </span>            : 
+<span class="lineNum">     517 </span>            :         int i;
+<span class="lineNum">     518 </span>            : 
+<span class="lineNum">     519 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;m_overlappingPairArray.size();)</span>
+<span class="lineNum">     520 </span>            :         {
+<span class="lineNum">     521 </span>            :         
+<span class="lineNum">     522 </span><span class="lineNoCov">          0 :                 btBroadphasePair* pair = &amp;m_overlappingPairArray[i];</span>
+<span class="lineNum">     523 </span><span class="lineNoCov">          0 :                 if (callback-&gt;processOverlap(*pair))</span>
+<span class="lineNum">     524 </span>            :                 {
+<span class="lineNum">     525 </span><span class="lineNoCov">          0 :                         cleanOverlappingPair(*pair,dispatcher);</span>
+<span class="lineNum">     526 </span><span class="lineNoCov">          0 :                         pair-&gt;m_pProxy0 = 0;</span>
+<span class="lineNum">     527 </span><span class="lineNoCov">          0 :                         pair-&gt;m_pProxy1 = 0;</span>
+<span class="lineNum">     528 </span><span class="lineNoCov">          0 :                         m_overlappingPairArray.swap(i,m_overlappingPairArray.size()-1);</span>
+<span class="lineNum">     529 </span><span class="lineNoCov">          0 :                         m_overlappingPairArray.pop_back();</span>
+<span class="lineNum">     530 </span><span class="lineNoCov">          0 :                         gOverlappingPairs--;</span>
+<span class="lineNum">     531 </span>            :                 } else
+<span class="lineNum">     532 </span>            :                 {
+<span class="lineNum">     533 </span><span class="lineNoCov">          0 :                         i++;</span>
+<span class="lineNum">     534 </span>            :                 }
+<span class="lineNum">     535 </span>            :         }
+<span class="lineNum">     536 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     537 </span>            : 
+<span class="lineNum">     538 </span>            : 
+<a name="539"><span class="lineNum">     539 </span>            : </a>
+<span class="lineNum">     540 </span>            : 
+<span class="lineNum">     541 </span><span class="lineNoCov">          0 : btSortedOverlappingPairCache::btSortedOverlappingPairCache():</span>
+<span class="lineNum">     542 </span>            :         m_blockedForChanges(false),
+<span class="lineNum">     543 </span>            :         m_hasDeferredRemoval(true),
+<span class="lineNum">     544 </span>            :         m_overlapFilterCallback(0),
+<span class="lineNum">     545 </span><span class="lineNoCov">          0 :         m_ghostPairCallback(0)</span>
+<span class="lineNum">     546 </span>            : {
+<span class="lineNum">     547 </span><span class="lineNoCov">          0 :         int initialAllocatedSize= 2;</span>
+<span class="lineNum">     548 </span><span class="lineNoCov">          0 :         m_overlappingPairArray.reserve(initialAllocatedSize);</span>
+<a name="549"><span class="lineNum">     549 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     550 </span>            : 
+<span class="lineNum">     551 </span><span class="lineNoCov">          0 : btSortedOverlappingPairCache::~btSortedOverlappingPairCache()</span>
+<span class="lineNum">     552 </span>            : {
+<a name="553"><span class="lineNum">     553 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     554 </span>            : 
+<span class="lineNum">     555 </span><span class="lineNoCov">          0 : void    btSortedOverlappingPairCache::cleanOverlappingPair(btBroadphasePair&amp; pair,btDispatcher* dispatcher)</span>
+<span class="lineNum">     556 </span>            : {
+<span class="lineNum">     557 </span><span class="lineNoCov">          0 :         if (pair.m_algorithm)</span>
+<span class="lineNum">     558 </span>            :         {
+<span class="lineNum">     559 </span>            :                 {
+<span class="lineNum">     560 </span><span class="lineNoCov">          0 :                         pair.m_algorithm-&gt;~btCollisionAlgorithm();</span>
+<span class="lineNum">     561 </span><span class="lineNoCov">          0 :                         dispatcher-&gt;freeCollisionAlgorithm(pair.m_algorithm);</span>
+<span class="lineNum">     562 </span><span class="lineNoCov">          0 :                         pair.m_algorithm=0;</span>
+<span class="lineNum">     563 </span><span class="lineNoCov">          0 :                         gRemovePairs--;</span>
+<span class="lineNum">     564 </span>            :                 }
+<span class="lineNum">     565 </span>            :         }
+<span class="lineNum">     566 </span><span class="lineNoCov">          0 : }</span>
+<a name="567"><span class="lineNum">     567 </span>            : </a>
+<span class="lineNum">     568 </span>            : 
+<span class="lineNum">     569 </span><span class="lineNoCov">          0 : void    btSortedOverlappingPairCache::cleanProxyFromPairs(btBroadphaseProxy* proxy,btDispatcher* dispatcher)</span>
+<a name="570"><span class="lineNum">     570 </span>            : {</a>
+<span class="lineNum">     571 </span>            : 
+<span class="lineNum">     572 </span><span class="lineNoCov">          0 :         class   CleanPairCallback : public btOverlapCallback</span>
+<span class="lineNum">     573 </span>            :         {
+<span class="lineNum">     574 </span>            :                 btBroadphaseProxy* m_cleanProxy;
+<span class="lineNum">     575 </span>            :                 btOverlappingPairCache* m_pairCache;
+<span class="lineNum">     576 </span>            :                 btDispatcher* m_dispatcher;
+<span class="lineNum">     577 </span>            : 
+<span class="lineNum">     578 </span>            :         public:
+<span class="lineNum">     579 </span>            :                 CleanPairCallback(btBroadphaseProxy* cleanProxy,btOverlappingPairCache* pairCache,btDispatcher* dispatcher)
+<span class="lineNum">     580 </span><span class="lineNoCov">          0 :                         :m_cleanProxy(cleanProxy),</span>
+<span class="lineNum">     581 </span>            :                         m_pairCache(pairCache),
+<span class="lineNum">     582 </span><span class="lineNoCov">          0 :                         m_dispatcher(dispatcher)</span>
+<a name="583"><span class="lineNum">     583 </span>            :                 {</a>
+<span class="lineNum">     584 </span>            :                 }
+<span class="lineNum">     585 </span><span class="lineNoCov">          0 :                 virtual bool    processOverlap(btBroadphasePair&amp; pair)</span>
+<span class="lineNum">     586 </span>            :                 {
+<span class="lineNum">     587 </span><span class="lineNoCov">          0 :                         if ((pair.m_pProxy0 == m_cleanProxy) ||</span>
+<span class="lineNum">     588 </span><span class="lineNoCov">          0 :                                 (pair.m_pProxy1 == m_cleanProxy))</span>
+<span class="lineNum">     589 </span>            :                         {
+<span class="lineNum">     590 </span><span class="lineNoCov">          0 :                                 m_pairCache-&gt;cleanOverlappingPair(pair,m_dispatcher);</span>
+<span class="lineNum">     591 </span>            :                         }
+<span class="lineNum">     592 </span><span class="lineNoCov">          0 :                         return false;</span>
+<span class="lineNum">     593 </span>            :                 }
+<span class="lineNum">     594 </span>            :                 
+<span class="lineNum">     595 </span>            :         };
+<span class="lineNum">     596 </span>            : 
+<span class="lineNum">     597 </span><span class="lineNoCov">          0 :         CleanPairCallback cleanPairs(proxy,this,dispatcher);</span>
+<span class="lineNum">     598 </span>            : 
+<span class="lineNum">     599 </span><span class="lineNoCov">          0 :         processAllOverlappingPairs(&amp;cleanPairs,dispatcher);</span>
+<span class="lineNum">     600 </span>            : 
+<span class="lineNum">     601 </span><span class="lineNoCov">          0 : }</span>
+<a name="602"><span class="lineNum">     602 </span>            : </a>
+<span class="lineNum">     603 </span>            : 
+<span class="lineNum">     604 </span><span class="lineNoCov">          0 : void    btSortedOverlappingPairCache::removeOverlappingPairsContainingProxy(btBroadphaseProxy* proxy,btDispatcher* dispatcher)</span>
+<a name="605"><span class="lineNum">     605 </span>            : {</a>
+<span class="lineNum">     606 </span>            : 
+<span class="lineNum">     607 </span><span class="lineNoCov">          0 :         class   RemovePairCallback : public btOverlapCallback</span>
+<span class="lineNum">     608 </span>            :         {
+<span class="lineNum">     609 </span>            :                 btBroadphaseProxy* m_obsoleteProxy;
+<span class="lineNum">     610 </span>            : 
+<span class="lineNum">     611 </span>            :         public:
+<span class="lineNum">     612 </span>            :                 RemovePairCallback(btBroadphaseProxy* obsoleteProxy)
+<span class="lineNum">     613 </span><span class="lineNoCov">          0 :                         :m_obsoleteProxy(obsoleteProxy)</span>
+<a name="614"><span class="lineNum">     614 </span>            :                 {</a>
+<span class="lineNum">     615 </span>            :                 }
+<span class="lineNum">     616 </span><span class="lineNoCov">          0 :                 virtual bool    processOverlap(btBroadphasePair&amp; pair)</span>
+<span class="lineNum">     617 </span>            :                 {
+<span class="lineNum">     618 </span><span class="lineNoCov">          0 :                         return ((pair.m_pProxy0 == m_obsoleteProxy) ||</span>
+<span class="lineNum">     619 </span><span class="lineNoCov">          0 :                                 (pair.m_pProxy1 == m_obsoleteProxy));</span>
+<span class="lineNum">     620 </span>            :                 }
+<span class="lineNum">     621 </span>            :                 
+<span class="lineNum">     622 </span>            :         };
+<span class="lineNum">     623 </span>            : 
+<span class="lineNum">     624 </span><span class="lineNoCov">          0 :         RemovePairCallback removeCallback(proxy);</span>
+<span class="lineNum">     625 </span>            : 
+<span class="lineNum">     626 </span><span class="lineNoCov">          0 :         processAllOverlappingPairs(&amp;removeCallback,dispatcher);</span>
+<a name="627"><span class="lineNum">     627 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     628 </span>            : 
+<span class="lineNum">     629 </span><span class="lineNoCov">          0 : void    btSortedOverlappingPairCache::sortOverlappingPairs(btDispatcher* dispatcher)</span>
+<span class="lineNum">     630 </span>            : {
+<span class="lineNum">     631 </span>            :         //should already be sorted
+<span class="lineNum">     632 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     633 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

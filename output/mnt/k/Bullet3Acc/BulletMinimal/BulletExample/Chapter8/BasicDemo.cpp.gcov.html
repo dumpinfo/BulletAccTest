@@ -1,0 +1,293 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - /mnt/k/Bullet3Acc/BulletMinimal/BulletExample/Chapter8/BasicDemo.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../../index.html">top level</a> - <a href="index.html">mnt/k/Bullet3Acc/BulletMinimal/BulletExample/Chapter8</a> - BasicDemo.cpp<span style="font-size: 80%;"> (source / <a href="BasicDemo.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">103</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : #include &quot;BasicDemo.h&quot;</a>
+<span class="lineNum">       2 </span>            : 
+<span class="lineNum">       3 </span><span class="lineNoCov">          0 : BasicDemo::BasicDemo()</span>
+<span class="lineNum">       4 </span>            : :
+<span class="lineNum">       5 </span>            : BulletOpenGLApplication(),
+<span class="lineNum">       6 </span>            : m_bApplyForce(false),
+<span class="lineNum">       7 </span>            : m_pExplosion(0),
+<span class="lineNum">       8 </span><span class="lineNoCov">          0 : m_bCanExplode(true) {</span>
+<span class="lineNum">       9 </span>            : 
+<a name="10"><span class="lineNum">      10 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      11 </span>            : 
+<span class="lineNum">      12 </span><span class="lineNoCov">          0 : void BasicDemo::InitializePhysics() {</span>
+<span class="lineNum">      13 </span>            :         // create the collision configuration
+<span class="lineNum">      14 </span><span class="lineNoCov">          0 :         m_pCollisionConfiguration = new btDefaultCollisionConfiguration();</span>
+<span class="lineNum">      15 </span>            :         // create the dispatcher
+<span class="lineNum">      16 </span><span class="lineNoCov">          0 :         m_pDispatcher = new btCollisionDispatcher(m_pCollisionConfiguration);</span>
+<span class="lineNum">      17 </span>            :         // create the broadphase
+<span class="lineNum">      18 </span><span class="lineNoCov">          0 :         m_pBroadphase = new btDbvtBroadphase();</span>
+<span class="lineNum">      19 </span>            :         // create the constraint solver
+<span class="lineNum">      20 </span><span class="lineNoCov">          0 :         m_pSolver = new btSequentialImpulseConstraintSolver();</span>
+<span class="lineNum">      21 </span>            :         // create the world
+<span class="lineNum">      22 </span><span class="lineNoCov">          0 :         m_pWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);</span>
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            :         // create our scene's physics objects
+<span class="lineNum">      25 </span><span class="lineNoCov">          0 :         CreateObjects();</span>
+<a name="26"><span class="lineNum">      26 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      27 </span>            : 
+<span class="lineNum">      28 </span><span class="lineNoCov">          0 : void BasicDemo::ShutdownPhysics() {</span>
+<span class="lineNum">      29 </span><span class="lineNoCov">          0 :         delete m_pWorld;</span>
+<span class="lineNum">      30 </span><span class="lineNoCov">          0 :         delete m_pSolver;</span>
+<span class="lineNum">      31 </span><span class="lineNoCov">          0 :         delete m_pBroadphase;</span>
+<span class="lineNum">      32 </span><span class="lineNoCov">          0 :         delete m_pDispatcher;</span>
+<span class="lineNum">      33 </span><span class="lineNoCov">          0 :         delete m_pCollisionConfiguration;</span>
+<a name="34"><span class="lineNum">      34 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span><span class="lineNoCov">          0 : void BasicDemo::CreateObjects() {</span>
+<span class="lineNum">      37 </span>            :         // create a ground plane
+<span class="lineNum">      38 </span><span class="lineNoCov">          0 :         CreateGameObject(new btBoxShape(btVector3(1,50,50)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(0.0f, 0.0f, 0.0f));</span>
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            :         // create our red box, but store the pointer for future usage
+<span class="lineNum">      41 </span><span class="lineNoCov">          0 :         m_pBox = CreateGameObject(new btBoxShape(btVector3(1,1,1)), 1.0, btVector3(1.0f, 0.2f, 0.2f), btVector3(0.0f, 10.0f, 0.0f));</span>
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            :         // create a second box
+<span class="lineNum">      44 </span><span class="lineNoCov">          0 :         CreateGameObject(new btBoxShape(btVector3(1,1,1)), 1.0, btVector3(0.0f, 0.2f, 0.8f), btVector3(1.25f, 20.0f, 0.0f));</span>
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            :         // create a trigger volume
+<span class="lineNum">      47 </span><span class="lineNoCov">          0 :         m_pTrigger = new btCollisionObject();</span>
+<span class="lineNum">      48 </span>            :         // create a box for the trigger's shape
+<span class="lineNum">      49 </span><span class="lineNoCov">          0 :         m_pTrigger-&gt;setCollisionShape(new btBoxShape(btVector3(1,0.25,1)));</span>
+<span class="lineNum">      50 </span>            :         // set the trigger's position
+<span class="lineNum">      51 </span><span class="lineNoCov">          0 :         btTransform triggerTrans;</span>
+<span class="lineNum">      52 </span><span class="lineNoCov">          0 :         triggerTrans.setIdentity();</span>
+<span class="lineNum">      53 </span><span class="lineNoCov">          0 :         triggerTrans.setOrigin(btVector3(0,1.5,0));</span>
+<span class="lineNum">      54 </span><span class="lineNoCov">          0 :         m_pTrigger-&gt;setWorldTransform(triggerTrans);</span>
+<span class="lineNum">      55 </span>            :         // flag the trigger to ignore contact responses
+<span class="lineNum">      56 </span><span class="lineNoCov">          0 :         m_pTrigger-&gt;setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);</span>
+<span class="lineNum">      57 </span>            :         // add the trigger to our world
+<span class="lineNum">      58 </span><span class="lineNoCov">          0 :         m_pWorld-&gt;addCollisionObject(m_pTrigger);</span>
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span>            :         // create a yellow sphere
+<span class="lineNum">      61 </span><span class="lineNoCov">          0 :         CreateGameObject(new btSphereShape(1.0f), 1.0, btVector3(0.7f, 0.7f, 0.0f), btVector3(-5.0, 10.0f, 0.0f));</span>
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span>            :         // create a green cylinder
+<span class="lineNum">      64 </span><span class="lineNoCov">          0 :         CreateGameObject(new btCylinderShape(btVector3(1,1,1)), 1.0, btVector3(0.0f, 0.7f, 0.0f), btVector3(-2, 10.0f, 0.0f));</span>
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            :         // create a vertex cloud defining a square-based pyramid
+<span class="lineNum">      67 </span>            :         btVector3 points[5] = {btVector3(-0.5,1,1),
+<span class="lineNum">      68 </span>            :                 btVector3(-0.5,1,-1),
+<span class="lineNum">      69 </span>            :                 btVector3(-0.5,-1,1),
+<span class="lineNum">      70 </span>            :                 btVector3(-0.5,-1,-1),
+<span class="lineNum">      71 </span><span class="lineNoCov">          0 :                 btVector3(1,0,0)};</span>
+<span class="lineNum">      72 </span>            :         // create our convex hull
+<span class="lineNum">      73 </span><span class="lineNoCov">          0 :         btConvexHullShape* pShape = new btConvexHullShape(&amp;points[0].getX(),5);</span>
+<span class="lineNum">      74 </span>            :         // initialize the object as a polyhedron
+<span class="lineNum">      75 </span><span class="lineNoCov">          0 :         pShape-&gt;initializePolyhedralFeatures();</span>
+<span class="lineNum">      76 </span>            :         // create the game object using our convex hull shape
+<span class="lineNum">      77 </span><span class="lineNoCov">          0 :         CreateGameObject(pShape, 1.0, btVector3(1,1,1), btVector3(5, 15, 0));</span>
+<span class="lineNum">      78 </span>            : 
+<span class="lineNum">      79 </span>            :         // create two shapes for the rod and the load
+<span class="lineNum">      80 </span><span class="lineNoCov">          0 :         btCollisionShape* pRod = new btBoxShape(btVector3(1.5f, 0.2f, 0.2f));</span>
+<span class="lineNum">      81 </span><span class="lineNoCov">          0 :         btCollisionShape* pLoad = new btSphereShape(0.5f);</span>
+<span class="lineNum">      82 </span>            :         // create a transform we'll use to set each object's position
+<span class="lineNum">      83 </span><span class="lineNoCov">          0 :         btTransform trans;</span>
+<span class="lineNum">      84 </span><span class="lineNoCov">          0 :         trans.setIdentity();</span>
+<span class="lineNum">      85 </span>            :         // create our compound shape
+<span class="lineNum">      86 </span><span class="lineNoCov">          0 :         btCompoundShape* pCompound = new btCompoundShape();</span>
+<span class="lineNum">      87 </span>            :         // add the rod
+<span class="lineNum">      88 </span><span class="lineNoCov">          0 :         pCompound-&gt;addChildShape(trans, pRod);</span>
+<span class="lineNum">      89 </span><span class="lineNoCov">          0 :         trans.setOrigin(btVector3(-1.75f, 0.0f, 0.0f));</span>
+<span class="lineNum">      90 </span>            :         // add the top load
+<span class="lineNum">      91 </span><span class="lineNoCov">          0 :         pCompound-&gt;addChildShape(trans, pLoad);</span>
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :         trans.setIdentity();</span>
+<span class="lineNum">      93 </span>            :         // add the bottom load
+<span class="lineNum">      94 </span><span class="lineNoCov">          0 :         trans.setOrigin(btVector3(1.75f, 0.0f, 0.0f));</span>
+<span class="lineNum">      95 </span><span class="lineNoCov">          0 :         pCompound-&gt;addChildShape(trans, pLoad);</span>
+<span class="lineNum">      96 </span>            :         // create a game object using the compound shape
+<span class="lineNum">      97 </span><span class="lineNoCov">          0 :         CreateGameObject(pCompound, 2.0f, btVector3(0.8,0.4,0.1), btVector3(-4, 10.0f, 0.0f));</span>
+<span class="lineNum">      98 </span>            : 
+<a name="99"><span class="lineNum">      99 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     100 </span>            : 
+<span class="lineNum">     101 </span><span class="lineNoCov">          0 : void BasicDemo::CollisionEvent(btRigidBody* pBody0, btRigidBody* pBody1) {</span>
+<span class="lineNum">     102 </span>            :         // did the box collide with the trigger?
+<span class="lineNum">     103 </span><span class="lineNoCov">          0 :         if (pBody0 == m_pBox-&gt;GetRigidBody() &amp;&amp; pBody1 == m_pTrigger ||</span>
+<span class="lineNum">     104 </span><span class="lineNoCov">          0 :                 pBody1 == m_pBox-&gt;GetRigidBody() &amp;&amp; pBody0 == m_pTrigger) {</span>
+<span class="lineNum">     105 </span>            :                         // if yes, create a big green box nearby
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 :                         CreateGameObject(new btBoxShape(btVector3(2,2,2)), 2.0, btVector3(0.3, 0.7, 0.3), btVector3(5, 10, 0));</span>
+<span class="lineNum">     107 </span>            :         }
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            :         // Impulse testing
+<span class="lineNum">     110 </span><span class="lineNoCov">          0 :         if (pBody0 == m_pExplosion || pBody1 == m_pExplosion) {</span>
+<span class="lineNum">     111 </span>            :                 // get the pointer of the other object
+<span class="lineNum">     112 </span>            :                 btRigidBody* pOther;
+<span class="lineNum">     113 </span><span class="lineNoCov">          0 :                 pBody0 == m_pExplosion ? pOther = (btRigidBody*)pBody1 : pOther = (btRigidBody*)pBody0;</span>
+<span class="lineNum">     114 </span>            :                 // wake the object up
+<span class="lineNum">     115 </span><span class="lineNoCov">          0 :                 pOther-&gt;setActivationState(ACTIVE_TAG);</span>
+<span class="lineNum">     116 </span>            :                 // calculate the vector between the object and
+<span class="lineNum">     117 </span>            :                 // the center of the explosion
+<span class="lineNum">     118 </span><span class="lineNoCov">          0 :                 btVector3 dir = pOther-&gt;getWorldTransform().getOrigin() - m_pExplosion-&gt;getWorldTransform().getOrigin();</span>
+<span class="lineNum">     119 </span>            :                 // get the distance
+<span class="lineNum">     120 </span><span class="lineNoCov">          0 :                 float dist = dir.length();</span>
+<span class="lineNum">     121 </span>            :                 // calculate the impulse strength
+<span class="lineNum">     122 </span><span class="lineNoCov">          0 :                 float strength = EXPLOSION_STRENGTH;</span>
+<span class="lineNum">     123 </span>            :                 // follow an inverse-distance rule
+<span class="lineNum">     124 </span><span class="lineNoCov">          0 :                 if (dist != 0.0) strength /= dist;</span>
+<span class="lineNum">     125 </span>            :                 // normalize the direction vector
+<span class="lineNum">     126 </span><span class="lineNoCov">          0 :                 dir.normalize();</span>
+<span class="lineNum">     127 </span>            :                 // apply the impulse
+<span class="lineNum">     128 </span><span class="lineNoCov">          0 :                 pOther-&gt;applyCentralImpulse(dir * strength);</span>
+<span class="lineNum">     129 </span>            :         }
+<a name="130"><span class="lineNum">     130 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span><span class="lineNoCov">          0 : void BasicDemo::Keyboard(unsigned char key, int x, int y) {</span>
+<span class="lineNum">     133 </span>            :         // call the base implementation first
+<span class="lineNum">     134 </span><span class="lineNoCov">          0 :         BulletOpenGLApplication::Keyboard(key, x, y);</span>
+<span class="lineNum">     135 </span><span class="lineNoCov">          0 :         switch(key) {</span>
+<span class="lineNum">     136 </span>            :         // Force testing
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 :         case 'g': </span>
+<span class="lineNum">     138 </span>            :                 {
+<span class="lineNum">     139 </span>            :                         // if 'g' is held down, apply a force
+<span class="lineNum">     140 </span><span class="lineNoCov">          0 :                         m_bApplyForce = true; </span>
+<span class="lineNum">     141 </span>            :                         // prevent the box from deactivating
+<span class="lineNum">     142 </span><span class="lineNoCov">          0 :                         m_pBox-&gt;GetRigidBody()-&gt;setActivationState(DISABLE_DEACTIVATION);</span>
+<span class="lineNum">     143 </span><span class="lineNoCov">          0 :                         break;</span>
+<span class="lineNum">     144 </span>            :                 }
+<span class="lineNum">     145 </span>            :         // Impulse testing
+<span class="lineNum">     146 </span><span class="lineNoCov">          0 :         case 'e':</span>
+<span class="lineNum">     147 </span>            :                 {
+<span class="lineNum">     148 </span>            :                         // don't create a new explosion if one already exists
+<span class="lineNum">     149 </span>            :                         // or we haven't released the key, yet
+<span class="lineNum">     150 </span><span class="lineNoCov">          0 :                         if (m_pExplosion || !m_bCanExplode) break;</span>
+<span class="lineNum">     151 </span>            :                         // don't let us create another explosion until the key is released
+<span class="lineNum">     152 </span><span class="lineNoCov">          0 :                         m_bCanExplode = false;</span>
+<span class="lineNum">     153 </span>            :                         // create a collision object for our explosion
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :                         m_pExplosion = new btCollisionObject();</span>
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :                         m_pExplosion-&gt;setCollisionShape(new btSphereShape(3.0f));</span>
+<span class="lineNum">     156 </span>            :                         // get the position that we clicked
+<span class="lineNum">     157 </span><span class="lineNoCov">          0 :                         RayResult result;</span>
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 :                         Raycast(m_cameraPosition, GetPickingRay(x, y), result, true);</span>
+<span class="lineNum">     159 </span>            :                         // create a transform from the hit point
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :                         btTransform explodeTrans;</span>
+<span class="lineNum">     161 </span><span class="lineNoCov">          0 :                         explodeTrans.setIdentity();</span>
+<span class="lineNum">     162 </span><span class="lineNoCov">          0 :                         explodeTrans.setOrigin(result.hitPoint);</span>
+<span class="lineNum">     163 </span><span class="lineNoCov">          0 :                         m_pExplosion-&gt;setWorldTransform(explodeTrans);</span>
+<span class="lineNum">     164 </span>            :                         // set the collision flag
+<span class="lineNum">     165 </span><span class="lineNoCov">          0 :                         m_pExplosion-&gt;setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);</span>
+<span class="lineNum">     166 </span>            :                         // add the explosion trigger to our world
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :                         m_pWorld-&gt;addCollisionObject(m_pExplosion);</span>
+<span class="lineNum">     168 </span><span class="lineNoCov">          0 :                         break;</span>
+<span class="lineNum">     169 </span>            :                 }
+<span class="lineNum">     170 </span>            :         }
+<a name="171"><span class="lineNum">     171 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span><span class="lineNoCov">          0 : void BasicDemo::KeyboardUp(unsigned char key, int x, int y) {</span>
+<span class="lineNum">     174 </span>            :         // call the base implementation first
+<span class="lineNum">     175 </span><span class="lineNoCov">          0 :         BulletOpenGLApplication::KeyboardUp(key, x, y);</span>
+<span class="lineNum">     176 </span><span class="lineNoCov">          0 :         switch(key) {</span>
+<span class="lineNum">     177 </span>            :         // Force testing
+<span class="lineNum">     178 </span><span class="lineNoCov">          0 :         case 'g': </span>
+<span class="lineNum">     179 </span>            :                 {
+<span class="lineNum">     180 </span>            :                         // if 'g' is let go, stop applying the force
+<span class="lineNum">     181 </span><span class="lineNoCov">          0 :                         m_bApplyForce = false; </span>
+<span class="lineNum">     182 </span>            :                         // allow the object to deactivate again
+<span class="lineNum">     183 </span><span class="lineNoCov">          0 :                         m_pBox-&gt;GetRigidBody()-&gt;forceActivationState(ACTIVE_TAG); </span>
+<span class="lineNum">     184 </span><span class="lineNoCov">          0 :                         break;</span>
+<span class="lineNum">     185 </span>            :                 }
+<span class="lineNum">     186 </span>            :         // Impulse testing
+<span class="lineNum">     187 </span><span class="lineNoCov">          0 :         case 'e': m_bCanExplode = true; break;</span>
+<span class="lineNum">     188 </span>            :         }
+<a name="189"><span class="lineNum">     189 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     190 </span>            : 
+<span class="lineNum">     191 </span><span class="lineNoCov">          0 : void BasicDemo::UpdateScene(float dt) {</span>
+<span class="lineNum">     192 </span>            :         // call the base implementation first
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 :         BulletOpenGLApplication::UpdateScene(dt);</span>
+<span class="lineNum">     194 </span>            : 
+<span class="lineNum">     195 </span>            :         // Force testing
+<span class="lineNum">     196 </span><span class="lineNoCov">          0 :         if (m_bApplyForce) {</span>
+<span class="lineNum">     197 </span><span class="lineNoCov">          0 :                 if (!m_pBox) return;</span>
+<span class="lineNum">     198 </span>            :                 // apply a central upwards force that exceeds gravity
+<span class="lineNum">     199 </span><span class="lineNoCov">          0 :                 m_pBox-&gt;GetRigidBody()-&gt;applyCentralForce(btVector3(0, 20, 0));</span>
+<span class="lineNum">     200 </span>            :         }
+<span class="lineNum">     201 </span>            : 
+<span class="lineNum">     202 </span>            :         // Impulse testing
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :         if (m_pExplosion) {</span>
+<span class="lineNum">     204 </span>            :                 // destroy the explosion object after one iteration
+<span class="lineNum">     205 </span><span class="lineNoCov">          0 :                 m_pWorld-&gt;removeCollisionObject(m_pExplosion);</span>
+<span class="lineNum">     206 </span><span class="lineNoCov">          0 :                 delete m_pExplosion;</span>
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 :                 m_pExplosion = 0;</span>
+<span class="lineNum">     208 </span>            :         }
+<span class="lineNum">     209 </span>            : }
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - /mnt/k/Bullet3Acc/BulletMinimal/BulletExample/Chapter8/CollisionFilteringDemo.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../../index.html">top level</a> - <a href="index.html">mnt/k/Bullet3Acc/BulletMinimal/BulletExample/Chapter8</a> - CollisionFilteringDemo.cpp<span style="font-size: 80%;"> (source / <a href="CollisionFilteringDemo.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">26</td>
+            <td class="headerCovTableEntry">33</td>
+            <td class="headerCovTableEntryMed">78.8 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntryMed">75.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*ADD*/ #include &quot;CollisionFilteringDemo.h&quot;</a>
+<span class="lineNum">       2 </span>            : /*ADD*/ 
+<span class="lineNum">       3 </span><span class="lineCov">          1 : /*ADD*/ CollisionFilteringDemo::CollisionFilteringDemo()</span>
+<span class="lineNum">       4 </span>            : /*ADD*/         :
+<span class="lineNum">       5 </span><span class="lineCov">          1 : /*ADD*/ BulletOpenGLApplication()</span>
+<span class="lineNum">       6 </span>            : /*ADD*/ {
+<a name="7"><span class="lineNum">       7 </span><span class="lineCov">          1 : /*ADD*/ }</span></a>
+<span class="lineNum">       8 </span>            : /*ADD*/ 
+<span class="lineNum">       9 </span><span class="lineCov">          1 : /*ADD*/ void CollisionFilteringDemo::InitializePhysics() {</span>
+<span class="lineNum">      10 </span>            : /*ADD*/         // create the collision configuration
+<span class="lineNum">      11 </span><span class="lineCov">          1 : /*ADD*/         m_pCollisionConfiguration = new btDefaultCollisionConfiguration();</span>
+<span class="lineNum">      12 </span>            : /*ADD*/         // create the dispatcher
+<span class="lineNum">      13 </span><span class="lineCov">          1 : /*ADD*/         m_pDispatcher = new btCollisionDispatcher(m_pCollisionConfiguration);</span>
+<span class="lineNum">      14 </span>            : /*ADD*/         // create the broadphase
+<span class="lineNum">      15 </span><span class="lineCov">          1 : /*ADD*/         m_pBroadphase = new btDbvtBroadphase();</span>
+<span class="lineNum">      16 </span>            : /*ADD*/         // create the constraint solver
+<span class="lineNum">      17 </span><span class="lineCov">          1 : /*ADD*/         m_pSolver = new btSequentialImpulseConstraintSolver();</span>
+<span class="lineNum">      18 </span>            : /*ADD*/         // create the world
+<span class="lineNum">      19 </span><span class="lineCov">          1 : /*ADD*/         m_pWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);</span>
+<span class="lineNum">      20 </span><span class="lineCov">          1 : /*ADD*/         CreateObjects();</span>
+<a name="21"><span class="lineNum">      21 </span><span class="lineCov">          1 : /*ADD*/ }</span></a>
+<span class="lineNum">      22 </span>            : /*ADD*/ 
+<span class="lineNum">      23 </span><span class="lineNoCov">          0 : /*ADD*/ void CollisionFilteringDemo::ShutdownPhysics() {</span>
+<span class="lineNum">      24 </span><span class="lineNoCov">          0 : /*ADD*/         delete m_pWorld;</span>
+<span class="lineNum">      25 </span><span class="lineNoCov">          0 : /*ADD*/         delete m_pSolver;</span>
+<span class="lineNum">      26 </span><span class="lineNoCov">          0 : /*ADD*/         delete m_pBroadphase;</span>
+<span class="lineNum">      27 </span><span class="lineNoCov">          0 : /*ADD*/         delete m_pDispatcher;</span>
+<span class="lineNum">      28 </span><span class="lineNoCov">          0 : /*ADD*/         delete m_pCollisionConfiguration;</span>
+<a name="29"><span class="lineNum">      29 </span><span class="lineNoCov">          0 : /*ADD*/ }</span></a>
+<span class="lineNum">      30 </span>            : /*ADD*/ 
+<span class="lineNum">      31 </span><span class="lineCov">          1 : /*ADD*/ void CollisionFilteringDemo::CreateObjects() {</span>
+<span class="lineNum">      32 </span>            : /*ADD*/         // create a ground plane
+<span class="lineNum">      33 </span><span class="lineCov">          3 : /*ADD*/         CreateGameObject(new btBoxShape(btVector3(1,50,50)), </span>
+<span class="lineNum">      34 </span><span class="lineCov">          2 : /*ADD*/                 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(0.0f, 0.0f, 0.0f),</span>
+<span class="lineNum">      35 </span>            : /*ADD*/                 COLGROUP_STATIC,
+<span class="lineNum">      36 </span>            : /*ADD*/                 /*the ground plane can collide with boxes and spheres*/
+<span class="lineNum">      37 </span>            : /*ADD*/                 COLGROUP_BOX | COLGROUP_SPHERE);
+<span class="lineNum">      38 </span>            : /*ADD*/ 
+<span class="lineNum">      39 </span>            : /*ADD*/         // create 25 boxes and spheres in a 5x5 stack formation 
+<span class="lineNum">      40 </span><span class="lineCov">          1 : /*ADD*/         float yPos = 0;</span>
+<span class="lineNum">      41 </span><span class="lineCov">         26 : /*ADD*/         for (int i = 0; i &lt; 25; i++) {</span>
+<span class="lineNum">      42 </span>            : /*ADD*/                 // calculate the x and y for the object
+<span class="lineNum">      43 </span><span class="lineCov">         25 : /*ADD*/                 float xPos = -5 + 2*(float)(i % 5);</span>
+<span class="lineNum">      44 </span><span class="lineCov">         25 : /*ADD*/                 if (i % 5 == 0) yPos += 2;</span>
+<span class="lineNum">      45 </span>            : /*ADD*/                 // create a btVector3 for the position
+<span class="lineNum">      46 </span><span class="lineCov">         25 : /*ADD*/                 btVector3 position(xPos, yPos, 4);</span>
+<span class="lineNum">      47 </span>            : /*ADD*/ 
+<span class="lineNum">      48 </span>            : /*ADD*/                 // create a box
+<span class="lineNum">      49 </span><span class="lineCov">         75 : /*ADD*/                 CreateGameObject(new btBoxShape(btVector3(1,1,1)),</span>
+<span class="lineNum">      50 </span>            : /*ADD*/                         1.0f,
+<span class="lineNum">      51 </span>            : /*ADD*/                         /*alternate colors*/
+<span class="lineNum">      52 </span><span class="lineCov">         50 : /*ADD*/                         btVector3(1.0f, 0.2f, i%2),</span>
+<span class="lineNum">      53 </span>            : /*ADD*/                         position,
+<span class="lineNum">      54 </span>            : /*ADD*/                         COLGROUP_BOX,
+<span class="lineNum">      55 </span>            : /*ADD*/                         /*boxes can collide with the ground plane and other boxes*/
+<span class="lineNum">      56 </span>            : /*ADD*/                         COLGROUP_BOX | COLGROUP_STATIC);
+<span class="lineNum">      57 </span>            : /*ADD*/ 
+<span class="lineNum">      58 </span>            : /*ADD*/                 // create a sphere in the same location
+<span class="lineNum">      59 </span><span class="lineCov">        100 : /*ADD*/                 GameObject* pSphere = CreateGameObject(new btSphereShape(1.2),</span>
+<span class="lineNum">      60 </span>            : /*ADD*/                         1.0f,
+<span class="lineNum">      61 </span>            : /*ADD*/                         /*alternate colors*/
+<span class="lineNum">      62 </span><span class="lineCov">         50 : /*ADD*/                         btVector3(i%2, 1.0f, 0.2f),</span>
+<span class="lineNum">      63 </span>            : /*ADD*/                         position,
+<span class="lineNum">      64 </span>            : /*ADD*/                         COLGROUP_SPHERE,
+<span class="lineNum">      65 </span>            : /*ADD*/                         /*spheres can collide with the ground plane and other spheres*/
+<span class="lineNum">      66 </span><span class="lineCov">         25 : /*ADD*/                         COLGROUP_SPHERE | COLGROUP_STATIC);</span>
+<span class="lineNum">      67 </span>            : /*ADD*/                 // set the sphere to only move in the XY plane
+<span class="lineNum">      68 </span><span class="lineCov">         25 : /*ADD*/                 pSphere-&gt;GetRigidBody()-&gt;setLinearFactor(btVector3(1, 1, 0));</span>
+<span class="lineNum">      69 </span>            : /*ADD*/         }
+<span class="lineNum">      70 </span><span class="lineCov">          1 : /*ADD*/ }</span>
+<span class="lineNum">      71 </span>            : /*ADD*/ 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

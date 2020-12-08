@@ -1,0 +1,961 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - LinearMath/btQuaternion.h</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">LinearMath</a> - btQuaternion.h<span style="font-size: 80%;"> (source / <a href="btQuaternion.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">36</td>
+            <td class="headerCovTableEntry">67</td>
+            <td class="headerCovTableEntryLo">53.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntryLo">66.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Copyright (c) 2003-2006 Gino van den Bergen / Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       5 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       6 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       7 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       8 </span>            : subject to the following restrictions:
+<span class="lineNum">       9 </span>            : 
+<span class="lineNum">      10 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      11 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      12 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      13 </span>            : */
+<span class="lineNum">      14 </span>            : 
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : #ifndef BT_SIMD__QUATERNION_H_
+<span class="lineNum">      18 </span>            : #define BT_SIMD__QUATERNION_H_
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span>            : #include &quot;btVector3.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;btQuadWord.h&quot;
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span>            : 
+<span class="lineNum">      28 </span>            : #ifdef BT_USE_SSE
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span>            : const __m128 ATTRIBUTE_ALIGNED16(vOnes) = {1.0f, 1.0f, 1.0f, 1.0f};
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span>            : #endif
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            : #if defined(BT_USE_SSE) || defined(BT_USE_NEON)
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span>            : const btSimdFloat4 ATTRIBUTE_ALIGNED16(vQInv) = {-0.0f, -0.0f, -0.0f, +0.0f};
+<span class="lineNum">      37 </span>            : const btSimdFloat4 ATTRIBUTE_ALIGNED16(vPPPM) = {+0.0f, +0.0f, +0.0f, -0.0f};
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : #endif
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            : /**@brief The btQuaternion implements quaternion to perform linear algebra rotations in combination with btMatrix3x3, btVector3 and btTransform. */
+<span class="lineNum">      42 </span>            : class btQuaternion : public btQuadWord {
+<span class="lineNum">      43 </span>            : public:
+<span class="lineNum">      44 </span>            :   /**@brief No initialization constructor */
+<span class="lineNum">      45 </span><span class="lineCov">    1500676 :         btQuaternion() {}</span>
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span>            : #if (defined(BT_USE_SSE_IN_API) &amp;&amp; defined(BT_USE_SSE))|| defined(BT_USE_NEON) 
+<span class="lineNum">      48 </span>            :         // Set Vector 
+<span class="lineNum">      49 </span>            :         SIMD_FORCE_INLINE btQuaternion(const btSimdFloat4 vec)
+<span class="lineNum">      50 </span>            :         {
+<span class="lineNum">      51 </span>            :                 mVec128 = vec;
+<span class="lineNum">      52 </span>            :         }
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span>            :         // Copy constructor
+<span class="lineNum">      55 </span>            :         SIMD_FORCE_INLINE btQuaternion(const btQuaternion&amp; rhs)
+<span class="lineNum">      56 </span>            :         {
+<span class="lineNum">      57 </span>            :                 mVec128 = rhs.mVec128;
+<span class="lineNum">      58 </span>            :         }
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span>            :         // Assignment Operator
+<span class="lineNum">      61 </span>            :         SIMD_FORCE_INLINE btQuaternion&amp; 
+<span class="lineNum">      62 </span>            :         operator=(const btQuaternion&amp; v) 
+<span class="lineNum">      63 </span>            :         {
+<span class="lineNum">      64 </span>            :                 mVec128 = v.mVec128;
+<span class="lineNum">      65 </span>            :                 
+<span class="lineNum">      66 </span>            :                 return *this;
+<span class="lineNum">      67 </span>            :         }
+<span class="lineNum">      68 </span>            :         
+<span class="lineNum">      69 </span>            : #endif
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span>            :         //              template &lt;typename btScalar&gt;
+<a name="72"><span class="lineNum">      72 </span>            :         //              explicit Quaternion(const btScalar *v) : Tuple4&lt;btScalar&gt;(v) {}</a>
+<span class="lineNum">      73 </span>            :   /**@brief Constructor from scalars */
+<span class="lineNum">      74 </span><span class="lineCov">        101 :         btQuaternion(const btScalar&amp; _x, const btScalar&amp; _y, const btScalar&amp; _z, const btScalar&amp; _w) </span>
+<span class="lineNum">      75 </span><span class="lineCov">    2251115 :                 : btQuadWord(_x, _y, _z, _w) </span>
+<span class="lineNum">      76 </span><span class="lineCov">        101 :         {}</span>
+<span class="lineNum">      77 </span>            :   /**@brief Axis angle Constructor
+<a name="78"><span class="lineNum">      78 </span>            :    * @param axis The axis which the rotation is around</a>
+<span class="lineNum">      79 </span>            :    * @param angle The magnitude of the rotation around the angle (Radians) */
+<span class="lineNum">      80 </span><span class="lineCov">      12420 :         btQuaternion(const btVector3&amp; _axis, const btScalar&amp; _angle) </span>
+<span class="lineNum">      81 </span><span class="lineCov">      12420 :         { </span>
+<span class="lineNum">      82 </span><span class="lineCov">      12420 :                 setRotation(_axis, _angle); </span>
+<span class="lineNum">      83 </span><span class="lineCov">      12420 :         }</span>
+<span class="lineNum">      84 </span>            :   /**@brief Constructor from Euler angles
+<span class="lineNum">      85 </span>            :    * @param yaw Angle around Y unless BT_EULER_DEFAULT_ZYX defined then Z
+<span class="lineNum">      86 </span>            :    * @param pitch Angle around X unless BT_EULER_DEFAULT_ZYX defined then Y
+<span class="lineNum">      87 </span>            :    * @param roll Angle around Z unless BT_EULER_DEFAULT_ZYX defined then X */
+<span class="lineNum">      88 </span>            :         btQuaternion(const btScalar&amp; yaw, const btScalar&amp; pitch, const btScalar&amp; roll)
+<span class="lineNum">      89 </span>            :         { 
+<span class="lineNum">      90 </span>            : #ifndef BT_EULER_DEFAULT_ZYX
+<span class="lineNum">      91 </span>            :                 setEuler(yaw, pitch, roll); 
+<span class="lineNum">      92 </span>            : #else
+<span class="lineNum">      93 </span>            :                 setEulerZYX(yaw, pitch, roll); 
+<span class="lineNum">      94 </span>            : #endif 
+<span class="lineNum">      95 </span>            :         }
+<span class="lineNum">      96 </span>            :   /**@brief Set the rotation using axis angle notation 
+<a name="97"><span class="lineNum">      97 </span>            :    * @param axis The axis around which to rotate</a>
+<span class="lineNum">      98 </span>            :    * @param angle The magnitude of the rotation in Radians */
+<span class="lineNum">      99 </span><span class="lineCov">      12420 :         void setRotation(const btVector3&amp; axis, const btScalar&amp; _angle)</span>
+<span class="lineNum">     100 </span>            :         {
+<span class="lineNum">     101 </span><span class="lineCov">      12420 :                 btScalar d = axis.length();</span>
+<span class="lineNum">     102 </span>            :                 btAssert(d != btScalar(0.0));
+<span class="lineNum">     103 </span><span class="lineCov">      12420 :                 btScalar s = btSin(_angle * btScalar(0.5)) / d;</span>
+<span class="lineNum">     104 </span><span class="lineCov">      24840 :                 setValue(axis.x() * s, axis.y() * s, axis.z() * s, </span>
+<span class="lineNum">     105 </span><span class="lineCov">      24840 :                         btCos(_angle * btScalar(0.5)));</span>
+<span class="lineNum">     106 </span><span class="lineCov">      12420 :         }</span>
+<span class="lineNum">     107 </span>            :   /**@brief Set the quaternion using Euler angles
+<span class="lineNum">     108 </span>            :    * @param yaw Angle around Y
+<span class="lineNum">     109 </span>            :    * @param pitch Angle around X
+<span class="lineNum">     110 </span>            :    * @param roll Angle around Z */
+<span class="lineNum">     111 </span>            :         void setEuler(const btScalar&amp; yaw, const btScalar&amp; pitch, const btScalar&amp; roll)
+<span class="lineNum">     112 </span>            :         {
+<span class="lineNum">     113 </span>            :                 btScalar halfYaw = btScalar(yaw) * btScalar(0.5);  
+<span class="lineNum">     114 </span>            :                 btScalar halfPitch = btScalar(pitch) * btScalar(0.5);  
+<span class="lineNum">     115 </span>            :                 btScalar halfRoll = btScalar(roll) * btScalar(0.5);  
+<span class="lineNum">     116 </span>            :                 btScalar cosYaw = btCos(halfYaw);
+<span class="lineNum">     117 </span>            :                 btScalar sinYaw = btSin(halfYaw);
+<span class="lineNum">     118 </span>            :                 btScalar cosPitch = btCos(halfPitch);
+<span class="lineNum">     119 </span>            :                 btScalar sinPitch = btSin(halfPitch);
+<span class="lineNum">     120 </span>            :                 btScalar cosRoll = btCos(halfRoll);
+<span class="lineNum">     121 </span>            :                 btScalar sinRoll = btSin(halfRoll);
+<span class="lineNum">     122 </span>            :                 setValue(cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw,
+<span class="lineNum">     123 </span>            :                         cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw,
+<span class="lineNum">     124 </span>            :                         sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw,
+<span class="lineNum">     125 </span>            :                         cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw);
+<span class="lineNum">     126 </span>            :         }
+<span class="lineNum">     127 </span>            :   /**@brief Set the quaternion using euler angles 
+<span class="lineNum">     128 </span>            :    * @param yaw Angle around Z
+<span class="lineNum">     129 </span>            :    * @param pitch Angle around Y
+<span class="lineNum">     130 </span>            :    * @param roll Angle around X */
+<span class="lineNum">     131 </span>            :         void setEulerZYX(const btScalar&amp; yaw, const btScalar&amp; pitch, const btScalar&amp; roll)
+<span class="lineNum">     132 </span>            :         {
+<span class="lineNum">     133 </span>            :                 btScalar halfYaw = btScalar(yaw) * btScalar(0.5);  
+<span class="lineNum">     134 </span>            :                 btScalar halfPitch = btScalar(pitch) * btScalar(0.5);  
+<span class="lineNum">     135 </span>            :                 btScalar halfRoll = btScalar(roll) * btScalar(0.5);  
+<span class="lineNum">     136 </span>            :                 btScalar cosYaw = btCos(halfYaw);
+<span class="lineNum">     137 </span>            :                 btScalar sinYaw = btSin(halfYaw);
+<span class="lineNum">     138 </span>            :                 btScalar cosPitch = btCos(halfPitch);
+<span class="lineNum">     139 </span>            :                 btScalar sinPitch = btSin(halfPitch);
+<span class="lineNum">     140 </span>            :                 btScalar cosRoll = btCos(halfRoll);
+<span class="lineNum">     141 </span>            :                 btScalar sinRoll = btSin(halfRoll);
+<span class="lineNum">     142 </span>            :                 setValue(sinRoll * cosPitch * cosYaw - cosRoll * sinPitch * sinYaw, //x
+<span class="lineNum">     143 </span>            :                          cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw, //y
+<span class="lineNum">     144 </span>            :                          cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw, //z
+<span class="lineNum">     145 </span>            :                          cosRoll * cosPitch * cosYaw + sinRoll * sinPitch * sinYaw); //formerly yzx
+<span class="lineNum">     146 </span>            :         }
+<span class="lineNum">     147 </span>            :   /**@brief Add two quaternions
+<span class="lineNum">     148 </span>            :    * @param q The quaternion to add to this one */
+<span class="lineNum">     149 </span>            :         SIMD_FORCE_INLINE       btQuaternion&amp; operator+=(const btQuaternion&amp; q)
+<span class="lineNum">     150 </span>            :         {
+<span class="lineNum">     151 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     152 </span>            :                 mVec128 = _mm_add_ps(mVec128, q.mVec128);
+<span class="lineNum">     153 </span>            : #elif defined(BT_USE_NEON)
+<span class="lineNum">     154 </span>            :                 mVec128 = vaddq_f32(mVec128, q.mVec128);
+<span class="lineNum">     155 </span>            : #else   
+<span class="lineNum">     156 </span>            :                 m_floats[0] += q.x(); 
+<span class="lineNum">     157 </span>            :         m_floats[1] += q.y(); 
+<span class="lineNum">     158 </span>            :         m_floats[2] += q.z(); 
+<span class="lineNum">     159 </span>            :         m_floats[3] += q.m_floats[3];
+<span class="lineNum">     160 </span>            : #endif
+<span class="lineNum">     161 </span>            :                 return *this;
+<span class="lineNum">     162 </span>            :         }
+<span class="lineNum">     163 </span>            : 
+<span class="lineNum">     164 </span>            :   /**@brief Subtract out a quaternion
+<span class="lineNum">     165 </span>            :    * @param q The quaternion to subtract from this one */
+<span class="lineNum">     166 </span>            :         btQuaternion&amp; operator-=(const btQuaternion&amp; q) 
+<span class="lineNum">     167 </span>            :         {
+<span class="lineNum">     168 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     169 </span>            :                 mVec128 = _mm_sub_ps(mVec128, q.mVec128);
+<span class="lineNum">     170 </span>            : #elif defined(BT_USE_NEON)
+<span class="lineNum">     171 </span>            :                 mVec128 = vsubq_f32(mVec128, q.mVec128);
+<span class="lineNum">     172 </span>            : #else   
+<span class="lineNum">     173 </span>            :                 m_floats[0] -= q.x(); 
+<span class="lineNum">     174 </span>            :         m_floats[1] -= q.y(); 
+<span class="lineNum">     175 </span>            :         m_floats[2] -= q.z(); 
+<span class="lineNum">     176 </span>            :         m_floats[3] -= q.m_floats[3];
+<span class="lineNum">     177 </span>            : #endif
+<span class="lineNum">     178 </span>            :         return *this;
+<span class="lineNum">     179 </span>            :         }
+<span class="lineNum">     180 </span>            : 
+<span class="lineNum">     181 </span>            :   /**@brief Scale this quaternion
+<span class="lineNum">     182 </span>            :    * @param s The scalar to scale by */
+<span class="lineNum">     183 </span>            :         btQuaternion&amp; operator*=(const btScalar&amp; s)
+<span class="lineNum">     184 </span>            :         {
+<span class="lineNum">     185 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     186 </span>            :                 __m128  vs = _mm_load_ss(&amp;s);       //      (S 0 0 0)
+<span class="lineNum">     187 </span>            :                 vs = bt_pshufd_ps(vs, 0);       //      (S S S S)
+<span class="lineNum">     188 </span>            :                 mVec128 = _mm_mul_ps(mVec128, vs);
+<span class="lineNum">     189 </span>            : #elif defined(BT_USE_NEON)
+<span class="lineNum">     190 </span>            :                 mVec128 = vmulq_n_f32(mVec128, s);
+<span class="lineNum">     191 </span>            : #else
+<span class="lineNum">     192 </span><span class="lineCov">     750338 :                 m_floats[0] *= s; </span>
+<span class="lineNum">     193 </span><span class="lineCov">     750338 :         m_floats[1] *= s; </span>
+<span class="lineNum">     194 </span><span class="lineCov">     750338 :         m_floats[2] *= s; </span>
+<span class="lineNum">     195 </span><span class="lineCov">     750338 :         m_floats[3] *= s;</span>
+<span class="lineNum">     196 </span>            : #endif
+<span class="lineNum">     197 </span>            :                 return *this;
+<span class="lineNum">     198 </span>            :         }
+<span class="lineNum">     199 </span>            : 
+<span class="lineNum">     200 </span>            :   /**@brief Multiply this quaternion by q on the right
+<a name="201"><span class="lineNum">     201 </span>            :    * @param q The other quaternion </a>
+<span class="lineNum">     202 </span>            :    * Equivilant to this = this * q */
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :         btQuaternion&amp; operator*=(const btQuaternion&amp; q)</span>
+<span class="lineNum">     204 </span>            :         {
+<span class="lineNum">     205 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     206 </span>            :                 __m128 vQ2 = q.get128();
+<span class="lineNum">     207 </span>            :                 
+<span class="lineNum">     208 </span>            :                 __m128 A1 = bt_pshufd_ps(mVec128, BT_SHUFFLE(0,1,2,0));
+<span class="lineNum">     209 </span>            :                 __m128 B1 = bt_pshufd_ps(vQ2, BT_SHUFFLE(3,3,3,0));
+<span class="lineNum">     210 </span>            :                 
+<span class="lineNum">     211 </span>            :                 A1 = A1 * B1;
+<span class="lineNum">     212 </span>            :                 
+<span class="lineNum">     213 </span>            :                 __m128 A2 = bt_pshufd_ps(mVec128, BT_SHUFFLE(1,2,0,1));
+<span class="lineNum">     214 </span>            :                 __m128 B2 = bt_pshufd_ps(vQ2, BT_SHUFFLE(2,0,1,1));
+<span class="lineNum">     215 </span>            :                 
+<span class="lineNum">     216 </span>            :                 A2 = A2 * B2;
+<span class="lineNum">     217 </span>            :                 
+<span class="lineNum">     218 </span>            :                 B1 = bt_pshufd_ps(mVec128, BT_SHUFFLE(2,0,1,2));
+<span class="lineNum">     219 </span>            :                 B2 = bt_pshufd_ps(vQ2, BT_SHUFFLE(1,2,0,2));
+<span class="lineNum">     220 </span>            :                 
+<span class="lineNum">     221 </span>            :                 B1 = B1 * B2;   //      A3 *= B3
+<span class="lineNum">     222 </span>            :                 
+<span class="lineNum">     223 </span>            :                 mVec128 = bt_splat_ps(mVec128, 3);      //      A0
+<span class="lineNum">     224 </span>            :                 mVec128 = mVec128 * vQ2;        //      A0 * B0
+<span class="lineNum">     225 </span>            :                 
+<span class="lineNum">     226 </span>            :                 A1 = A1 + A2;   //      AB12
+<span class="lineNum">     227 </span>            :                 mVec128 = mVec128 - B1; //      AB03 = AB0 - AB3 
+<span class="lineNum">     228 </span>            :                 A1 = _mm_xor_ps(A1, vPPPM);     //      change sign of the last element
+<span class="lineNum">     229 </span>            :                 mVec128 = mVec128+ A1;  //      AB03 + AB12
+<span class="lineNum">     230 </span>            : 
+<span class="lineNum">     231 </span>            : #elif defined(BT_USE_NEON)     
+<span class="lineNum">     232 </span>            : 
+<span class="lineNum">     233 </span>            :         float32x4_t vQ1 = mVec128;
+<span class="lineNum">     234 </span>            :         float32x4_t vQ2 = q.get128();
+<span class="lineNum">     235 </span>            :         float32x4_t A0, A1, B1, A2, B2, A3, B3;
+<span class="lineNum">     236 </span>            :         float32x2_t vQ1zx, vQ2wx, vQ1yz, vQ2zx, vQ2yz, vQ2xz;
+<span class="lineNum">     237 </span>            :         
+<span class="lineNum">     238 </span>            :         {
+<span class="lineNum">     239 </span>            :         float32x2x2_t tmp;
+<span class="lineNum">     240 </span>            :         tmp = vtrn_f32( vget_high_f32(vQ1), vget_low_f32(vQ1) );       // {z x}, {w y}
+<span class="lineNum">     241 </span>            :         vQ1zx = tmp.val[0];
+<span class="lineNum">     242 </span>            : 
+<span class="lineNum">     243 </span>            :         tmp = vtrn_f32( vget_high_f32(vQ2), vget_low_f32(vQ2) );       // {z x}, {w y}
+<span class="lineNum">     244 </span>            :         vQ2zx = tmp.val[0];
+<span class="lineNum">     245 </span>            :         }
+<span class="lineNum">     246 </span>            :         vQ2wx = vext_f32(vget_high_f32(vQ2), vget_low_f32(vQ2), 1); 
+<span class="lineNum">     247 </span>            : 
+<span class="lineNum">     248 </span>            :         vQ1yz = vext_f32(vget_low_f32(vQ1), vget_high_f32(vQ1), 1);
+<span class="lineNum">     249 </span>            : 
+<span class="lineNum">     250 </span>            :         vQ2yz = vext_f32(vget_low_f32(vQ2), vget_high_f32(vQ2), 1);
+<span class="lineNum">     251 </span>            :         vQ2xz = vext_f32(vQ2zx, vQ2zx, 1);
+<span class="lineNum">     252 </span>            : 
+<span class="lineNum">     253 </span>            :         A1 = vcombine_f32(vget_low_f32(vQ1), vQ1zx);                    // X Y  z x 
+<span class="lineNum">     254 </span>            :         B1 = vcombine_f32(vdup_lane_f32(vget_high_f32(vQ2), 1), vQ2wx); // W W  W X 
+<span class="lineNum">     255 </span>            : 
+<span class="lineNum">     256 </span>            :         A2 = vcombine_f32(vQ1yz, vget_low_f32(vQ1));
+<span class="lineNum">     257 </span>            :         B2 = vcombine_f32(vQ2zx, vdup_lane_f32(vget_low_f32(vQ2), 1));
+<span class="lineNum">     258 </span>            : 
+<span class="lineNum">     259 </span>            :         A3 = vcombine_f32(vQ1zx, vQ1yz);        // Z X Y Z
+<span class="lineNum">     260 </span>            :         B3 = vcombine_f32(vQ2yz, vQ2xz);        // Y Z x z
+<span class="lineNum">     261 </span>            : 
+<span class="lineNum">     262 </span>            :         A1 = vmulq_f32(A1, B1);
+<span class="lineNum">     263 </span>            :         A2 = vmulq_f32(A2, B2);
+<span class="lineNum">     264 </span>            :         A3 = vmulq_f32(A3, B3); //      A3 *= B3
+<span class="lineNum">     265 </span>            :         A0 = vmulq_lane_f32(vQ2, vget_high_f32(vQ1), 1); //     A0 * B0
+<span class="lineNum">     266 </span>            : 
+<span class="lineNum">     267 </span>            :         A1 = vaddq_f32(A1, A2); //      AB12 = AB1 + AB2
+<span class="lineNum">     268 </span>            :         A0 = vsubq_f32(A0, A3); //      AB03 = AB0 - AB3 
+<span class="lineNum">     269 </span>            :         
+<span class="lineNum">     270 </span>            :         //      change the sign of the last element
+<span class="lineNum">     271 </span>            :         A1 = (btSimdFloat4)veorq_s32((int32x4_t)A1, (int32x4_t)vPPPM);  
+<span class="lineNum">     272 </span>            :         A0 = vaddq_f32(A0, A1); //      AB03 + AB12
+<span class="lineNum">     273 </span>            :         
+<span class="lineNum">     274 </span>            :         mVec128 = A0;
+<span class="lineNum">     275 </span>            : #else
+<span class="lineNum">     276 </span><span class="lineNoCov">          0 :                 setValue(</span>
+<span class="lineNum">     277 </span><span class="lineNoCov">          0 :             m_floats[3] * q.x() + m_floats[0] * q.m_floats[3] + m_floats[1] * q.z() - m_floats[2] * q.y(),</span>
+<span class="lineNum">     278 </span><span class="lineNoCov">          0 :                         m_floats[3] * q.y() + m_floats[1] * q.m_floats[3] + m_floats[2] * q.x() - m_floats[0] * q.z(),</span>
+<span class="lineNum">     279 </span><span class="lineNoCov">          0 :                         m_floats[3] * q.z() + m_floats[2] * q.m_floats[3] + m_floats[0] * q.y() - m_floats[1] * q.x(),</span>
+<span class="lineNum">     280 </span><span class="lineNoCov">          0 :                         m_floats[3] * q.m_floats[3] - m_floats[0] * q.x() - m_floats[1] * q.y() - m_floats[2] * q.z());</span>
+<span class="lineNum">     281 </span>            : #endif
+<span class="lineNum">     282 </span><span class="lineNoCov">          0 :                 return *this;</span>
+<span class="lineNum">     283 </span>            :         }
+<a name="284"><span class="lineNum">     284 </span>            :   /**@brief Return the dot product between this quaternion and another</a>
+<span class="lineNum">     285 </span>            :    * @param q The other quaternion */
+<span class="lineNum">     286 </span><span class="lineCov">      12521 :         btScalar dot(const btQuaternion&amp; q) const</span>
+<span class="lineNum">     287 </span>            :         {
+<span class="lineNum">     288 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     289 </span>            :                 __m128  vd;
+<span class="lineNum">     290 </span>            :                 
+<span class="lineNum">     291 </span>            :                 vd = _mm_mul_ps(mVec128, q.mVec128);
+<span class="lineNum">     292 </span>            :                 
+<span class="lineNum">     293 </span>            :         __m128 t = _mm_movehl_ps(vd, vd);
+<span class="lineNum">     294 </span>            :                 vd = _mm_add_ps(vd, t);
+<span class="lineNum">     295 </span>            :                 t = _mm_shuffle_ps(vd, vd, 0x55);
+<span class="lineNum">     296 </span>            :                 vd = _mm_add_ss(vd, t);
+<span class="lineNum">     297 </span>            :                 
+<span class="lineNum">     298 </span>            :         return _mm_cvtss_f32(vd);
+<span class="lineNum">     299 </span>            : #elif defined(BT_USE_NEON)
+<span class="lineNum">     300 </span>            :                 float32x4_t vd = vmulq_f32(mVec128, q.mVec128);
+<span class="lineNum">     301 </span>            :                 float32x2_t x = vpadd_f32(vget_low_f32(vd), vget_high_f32(vd));  
+<span class="lineNum">     302 </span>            :                 x = vpadd_f32(x, x);
+<span class="lineNum">     303 </span>            :                 return vget_lane_f32(x, 0);
+<span class="lineNum">     304 </span>            : #else    
+<span class="lineNum">     305 </span><span class="lineCov">    3026394 :                 return  m_floats[0] * q.x() + </span>
+<span class="lineNum">     306 </span><span class="lineCov">    3026394 :                 m_floats[1] * q.y() + </span>
+<span class="lineNum">     307 </span><span class="lineCov">    1513197 :                 m_floats[2] * q.z() + </span>
+<span class="lineNum">     308 </span><span class="lineCov">    1513197 :                 m_floats[3] * q.m_floats[3];</span>
+<span class="lineNum">     309 </span>            : #endif
+<span class="lineNum">     310 </span>            :         }
+<a name="311"><span class="lineNum">     311 </span>            : </a>
+<span class="lineNum">     312 </span>            :   /**@brief Return the length squared of the quaternion */
+<span class="lineNum">     313 </span><span class="lineCov">      12521 :         btScalar length2() const</span>
+<span class="lineNum">     314 </span>            :         {
+<span class="lineNum">     315 </span><span class="lineCov">    1513197 :                 return dot(*this);</span>
+<span class="lineNum">     316 </span>            :         }
+<a name="317"><span class="lineNum">     317 </span>            : </a>
+<span class="lineNum">     318 </span>            :   /**@brief Return the length of the quaternion */
+<span class="lineNum">     319 </span><span class="lineCov">     750338 :         btScalar length() const</span>
+<span class="lineNum">     320 </span>            :         {
+<span class="lineNum">     321 </span><span class="lineCov">    1500676 :                 return btSqrt(length2());</span>
+<span class="lineNum">     322 </span>            :         }
+<span class="lineNum">     323 </span>            : 
+<a name="324"><span class="lineNum">     324 </span>            :   /**@brief Normalize the quaternion </a>
+<span class="lineNum">     325 </span>            :    * Such that x^2 + y^2 + z^2 +w^2 = 1 */
+<span class="lineNum">     326 </span><span class="lineCov">     750338 :         btQuaternion&amp; normalize() </span>
+<span class="lineNum">     327 </span>            :         {
+<span class="lineNum">     328 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     329 </span>            :                 __m128  vd;
+<span class="lineNum">     330 </span>            :                 
+<span class="lineNum">     331 </span>            :                 vd = _mm_mul_ps(mVec128, mVec128);
+<span class="lineNum">     332 </span>            :                 
+<span class="lineNum">     333 </span>            :         __m128 t = _mm_movehl_ps(vd, vd);
+<span class="lineNum">     334 </span>            :                 vd = _mm_add_ps(vd, t);
+<span class="lineNum">     335 </span>            :                 t = _mm_shuffle_ps(vd, vd, 0x55);
+<span class="lineNum">     336 </span>            :                 vd = _mm_add_ss(vd, t);
+<span class="lineNum">     337 </span>            : 
+<span class="lineNum">     338 </span>            :                 vd = _mm_sqrt_ss(vd);
+<span class="lineNum">     339 </span>            :                 vd = _mm_div_ss(vOnes, vd);
+<span class="lineNum">     340 </span>            :         vd = bt_pshufd_ps(vd, 0); // splat
+<span class="lineNum">     341 </span>            :                 mVec128 = _mm_mul_ps(mVec128, vd);
+<span class="lineNum">     342 </span>            :     
+<span class="lineNum">     343 </span>            :                 return *this;
+<span class="lineNum">     344 </span>            : #else    
+<span class="lineNum">     345 </span><span class="lineCov">    1500676 :                 return *this /= length();</span>
+<span class="lineNum">     346 </span>            : #endif
+<span class="lineNum">     347 </span>            :         }
+<span class="lineNum">     348 </span>            : 
+<span class="lineNum">     349 </span>            :   /**@brief Return a scaled version of this quaternion
+<span class="lineNum">     350 </span>            :    * @param s The scale factor */
+<span class="lineNum">     351 </span>            :         SIMD_FORCE_INLINE btQuaternion
+<span class="lineNum">     352 </span>            :         operator*(const btScalar&amp; s) const
+<span class="lineNum">     353 </span>            :         {
+<span class="lineNum">     354 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     355 </span>            :                 __m128  vs = _mm_load_ss(&amp;s);       //      (S 0 0 0)
+<span class="lineNum">     356 </span>            :                 vs = bt_pshufd_ps(vs, 0x00);    //      (S S S S)
+<span class="lineNum">     357 </span>            :                 
+<span class="lineNum">     358 </span>            :                 return btQuaternion(_mm_mul_ps(mVec128, vs));
+<span class="lineNum">     359 </span>            : #elif defined(BT_USE_NEON)
+<span class="lineNum">     360 </span>            :                 return btQuaternion(vmulq_n_f32(mVec128, s));
+<span class="lineNum">     361 </span>            : #else
+<span class="lineNum">     362 </span>            :                 return btQuaternion(x() * s, y() * s, z() * s, m_floats[3] * s);
+<span class="lineNum">     363 </span>            : #endif
+<span class="lineNum">     364 </span>            :         }
+<span class="lineNum">     365 </span>            : 
+<span class="lineNum">     366 </span>            :   /**@brief Return an inversely scaled versionof this quaternion
+<span class="lineNum">     367 </span>            :    * @param s The inverse scale factor */
+<span class="lineNum">     368 </span>            :         btQuaternion operator/(const btScalar&amp; s) const
+<span class="lineNum">     369 </span>            :         {
+<span class="lineNum">     370 </span>            :                 btAssert(s != btScalar(0.0));
+<span class="lineNum">     371 </span>            :                 return *this * (btScalar(1.0) / s);
+<span class="lineNum">     372 </span>            :         }
+<span class="lineNum">     373 </span>            : 
+<span class="lineNum">     374 </span>            :   /**@brief Inversely scale this quaternion
+<span class="lineNum">     375 </span>            :    * @param s The scale factor */
+<span class="lineNum">     376 </span>            :         btQuaternion&amp; operator/=(const btScalar&amp; s) 
+<span class="lineNum">     377 </span>            :         {
+<span class="lineNum">     378 </span>            :                 btAssert(s != btScalar(0.0));
+<span class="lineNum">     379 </span><span class="lineCov">    1500676 :                 return *this *= btScalar(1.0) / s;</span>
+<span class="lineNum">     380 </span>            :         }
+<span class="lineNum">     381 </span>            : 
+<span class="lineNum">     382 </span>            :   /**@brief Return a normalized version of this quaternion */
+<span class="lineNum">     383 </span>            :         btQuaternion normalized() const 
+<span class="lineNum">     384 </span>            :         {
+<span class="lineNum">     385 </span>            :                 return *this / length();
+<span class="lineNum">     386 </span>            :         } 
+<span class="lineNum">     387 </span>            :   /**@brief Return the angle between this quaternion and the other 
+<span class="lineNum">     388 </span>            :    * @param q The other quaternion */
+<span class="lineNum">     389 </span>            :         btScalar angle(const btQuaternion&amp; q) const 
+<span class="lineNum">     390 </span>            :         {
+<span class="lineNum">     391 </span>            :                 btScalar s = btSqrt(length2() * q.length2());
+<span class="lineNum">     392 </span>            :                 btAssert(s != btScalar(0.0));
+<span class="lineNum">     393 </span>            :                 return btAcos(dot(q) / s);
+<span class="lineNum">     394 </span>            :         }
+<span class="lineNum">     395 </span>            :   /**@brief Return the angle of rotation represented by this quaternion */
+<span class="lineNum">     396 </span>            :         btScalar getAngle() const 
+<span class="lineNum">     397 </span>            :         {
+<span class="lineNum">     398 </span><span class="lineNoCov">          0 :                 btScalar s = btScalar(2.) * btAcos(m_floats[3]);</span>
+<span class="lineNum">     399 </span>            :                 return s;
+<span class="lineNum">     400 </span>            :         }
+<span class="lineNum">     401 </span>            : 
+<span class="lineNum">     402 </span>            :         /**@brief Return the axis of the rotation represented by this quaternion */
+<span class="lineNum">     403 </span>            :         btVector3 getAxis() const
+<span class="lineNum">     404 </span>            :         {
+<span class="lineNum">     405 </span>            :                 btScalar s_squared = 1.f-m_floats[3]*m_floats[3];
+<span class="lineNum">     406 </span>            :                 
+<span class="lineNum">     407 </span>            :                 if (s_squared &lt; btScalar(10.) * SIMD_EPSILON) //Check for divide by zero
+<span class="lineNum">     408 </span>            :                         return btVector3(1.0, 0.0, 0.0);  // Arbitrary
+<span class="lineNum">     409 </span>            :                 btScalar s = 1.f/btSqrt(s_squared);
+<span class="lineNum">     410 </span>            :                 return btVector3(m_floats[0] * s, m_floats[1] * s, m_floats[2] * s);
+<span class="lineNum">     411 </span>            :         }
+<span class="lineNum">     412 </span>            : 
+<span class="lineNum">     413 </span>            :         /**@brief Return the inverse of this quaternion */
+<span class="lineNum">     414 </span>            :         btQuaternion inverse() const
+<span class="lineNum">     415 </span>            :         {
+<span class="lineNum">     416 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     417 </span>            :                 return btQuaternion(_mm_xor_ps(mVec128, vQInv));
+<span class="lineNum">     418 </span>            : #elif defined(BT_USE_NEON)
+<span class="lineNum">     419 </span>            :         return btQuaternion((btSimdFloat4)veorq_s32((int32x4_t)mVec128, (int32x4_t)vQInv));
+<span class="lineNum">     420 </span>            : #else   
+<span class="lineNum">     421 </span><span class="lineNoCov">          0 :                 return btQuaternion(-m_floats[0], -m_floats[1], -m_floats[2], m_floats[3]);</span>
+<span class="lineNum">     422 </span>            : #endif
+<span class="lineNum">     423 </span>            :         }
+<span class="lineNum">     424 </span>            : 
+<span class="lineNum">     425 </span>            :   /**@brief Return the sum of this quaternion and the other 
+<span class="lineNum">     426 </span>            :    * @param q2 The other quaternion */
+<span class="lineNum">     427 </span>            :         SIMD_FORCE_INLINE btQuaternion
+<span class="lineNum">     428 </span>            :         operator+(const btQuaternion&amp; q2) const
+<span class="lineNum">     429 </span>            :         {
+<span class="lineNum">     430 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     431 </span>            :                 return btQuaternion(_mm_add_ps(mVec128, q2.mVec128));
+<span class="lineNum">     432 </span>            : #elif defined(BT_USE_NEON)
+<span class="lineNum">     433 </span>            :         return btQuaternion(vaddq_f32(mVec128, q2.mVec128));
+<span class="lineNum">     434 </span>            : #else   
+<span class="lineNum">     435 </span>            :                 const btQuaternion&amp; q1 = *this;
+<span class="lineNum">     436 </span>            :                 return btQuaternion(q1.x() + q2.x(), q1.y() + q2.y(), q1.z() + q2.z(), q1.m_floats[3] + q2.m_floats[3]);
+<span class="lineNum">     437 </span>            : #endif
+<span class="lineNum">     438 </span>            :         }
+<span class="lineNum">     439 </span>            : 
+<span class="lineNum">     440 </span>            :   /**@brief Return the difference between this quaternion and the other 
+<span class="lineNum">     441 </span>            :    * @param q2 The other quaternion */
+<span class="lineNum">     442 </span>            :         SIMD_FORCE_INLINE btQuaternion
+<span class="lineNum">     443 </span>            :         operator-(const btQuaternion&amp; q2) const
+<span class="lineNum">     444 </span>            :         {
+<span class="lineNum">     445 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     446 </span>            :                 return btQuaternion(_mm_sub_ps(mVec128, q2.mVec128));
+<span class="lineNum">     447 </span>            : #elif defined(BT_USE_NEON)
+<span class="lineNum">     448 </span>            :         return btQuaternion(vsubq_f32(mVec128, q2.mVec128));
+<span class="lineNum">     449 </span>            : #else   
+<span class="lineNum">     450 </span>            :                 const btQuaternion&amp; q1 = *this;
+<span class="lineNum">     451 </span>            :                 return btQuaternion(q1.x() - q2.x(), q1.y() - q2.y(), q1.z() - q2.z(), q1.m_floats[3] - q2.m_floats[3]);
+<span class="lineNum">     452 </span>            : #endif
+<span class="lineNum">     453 </span>            :         }
+<span class="lineNum">     454 </span>            : 
+<span class="lineNum">     455 </span>            :   /**@brief Return the negative of this quaternion 
+<span class="lineNum">     456 </span>            :    * This simply negates each element */
+<span class="lineNum">     457 </span>            :         SIMD_FORCE_INLINE btQuaternion operator-() const
+<span class="lineNum">     458 </span>            :         {
+<span class="lineNum">     459 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     460 </span>            :                 return btQuaternion(_mm_xor_ps(mVec128, btvMzeroMask));
+<span class="lineNum">     461 </span>            : #elif defined(BT_USE_NEON)
+<span class="lineNum">     462 </span>            :                 return btQuaternion((btSimdFloat4)veorq_s32((int32x4_t)mVec128, (int32x4_t)btvMzeroMask) );
+<span class="lineNum">     463 </span>            : #else   
+<span class="lineNum">     464 </span><span class="lineNoCov">          0 :                 const btQuaternion&amp; q2 = *this;</span>
+<span class="lineNum">     465 </span><span class="lineNoCov">          0 :                 return btQuaternion( - q2.x(), - q2.y(),  - q2.z(),  - q2.m_floats[3]);</span>
+<span class="lineNum">     466 </span>            : #endif
+<span class="lineNum">     467 </span>            :         }
+<span class="lineNum">     468 </span>            :   /**@todo document this and it's use */
+<span class="lineNum">     469 </span>            :         SIMD_FORCE_INLINE btQuaternion farthest( const btQuaternion&amp; qd) const 
+<span class="lineNum">     470 </span>            :         {
+<span class="lineNum">     471 </span>            :                 btQuaternion diff,sum;
+<span class="lineNum">     472 </span>            :                 diff = *this - qd;
+<span class="lineNum">     473 </span>            :                 sum = *this + qd;
+<span class="lineNum">     474 </span>            :                 if( diff.dot(diff) &gt; sum.dot(sum) )
+<span class="lineNum">     475 </span>            :                         return qd;
+<span class="lineNum">     476 </span>            :                 return (-qd);
+<span class="lineNum">     477 </span>            :         }
+<span class="lineNum">     478 </span>            : 
+<span class="lineNum">     479 </span>            :         /**@todo document this and it's use */
+<span class="lineNum">     480 </span>            :         SIMD_FORCE_INLINE btQuaternion nearest( const btQuaternion&amp; qd) const 
+<span class="lineNum">     481 </span>            :         {
+<span class="lineNum">     482 </span>            :                 btQuaternion diff,sum;
+<span class="lineNum">     483 </span>            :                 diff = *this - qd;
+<span class="lineNum">     484 </span>            :                 sum = *this + qd;
+<span class="lineNum">     485 </span>            :                 if( diff.dot(diff) &lt; sum.dot(sum) )
+<span class="lineNum">     486 </span>            :                         return qd;
+<span class="lineNum">     487 </span>            :                 return (-qd);
+<span class="lineNum">     488 </span>            :         }
+<span class="lineNum">     489 </span>            : 
+<span class="lineNum">     490 </span>            : 
+<span class="lineNum">     491 </span>            :   /**@brief Return the quaternion which is the result of Spherical Linear Interpolation between this and the other quaternion
+<span class="lineNum">     492 </span>            :    * @param q The other quaternion to interpolate with 
+<span class="lineNum">     493 </span>            :    * @param t The ratio between this and q to interpolate.  If t = 0 the result is this, if t=1 the result is q.
+<span class="lineNum">     494 </span>            :    * Slerp interpolates assuming constant velocity.  */
+<span class="lineNum">     495 </span>            :         btQuaternion slerp(const btQuaternion&amp; q, const btScalar&amp; t) const
+<span class="lineNum">     496 </span>            :         {
+<span class="lineNum">     497 </span>            :           btScalar magnitude = btSqrt(length2() * q.length2()); 
+<span class="lineNum">     498 </span>            :           btAssert(magnitude &gt; btScalar(0));
+<span class="lineNum">     499 </span>            : 
+<span class="lineNum">     500 </span>            :     btScalar product = dot(q) / magnitude;
+<span class="lineNum">     501 </span>            :     if (btFabs(product) != btScalar(1))
+<span class="lineNum">     502 </span>            :                 {
+<span class="lineNum">     503 </span>            :       // Take care of long angle case see http://en.wikipedia.org/wiki/Slerp
+<span class="lineNum">     504 </span>            :       const btScalar sign = (product &lt; 0) ? btScalar(-1) : btScalar(1);
+<span class="lineNum">     505 </span>            : 
+<span class="lineNum">     506 </span>            :       const btScalar theta = btAcos(sign * product);
+<span class="lineNum">     507 </span>            :       const btScalar s1 = btSin(sign * t * theta);   
+<span class="lineNum">     508 </span>            :       const btScalar d = btScalar(1.0) / btSin(theta);
+<span class="lineNum">     509 </span>            :       const btScalar s0 = btSin((btScalar(1.0) - t) * theta);
+<span class="lineNum">     510 </span>            : 
+<span class="lineNum">     511 </span>            :       return btQuaternion(
+<span class="lineNum">     512 </span>            :           (m_floats[0] * s0 + q.x() * s1) * d,
+<span class="lineNum">     513 </span>            :           (m_floats[1] * s0 + q.y() * s1) * d,
+<span class="lineNum">     514 </span>            :           (m_floats[2] * s0 + q.z() * s1) * d,
+<span class="lineNum">     515 </span>            :           (m_floats[3] * s0 + q.m_floats[3] * s1) * d);
+<span class="lineNum">     516 </span>            :                 }
+<span class="lineNum">     517 </span>            :                 else
+<span class="lineNum">     518 </span>            :                 {
+<span class="lineNum">     519 </span>            :                         return *this;
+<span class="lineNum">     520 </span>            :                 }
+<span class="lineNum">     521 </span>            :         }
+<span class="lineNum">     522 </span>            : 
+<span class="lineNum">     523 </span>            :         static const btQuaternion&amp;  getIdentity()
+<span class="lineNum">     524 </span>            :         {
+<span class="lineNum">     525 </span>            :                 static const btQuaternion identityQuat(btScalar(0.),btScalar(0.),btScalar(0.),btScalar(1.));
+<span class="lineNum">     526 </span>            :                 return identityQuat;
+<span class="lineNum">     527 </span>            :         }
+<span class="lineNum">     528 </span>            : 
+<span class="lineNum">     529 </span>            :         SIMD_FORCE_INLINE const btScalar&amp; getW() const { return m_floats[3]; }
+<span class="lineNum">     530 </span>            : 
+<span class="lineNum">     531 </span>            :         
+<span class="lineNum">     532 </span>            : };
+<span class="lineNum">     533 </span>            : 
+<span class="lineNum">     534 </span>            : 
+<span class="lineNum">     535 </span>            : 
+<span class="lineNum">     536 </span>            : 
+<span class="lineNum">     537 </span>            : 
+<a name="538"><span class="lineNum">     538 </span>            : /**@brief Return the product of two quaternions */</a>
+<span class="lineNum">     539 </span>            : SIMD_FORCE_INLINE btQuaternion
+<span class="lineNum">     540 </span><span class="lineCov">     750338 : operator*(const btQuaternion&amp; q1, const btQuaternion&amp; q2) </span>
+<span class="lineNum">     541 </span>            : {
+<span class="lineNum">     542 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     543 </span>            :         __m128 vQ1 = q1.get128();
+<span class="lineNum">     544 </span>            :         __m128 vQ2 = q2.get128();
+<span class="lineNum">     545 </span>            :         __m128 A0, A1, B1, A2, B2;
+<span class="lineNum">     546 </span>            :     
+<span class="lineNum">     547 </span>            :         A1 = bt_pshufd_ps(vQ1, BT_SHUFFLE(0,1,2,0)); // X Y  z x     //      vtrn
+<span class="lineNum">     548 </span>            :         B1 = bt_pshufd_ps(vQ2, BT_SHUFFLE(3,3,3,0)); // W W  W X     // vdup vext
+<span class="lineNum">     549 </span>            : 
+<span class="lineNum">     550 </span>            :         A1 = A1 * B1;
+<span class="lineNum">     551 </span>            :         
+<span class="lineNum">     552 </span>            :         A2 = bt_pshufd_ps(vQ1, BT_SHUFFLE(1,2,0,1)); // Y Z  X Y     // vext 
+<span class="lineNum">     553 </span>            :         B2 = bt_pshufd_ps(vQ2, BT_SHUFFLE(2,0,1,1)); // z x  Y Y     // vtrn vdup
+<span class="lineNum">     554 </span>            : 
+<span class="lineNum">     555 </span>            :         A2 = A2 * B2;
+<span class="lineNum">     556 </span>            : 
+<span class="lineNum">     557 </span>            :         B1 = bt_pshufd_ps(vQ1, BT_SHUFFLE(2,0,1,2)); // z x Y Z      // vtrn vext
+<span class="lineNum">     558 </span>            :         B2 = bt_pshufd_ps(vQ2, BT_SHUFFLE(1,2,0,2)); // Y Z x z      // vext vtrn
+<span class="lineNum">     559 </span>            :         
+<span class="lineNum">     560 </span>            :         B1 = B1 * B2;   //      A3 *= B3
+<span class="lineNum">     561 </span>            : 
+<span class="lineNum">     562 </span>            :         A0 = bt_splat_ps(vQ1, 3);       //      A0
+<span class="lineNum">     563 </span>            :         A0 = A0 * vQ2;  //      A0 * B0
+<span class="lineNum">     564 </span>            : 
+<span class="lineNum">     565 </span>            :         A1 = A1 + A2;   //      AB12
+<span class="lineNum">     566 </span>            :         A0 =  A0 - B1;  //      AB03 = AB0 - AB3 
+<span class="lineNum">     567 </span>            :         
+<span class="lineNum">     568 </span>            :     A1 = _mm_xor_ps(A1, vPPPM); //      change sign of the last element
+<span class="lineNum">     569 </span>            :         A0 = A0 + A1;   //      AB03 + AB12
+<span class="lineNum">     570 </span>            :         
+<span class="lineNum">     571 </span>            :         return btQuaternion(A0);
+<span class="lineNum">     572 </span>            : 
+<span class="lineNum">     573 </span>            : #elif defined(BT_USE_NEON)     
+<span class="lineNum">     574 </span>            : 
+<span class="lineNum">     575 </span>            :         float32x4_t vQ1 = q1.get128();
+<span class="lineNum">     576 </span>            :         float32x4_t vQ2 = q2.get128();
+<span class="lineNum">     577 </span>            :         float32x4_t A0, A1, B1, A2, B2, A3, B3;
+<span class="lineNum">     578 </span>            :     float32x2_t vQ1zx, vQ2wx, vQ1yz, vQ2zx, vQ2yz, vQ2xz;
+<span class="lineNum">     579 </span>            :     
+<span class="lineNum">     580 </span>            :     {
+<span class="lineNum">     581 </span>            :     float32x2x2_t tmp;
+<span class="lineNum">     582 </span>            :     tmp = vtrn_f32( vget_high_f32(vQ1), vget_low_f32(vQ1) );       // {z x}, {w y}
+<span class="lineNum">     583 </span>            :     vQ1zx = tmp.val[0];
+<span class="lineNum">     584 </span>            : 
+<span class="lineNum">     585 </span>            :     tmp = vtrn_f32( vget_high_f32(vQ2), vget_low_f32(vQ2) );       // {z x}, {w y}
+<span class="lineNum">     586 </span>            :     vQ2zx = tmp.val[0];
+<span class="lineNum">     587 </span>            :     }
+<span class="lineNum">     588 </span>            :     vQ2wx = vext_f32(vget_high_f32(vQ2), vget_low_f32(vQ2), 1); 
+<span class="lineNum">     589 </span>            : 
+<span class="lineNum">     590 </span>            :     vQ1yz = vext_f32(vget_low_f32(vQ1), vget_high_f32(vQ1), 1);
+<span class="lineNum">     591 </span>            : 
+<span class="lineNum">     592 </span>            :     vQ2yz = vext_f32(vget_low_f32(vQ2), vget_high_f32(vQ2), 1);
+<span class="lineNum">     593 </span>            :     vQ2xz = vext_f32(vQ2zx, vQ2zx, 1);
+<span class="lineNum">     594 </span>            : 
+<span class="lineNum">     595 </span>            :     A1 = vcombine_f32(vget_low_f32(vQ1), vQ1zx);                    // X Y  z x 
+<span class="lineNum">     596 </span>            :     B1 = vcombine_f32(vdup_lane_f32(vget_high_f32(vQ2), 1), vQ2wx); // W W  W X 
+<span class="lineNum">     597 </span>            : 
+<span class="lineNum">     598 </span>            :         A2 = vcombine_f32(vQ1yz, vget_low_f32(vQ1));
+<span class="lineNum">     599 </span>            :     B2 = vcombine_f32(vQ2zx, vdup_lane_f32(vget_low_f32(vQ2), 1));
+<span class="lineNum">     600 </span>            : 
+<span class="lineNum">     601 </span>            :     A3 = vcombine_f32(vQ1zx, vQ1yz);        // Z X Y Z
+<span class="lineNum">     602 </span>            :     B3 = vcombine_f32(vQ2yz, vQ2xz);        // Y Z x z
+<span class="lineNum">     603 </span>            : 
+<span class="lineNum">     604 </span>            :         A1 = vmulq_f32(A1, B1);
+<span class="lineNum">     605 </span>            :         A2 = vmulq_f32(A2, B2);
+<span class="lineNum">     606 </span>            :         A3 = vmulq_f32(A3, B3); //      A3 *= B3
+<span class="lineNum">     607 </span>            :         A0 = vmulq_lane_f32(vQ2, vget_high_f32(vQ1), 1); //     A0 * B0
+<span class="lineNum">     608 </span>            : 
+<span class="lineNum">     609 </span>            :         A1 = vaddq_f32(A1, A2); //      AB12 = AB1 + AB2
+<span class="lineNum">     610 </span>            :         A0 = vsubq_f32(A0, A3); //      AB03 = AB0 - AB3 
+<span class="lineNum">     611 </span>            :         
+<span class="lineNum">     612 </span>            :     //  change the sign of the last element
+<span class="lineNum">     613 </span>            :     A1 = (btSimdFloat4)veorq_s32((int32x4_t)A1, (int32x4_t)vPPPM);      
+<span class="lineNum">     614 </span>            :         A0 = vaddq_f32(A0, A1); //      AB03 + AB12
+<span class="lineNum">     615 </span>            :         
+<span class="lineNum">     616 </span>            :         return btQuaternion(A0);
+<span class="lineNum">     617 </span>            : 
+<span class="lineNum">     618 </span>            : #else
+<span class="lineNum">     619 </span><span class="lineCov">     750338 :         return btQuaternion(</span>
+<span class="lineNum">     620 </span><span class="lineCov">     750338 :         q1.w() * q2.x() + q1.x() * q2.w() + q1.y() * q2.z() - q1.z() * q2.y(),</span>
+<span class="lineNum">     621 </span><span class="lineCov">     750338 :                 q1.w() * q2.y() + q1.y() * q2.w() + q1.z() * q2.x() - q1.x() * q2.z(),</span>
+<span class="lineNum">     622 </span><span class="lineCov">     750338 :                 q1.w() * q2.z() + q1.z() * q2.w() + q1.x() * q2.y() - q1.y() * q2.x(),</span>
+<span class="lineNum">     623 </span><span class="lineCov">    1500676 :                 q1.w() * q2.w() - q1.x() * q2.x() - q1.y() * q2.y() - q1.z() * q2.z()); </span>
+<span class="lineNum">     624 </span>            : #endif
+<span class="lineNum">     625 </span>            : }
+<a name="626"><span class="lineNum">     626 </span>            : </a>
+<span class="lineNum">     627 </span>            : SIMD_FORCE_INLINE btQuaternion
+<span class="lineNum">     628 </span><span class="lineNoCov">          0 : operator*(const btQuaternion&amp; q, const btVector3&amp; w)</span>
+<span class="lineNum">     629 </span>            : {
+<span class="lineNum">     630 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     631 </span>            :         __m128 vQ1 = q.get128();
+<span class="lineNum">     632 </span>            :         __m128 vQ2 = w.get128();
+<span class="lineNum">     633 </span>            :         __m128 A1, B1, A2, B2, A3, B3;
+<span class="lineNum">     634 </span>            :         
+<span class="lineNum">     635 </span>            :         A1 = bt_pshufd_ps(vQ1, BT_SHUFFLE(3,3,3,0));
+<span class="lineNum">     636 </span>            :         B1 = bt_pshufd_ps(vQ2, BT_SHUFFLE(0,1,2,0));
+<span class="lineNum">     637 </span>            : 
+<span class="lineNum">     638 </span>            :         A1 = A1 * B1;
+<span class="lineNum">     639 </span>            :         
+<span class="lineNum">     640 </span>            :         A2 = bt_pshufd_ps(vQ1, BT_SHUFFLE(1,2,0,1));
+<span class="lineNum">     641 </span>            :         B2 = bt_pshufd_ps(vQ2, BT_SHUFFLE(2,0,1,1));
+<span class="lineNum">     642 </span>            : 
+<span class="lineNum">     643 </span>            :         A2 = A2 * B2;
+<span class="lineNum">     644 </span>            : 
+<span class="lineNum">     645 </span>            :         A3 = bt_pshufd_ps(vQ1, BT_SHUFFLE(2,0,1,2));
+<span class="lineNum">     646 </span>            :         B3 = bt_pshufd_ps(vQ2, BT_SHUFFLE(1,2,0,2));
+<span class="lineNum">     647 </span>            :         
+<span class="lineNum">     648 </span>            :         A3 = A3 * B3;   //      A3 *= B3
+<span class="lineNum">     649 </span>            : 
+<span class="lineNum">     650 </span>            :         A1 = A1 + A2;   //      AB12
+<span class="lineNum">     651 </span>            :         A1 = _mm_xor_ps(A1, vPPPM);     //      change sign of the last element
+<span class="lineNum">     652 </span>            :     A1 = A1 - A3;       //      AB123 = AB12 - AB3 
+<span class="lineNum">     653 </span>            :         
+<span class="lineNum">     654 </span>            :         return btQuaternion(A1);
+<span class="lineNum">     655 </span>            :     
+<span class="lineNum">     656 </span>            : #elif defined(BT_USE_NEON)     
+<span class="lineNum">     657 </span>            : 
+<span class="lineNum">     658 </span>            :         float32x4_t vQ1 = q.get128();
+<span class="lineNum">     659 </span>            :         float32x4_t vQ2 = w.get128();
+<span class="lineNum">     660 </span>            :         float32x4_t A1, B1, A2, B2, A3, B3;
+<span class="lineNum">     661 </span>            :     float32x2_t vQ1wx, vQ2zx, vQ1yz, vQ2yz, vQ1zx, vQ2xz;
+<span class="lineNum">     662 </span>            :     
+<span class="lineNum">     663 </span>            :     vQ1wx = vext_f32(vget_high_f32(vQ1), vget_low_f32(vQ1), 1); 
+<span class="lineNum">     664 </span>            :     {
+<span class="lineNum">     665 </span>            :     float32x2x2_t tmp;
+<span class="lineNum">     666 </span>            : 
+<span class="lineNum">     667 </span>            :     tmp = vtrn_f32( vget_high_f32(vQ2), vget_low_f32(vQ2) );       // {z x}, {w y}
+<span class="lineNum">     668 </span>            :     vQ2zx = tmp.val[0];
+<span class="lineNum">     669 </span>            : 
+<span class="lineNum">     670 </span>            :     tmp = vtrn_f32( vget_high_f32(vQ1), vget_low_f32(vQ1) );       // {z x}, {w y}
+<span class="lineNum">     671 </span>            :     vQ1zx = tmp.val[0];
+<span class="lineNum">     672 </span>            :     }
+<span class="lineNum">     673 </span>            : 
+<span class="lineNum">     674 </span>            :     vQ1yz = vext_f32(vget_low_f32(vQ1), vget_high_f32(vQ1), 1);
+<span class="lineNum">     675 </span>            : 
+<span class="lineNum">     676 </span>            :     vQ2yz = vext_f32(vget_low_f32(vQ2), vget_high_f32(vQ2), 1);
+<span class="lineNum">     677 </span>            :     vQ2xz = vext_f32(vQ2zx, vQ2zx, 1);
+<span class="lineNum">     678 </span>            : 
+<span class="lineNum">     679 </span>            :     A1 = vcombine_f32(vdup_lane_f32(vget_high_f32(vQ1), 1), vQ1wx); // W W  W X 
+<span class="lineNum">     680 </span>            :     B1 = vcombine_f32(vget_low_f32(vQ2), vQ2zx);                    // X Y  z x 
+<span class="lineNum">     681 </span>            : 
+<span class="lineNum">     682 </span>            :         A2 = vcombine_f32(vQ1yz, vget_low_f32(vQ1));
+<span class="lineNum">     683 </span>            :     B2 = vcombine_f32(vQ2zx, vdup_lane_f32(vget_low_f32(vQ2), 1));
+<span class="lineNum">     684 </span>            : 
+<span class="lineNum">     685 </span>            :     A3 = vcombine_f32(vQ1zx, vQ1yz);        // Z X Y Z
+<span class="lineNum">     686 </span>            :     B3 = vcombine_f32(vQ2yz, vQ2xz);        // Y Z x z
+<span class="lineNum">     687 </span>            : 
+<span class="lineNum">     688 </span>            :         A1 = vmulq_f32(A1, B1);
+<span class="lineNum">     689 </span>            :         A2 = vmulq_f32(A2, B2);
+<span class="lineNum">     690 </span>            :         A3 = vmulq_f32(A3, B3); //      A3 *= B3
+<span class="lineNum">     691 </span>            : 
+<span class="lineNum">     692 </span>            :         A1 = vaddq_f32(A1, A2); //      AB12 = AB1 + AB2
+<span class="lineNum">     693 </span>            :         
+<span class="lineNum">     694 </span>            :     //  change the sign of the last element
+<span class="lineNum">     695 </span>            :     A1 = (btSimdFloat4)veorq_s32((int32x4_t)A1, (int32x4_t)vPPPM);      
+<span class="lineNum">     696 </span>            :         
+<span class="lineNum">     697 </span>            :     A1 = vsubq_f32(A1, A3);     //      AB123 = AB12 - AB3
+<span class="lineNum">     698 </span>            :         
+<span class="lineNum">     699 </span>            :         return btQuaternion(A1);
+<span class="lineNum">     700 </span>            :     
+<span class="lineNum">     701 </span>            : #else
+<span class="lineNum">     702 </span><span class="lineNoCov">          0 :         return btQuaternion( </span>
+<span class="lineNum">     703 </span><span class="lineNoCov">          0 :          q.w() * w.x() + q.y() * w.z() - q.z() * w.y(),</span>
+<span class="lineNum">     704 </span><span class="lineNoCov">          0 :                  q.w() * w.y() + q.z() * w.x() - q.x() * w.z(),</span>
+<span class="lineNum">     705 </span><span class="lineNoCov">          0 :                  q.w() * w.z() + q.x() * w.y() - q.y() * w.x(),</span>
+<span class="lineNum">     706 </span><span class="lineNoCov">          0 :                 -q.x() * w.x() - q.y() * w.y() - q.z() * w.z()); </span>
+<span class="lineNum">     707 </span>            : #endif
+<span class="lineNum">     708 </span>            : }
+<span class="lineNum">     709 </span>            : 
+<span class="lineNum">     710 </span>            : SIMD_FORCE_INLINE btQuaternion
+<span class="lineNum">     711 </span>            : operator*(const btVector3&amp; w, const btQuaternion&amp; q)
+<span class="lineNum">     712 </span>            : {
+<span class="lineNum">     713 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     714 </span>            :         __m128 vQ1 = w.get128();
+<span class="lineNum">     715 </span>            :         __m128 vQ2 = q.get128();
+<span class="lineNum">     716 </span>            :         __m128 A1, B1, A2, B2, A3, B3;
+<span class="lineNum">     717 </span>            :         
+<span class="lineNum">     718 </span>            :         A1 = bt_pshufd_ps(vQ1, BT_SHUFFLE(0,1,2,0));  // X Y  z x
+<span class="lineNum">     719 </span>            :         B1 = bt_pshufd_ps(vQ2, BT_SHUFFLE(3,3,3,0));  // W W  W X 
+<span class="lineNum">     720 </span>            : 
+<span class="lineNum">     721 </span>            :         A1 = A1 * B1;
+<span class="lineNum">     722 </span>            :         
+<span class="lineNum">     723 </span>            :         A2 = bt_pshufd_ps(vQ1, BT_SHUFFLE(1,2,0,1));
+<span class="lineNum">     724 </span>            :         B2 = bt_pshufd_ps(vQ2, BT_SHUFFLE(2,0,1,1));
+<span class="lineNum">     725 </span>            : 
+<span class="lineNum">     726 </span>            :         A2 = A2 *B2;
+<span class="lineNum">     727 </span>            : 
+<span class="lineNum">     728 </span>            :         A3 = bt_pshufd_ps(vQ1, BT_SHUFFLE(2,0,1,2));
+<span class="lineNum">     729 </span>            :         B3 = bt_pshufd_ps(vQ2, BT_SHUFFLE(1,2,0,2));
+<span class="lineNum">     730 </span>            :         
+<span class="lineNum">     731 </span>            :         A3 = A3 * B3;   //      A3 *= B3
+<span class="lineNum">     732 </span>            : 
+<span class="lineNum">     733 </span>            :         A1 = A1 + A2;   //      AB12
+<span class="lineNum">     734 </span>            :         A1 = _mm_xor_ps(A1, vPPPM);     //      change sign of the last element
+<span class="lineNum">     735 </span>            :         A1 = A1 - A3;   //      AB123 = AB12 - AB3 
+<span class="lineNum">     736 </span>            :         
+<span class="lineNum">     737 </span>            :         return btQuaternion(A1);
+<span class="lineNum">     738 </span>            : 
+<span class="lineNum">     739 </span>            : #elif defined(BT_USE_NEON)     
+<span class="lineNum">     740 </span>            : 
+<span class="lineNum">     741 </span>            :         float32x4_t vQ1 = w.get128();
+<span class="lineNum">     742 </span>            :         float32x4_t vQ2 = q.get128();
+<span class="lineNum">     743 </span>            :         float32x4_t  A1, B1, A2, B2, A3, B3;
+<span class="lineNum">     744 </span>            :     float32x2_t vQ1zx, vQ2wx, vQ1yz, vQ2zx, vQ2yz, vQ2xz;
+<span class="lineNum">     745 </span>            :     
+<span class="lineNum">     746 </span>            :     {
+<span class="lineNum">     747 </span>            :     float32x2x2_t tmp;
+<span class="lineNum">     748 </span>            :    
+<span class="lineNum">     749 </span>            :     tmp = vtrn_f32( vget_high_f32(vQ1), vget_low_f32(vQ1) );       // {z x}, {w y}
+<span class="lineNum">     750 </span>            :     vQ1zx = tmp.val[0];
+<span class="lineNum">     751 </span>            : 
+<span class="lineNum">     752 </span>            :     tmp = vtrn_f32( vget_high_f32(vQ2), vget_low_f32(vQ2) );       // {z x}, {w y}
+<span class="lineNum">     753 </span>            :     vQ2zx = tmp.val[0];
+<span class="lineNum">     754 </span>            :     }
+<span class="lineNum">     755 </span>            :     vQ2wx = vext_f32(vget_high_f32(vQ2), vget_low_f32(vQ2), 1); 
+<span class="lineNum">     756 </span>            : 
+<span class="lineNum">     757 </span>            :     vQ1yz = vext_f32(vget_low_f32(vQ1), vget_high_f32(vQ1), 1);
+<span class="lineNum">     758 </span>            : 
+<span class="lineNum">     759 </span>            :     vQ2yz = vext_f32(vget_low_f32(vQ2), vget_high_f32(vQ2), 1);
+<span class="lineNum">     760 </span>            :     vQ2xz = vext_f32(vQ2zx, vQ2zx, 1);
+<span class="lineNum">     761 </span>            : 
+<span class="lineNum">     762 </span>            :     A1 = vcombine_f32(vget_low_f32(vQ1), vQ1zx);                    // X Y  z x 
+<span class="lineNum">     763 </span>            :     B1 = vcombine_f32(vdup_lane_f32(vget_high_f32(vQ2), 1), vQ2wx); // W W  W X 
+<span class="lineNum">     764 </span>            : 
+<span class="lineNum">     765 </span>            :         A2 = vcombine_f32(vQ1yz, vget_low_f32(vQ1));
+<span class="lineNum">     766 </span>            :     B2 = vcombine_f32(vQ2zx, vdup_lane_f32(vget_low_f32(vQ2), 1));
+<span class="lineNum">     767 </span>            : 
+<span class="lineNum">     768 </span>            :     A3 = vcombine_f32(vQ1zx, vQ1yz);        // Z X Y Z
+<span class="lineNum">     769 </span>            :     B3 = vcombine_f32(vQ2yz, vQ2xz);        // Y Z x z
+<span class="lineNum">     770 </span>            : 
+<span class="lineNum">     771 </span>            :         A1 = vmulq_f32(A1, B1);
+<span class="lineNum">     772 </span>            :         A2 = vmulq_f32(A2, B2);
+<span class="lineNum">     773 </span>            :         A3 = vmulq_f32(A3, B3); //      A3 *= B3
+<span class="lineNum">     774 </span>            : 
+<span class="lineNum">     775 </span>            :         A1 = vaddq_f32(A1, A2); //      AB12 = AB1 + AB2
+<span class="lineNum">     776 </span>            :         
+<span class="lineNum">     777 </span>            :     //  change the sign of the last element
+<span class="lineNum">     778 </span>            :     A1 = (btSimdFloat4)veorq_s32((int32x4_t)A1, (int32x4_t)vPPPM);      
+<span class="lineNum">     779 </span>            :         
+<span class="lineNum">     780 </span>            :     A1 = vsubq_f32(A1, A3);     //      AB123 = AB12 - AB3
+<span class="lineNum">     781 </span>            :         
+<span class="lineNum">     782 </span>            :         return btQuaternion(A1);
+<span class="lineNum">     783 </span>            :     
+<span class="lineNum">     784 </span>            : #else
+<span class="lineNum">     785 </span>            :         return btQuaternion( 
+<span class="lineNum">     786 </span>            :         +w.x() * q.w() + w.y() * q.z() - w.z() * q.y(),
+<span class="lineNum">     787 </span>            :                 +w.y() * q.w() + w.z() * q.x() - w.x() * q.z(),
+<span class="lineNum">     788 </span>            :                 +w.z() * q.w() + w.x() * q.y() - w.y() * q.x(),
+<span class="lineNum">     789 </span>            :                 -w.x() * q.x() - w.y() * q.y() - w.z() * q.z()); 
+<span class="lineNum">     790 </span>            : #endif
+<span class="lineNum">     791 </span>            : }
+<span class="lineNum">     792 </span>            : 
+<span class="lineNum">     793 </span>            : /**@brief Calculate the dot product between two quaternions */
+<span class="lineNum">     794 </span>            : SIMD_FORCE_INLINE btScalar 
+<span class="lineNum">     795 </span>            : dot(const btQuaternion&amp; q1, const btQuaternion&amp; q2) 
+<span class="lineNum">     796 </span>            : { 
+<span class="lineNum">     797 </span>            :         return q1.dot(q2); 
+<span class="lineNum">     798 </span>            : }
+<span class="lineNum">     799 </span>            : 
+<span class="lineNum">     800 </span>            : 
+<span class="lineNum">     801 </span>            : /**@brief Return the length of a quaternion */
+<span class="lineNum">     802 </span>            : SIMD_FORCE_INLINE btScalar
+<span class="lineNum">     803 </span>            : length(const btQuaternion&amp; q) 
+<span class="lineNum">     804 </span>            : { 
+<span class="lineNum">     805 </span>            :         return q.length(); 
+<span class="lineNum">     806 </span>            : }
+<span class="lineNum">     807 </span>            : 
+<span class="lineNum">     808 </span>            : /**@brief Return the angle between two quaternions*/
+<span class="lineNum">     809 </span>            : SIMD_FORCE_INLINE btScalar
+<span class="lineNum">     810 </span>            : btAngle(const btQuaternion&amp; q1, const btQuaternion&amp; q2) 
+<span class="lineNum">     811 </span>            : { 
+<span class="lineNum">     812 </span>            :         return q1.angle(q2); 
+<span class="lineNum">     813 </span>            : }
+<span class="lineNum">     814 </span>            : 
+<span class="lineNum">     815 </span>            : /**@brief Return the inverse of a quaternion*/
+<span class="lineNum">     816 </span>            : SIMD_FORCE_INLINE btQuaternion
+<span class="lineNum">     817 </span>            : inverse(const btQuaternion&amp; q) 
+<span class="lineNum">     818 </span>            : {
+<span class="lineNum">     819 </span>            :         return q.inverse();
+<span class="lineNum">     820 </span>            : }
+<span class="lineNum">     821 </span>            : 
+<span class="lineNum">     822 </span>            : /**@brief Return the result of spherical linear interpolation betwen two quaternions 
+<span class="lineNum">     823 </span>            :  * @param q1 The first quaternion
+<span class="lineNum">     824 </span>            :  * @param q2 The second quaternion 
+<span class="lineNum">     825 </span>            :  * @param t The ration between q1 and q2.  t = 0 return q1, t=1 returns q2 
+<span class="lineNum">     826 </span>            :  * Slerp assumes constant velocity between positions. */
+<span class="lineNum">     827 </span>            : SIMD_FORCE_INLINE btQuaternion
+<span class="lineNum">     828 </span>            : slerp(const btQuaternion&amp; q1, const btQuaternion&amp; q2, const btScalar&amp; t) 
+<span class="lineNum">     829 </span>            : {
+<span class="lineNum">     830 </span>            :         return q1.slerp(q2, t);
+<span class="lineNum">     831 </span>            : }
+<span class="lineNum">     832 </span>            : 
+<span class="lineNum">     833 </span>            : SIMD_FORCE_INLINE btVector3 
+<span class="lineNum">     834 </span><span class="lineNoCov">          0 : quatRotate(const btQuaternion&amp; rotation, const btVector3&amp; v) </span>
+<span class="lineNum">     835 </span>            : {
+<span class="lineNum">     836 </span><span class="lineNoCov">          0 :         btQuaternion q = rotation * v;</span>
+<span class="lineNum">     837 </span><span class="lineNoCov">          0 :         q *= rotation.inverse();</span>
+<span class="lineNum">     838 </span>            : #if defined (BT_USE_SSE_IN_API) &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     839 </span>            :         return btVector3(_mm_and_ps(q.get128(), btvFFF0fMask));
+<span class="lineNum">     840 </span>            : #elif defined(BT_USE_NEON)
+<span class="lineNum">     841 </span>            :     return btVector3((float32x4_t)vandq_s32((int32x4_t)q.get128(), btvFFF0Mask));
+<span class="lineNum">     842 </span>            : #else   
+<span class="lineNum">     843 </span><span class="lineNoCov">          0 :         return btVector3(q.getX(),q.getY(),q.getZ());</span>
+<span class="lineNum">     844 </span>            : #endif
+<span class="lineNum">     845 </span>            : }
+<span class="lineNum">     846 </span>            : 
+<span class="lineNum">     847 </span>            : SIMD_FORCE_INLINE btQuaternion 
+<span class="lineNum">     848 </span><span class="lineNoCov">          0 : shortestArcQuat(const btVector3&amp; v0, const btVector3&amp; v1) // Game Programming Gems 2.10. make sure v0,v1 are normalized</span>
+<span class="lineNum">     849 </span>            : {
+<span class="lineNum">     850 </span><span class="lineNoCov">          0 :         btVector3 c = v0.cross(v1);</span>
+<span class="lineNum">     851 </span><span class="lineNoCov">          0 :         btScalar  d = v0.dot(v1);</span>
+<span class="lineNum">     852 </span>            : 
+<span class="lineNum">     853 </span><span class="lineNoCov">          0 :         if (d &lt; -1.0 + SIMD_EPSILON)</span>
+<span class="lineNum">     854 </span>            :         {
+<span class="lineNum">     855 </span><span class="lineNoCov">          0 :                 btVector3 n,unused;</span>
+<span class="lineNum">     856 </span><span class="lineNoCov">          0 :                 btPlaneSpace1(v0,n,unused);</span>
+<span class="lineNum">     857 </span><span class="lineNoCov">          0 :                 return btQuaternion(n.x(),n.y(),n.z(),0.0f); // just pick any vector that is orthogonal to v0</span>
+<span class="lineNum">     858 </span>            :         }
+<span class="lineNum">     859 </span>            : 
+<span class="lineNum">     860 </span><span class="lineNoCov">          0 :         btScalar  s = btSqrt((1.0f + d) * 2.0f);</span>
+<span class="lineNum">     861 </span><span class="lineNoCov">          0 :         btScalar rs = 1.0f / s;</span>
+<span class="lineNum">     862 </span>            : 
+<span class="lineNum">     863 </span><span class="lineNoCov">          0 :         return btQuaternion(c.getX()*rs,c.getY()*rs,c.getZ()*rs,s * 0.5f);</span>
+<span class="lineNum">     864 </span>            : }
+<span class="lineNum">     865 </span>            : 
+<span class="lineNum">     866 </span>            : SIMD_FORCE_INLINE btQuaternion 
+<span class="lineNum">     867 </span>            : shortestArcQuatNormalize2(btVector3&amp; v0,btVector3&amp; v1)
+<span class="lineNum">     868 </span>            : {
+<span class="lineNum">     869 </span>            :         v0.normalize();
+<span class="lineNum">     870 </span>            :         v1.normalize();
+<span class="lineNum">     871 </span>            :         return shortestArcQuat(v0,v1);
+<span class="lineNum">     872 </span>            : }
+<span class="lineNum">     873 </span>            : 
+<span class="lineNum">     874 </span>            : #endif //BT_SIMD__QUATERNION_H_
+<span class="lineNum">     875 </span>            : 
+<span class="lineNum">     876 </span>            : 
+<span class="lineNum">     877 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,1550 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletDynamics/Dynamics/btDiscreteDynamicsWorld.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletDynamics/Dynamics</a> - btDiscreteDynamicsWorld.cpp<span style="font-size: 80%;"> (source / <a href="btDiscreteDynamicsWorld.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">235</td>
+            <td class="headerCovTableEntry">605</td>
+            <td class="headerCovTableEntryLo">38.8 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">24</td>
+            <td class="headerCovTableEntry">52</td>
+            <td class="headerCovTableEntryLo">46.2 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : #include &quot;btDiscreteDynamicsWorld.h&quot;
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : //collision detection
+<span class="lineNum">      20 </span>            : #include &quot;BulletCollision/CollisionDispatch/btCollisionDispatcher.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;BulletCollision/BroadphaseCollision/btSimpleBroadphase.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h&quot;
+<span class="lineNum">      23 </span>            : #include &quot;BulletCollision/CollisionShapes/btCollisionShape.h&quot;
+<span class="lineNum">      24 </span>            : #include &quot;BulletCollision/CollisionDispatch/btSimulationIslandManager.h&quot;
+<span class="lineNum">      25 </span>            : #include &quot;LinearMath/btTransformUtil.h&quot;
+<span class="lineNum">      26 </span>            : #include &quot;LinearMath/btQuickprof.h&quot;
+<span class="lineNum">      27 </span>            : 
+<span class="lineNum">      28 </span>            : //rigidbody &amp; constraints
+<span class="lineNum">      29 </span>            : #include &quot;BulletDynamics/Dynamics/btRigidBody.h&quot;
+<span class="lineNum">      30 </span>            : #include &quot;BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h&quot;
+<span class="lineNum">      31 </span>            : #include &quot;BulletDynamics/ConstraintSolver/btContactSolverInfo.h&quot;
+<span class="lineNum">      32 </span>            : #include &quot;BulletDynamics/ConstraintSolver/btTypedConstraint.h&quot;
+<span class="lineNum">      33 </span>            : #include &quot;BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h&quot;
+<span class="lineNum">      34 </span>            : #include &quot;BulletDynamics/ConstraintSolver/btHingeConstraint.h&quot;
+<span class="lineNum">      35 </span>            : #include &quot;BulletDynamics/ConstraintSolver/btConeTwistConstraint.h&quot;
+<span class="lineNum">      36 </span>            : #include &quot;BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.h&quot;
+<span class="lineNum">      37 </span>            : #include &quot;BulletDynamics/ConstraintSolver/btSliderConstraint.h&quot;
+<span class="lineNum">      38 </span>            : #include &quot;BulletDynamics/ConstraintSolver/btContactConstraint.h&quot;
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            : #include &quot;LinearMath/btIDebugDraw.h&quot;
+<span class="lineNum">      42 </span>            : #include &quot;BulletCollision/CollisionShapes/btSphereShape.h&quot;
+<span class="lineNum">      43 </span>            : 
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            : #include &quot;BulletDynamics/Dynamics/btActionInterface.h&quot;
+<span class="lineNum">      46 </span>            : #include &quot;LinearMath/btQuickprof.h&quot;
+<span class="lineNum">      47 </span>            : #include &quot;LinearMath/btMotionState.h&quot;
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : #include &quot;LinearMath/btSerializer.h&quot;
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span>            : #if 0
+<span class="lineNum">      52 </span>            : btAlignedObjectArray&lt;btVector3&gt; debugContacts;
+<span class="lineNum">      53 </span>            : btAlignedObjectArray&lt;btVector3&gt; debugNormals;
+<span class="lineNum">      54 </span>            : int startHit=2;
+<span class="lineNum">      55 </span>            : int firstHit=startHit;
+<span class="lineNum">      56 </span>            : #endif
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span>            : SIMD_FORCE_INLINE       int     btGetConstraintIslandId(const btTypedConstraint* lhs)
+<span class="lineNum">      59 </span>            : {
+<span class="lineNum">      60 </span>            :         int islandId;
+<span class="lineNum">      61 </span>            :         
+<span class="lineNum">      62 </span><span class="lineCov">         76 :         const btCollisionObject&amp; rcolObj0 = lhs-&gt;getRigidBodyA();</span>
+<span class="lineNum">      63 </span><span class="lineCov">         76 :         const btCollisionObject&amp; rcolObj1 = lhs-&gt;getRigidBodyB();</span>
+<span class="lineNum">      64 </span><span class="lineCov">         76 :         islandId= rcolObj0.getIslandTag()&gt;=0?rcolObj0.getIslandTag():rcolObj1.getIslandTag();</span>
+<span class="lineNum">      65 </span>            :         return islandId;
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span>            : }
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span>            : class btSortConstraintOnIslandPredicate
+<span class="lineNum">      71 </span>            : {
+<span class="lineNum">      72 </span>            :         public:
+<span class="lineNum">      73 </span>            : 
+<span class="lineNum">      74 </span>            :                 bool operator() ( const btTypedConstraint* lhs, const btTypedConstraint* rhs ) const
+<span class="lineNum">      75 </span>            :                 {
+<span class="lineNum">      76 </span>            :                         int rIslandId0,lIslandId0;
+<span class="lineNum">      77 </span><span class="lineNoCov">          0 :                         rIslandId0 = btGetConstraintIslandId(rhs);</span>
+<span class="lineNum">      78 </span><span class="lineNoCov">          0 :                         lIslandId0 = btGetConstraintIslandId(lhs);</span>
+<span class="lineNum">      79 </span>            :                         return lIslandId0 &lt; rIslandId0;
+<span class="lineNum">      80 </span>            :                 }
+<a name="81"><span class="lineNum">      81 </span>            : };</a>
+<span class="lineNum">      82 </span>            : 
+<span class="lineNum">      83 </span><span class="lineNoCov">          0 : struct InplaceSolverIslandCallback : public btSimulationIslandManager::IslandCallback</span>
+<span class="lineNum">      84 </span>            : {
+<span class="lineNum">      85 </span>            :         btContactSolverInfo*    m_solverInfo;
+<span class="lineNum">      86 </span>            :         btConstraintSolver*             m_solver;
+<span class="lineNum">      87 </span>            :         btTypedConstraint**             m_sortedConstraints;
+<span class="lineNum">      88 </span>            :         int                                             m_numConstraints;
+<span class="lineNum">      89 </span>            :         btIDebugDraw*                   m_debugDrawer;
+<span class="lineNum">      90 </span>            :         btStackAlloc*                   m_stackAlloc;
+<span class="lineNum">      91 </span>            :         btDispatcher*                   m_dispatcher;
+<span class="lineNum">      92 </span>            :         
+<span class="lineNum">      93 </span>            :         btAlignedObjectArray&lt;btCollisionObject*&gt; m_bodies;
+<span class="lineNum">      94 </span>            :         btAlignedObjectArray&lt;btPersistentManifold*&gt; m_manifolds;
+<span class="lineNum">      95 </span>            :         btAlignedObjectArray&lt;btTypedConstraint*&gt; m_constraints;
+<span class="lineNum">      96 </span>            : 
+<span class="lineNum">      97 </span>            : 
+<span class="lineNum">      98 </span>            :         InplaceSolverIslandCallback(
+<span class="lineNum">      99 </span>            :                 btConstraintSolver*     solver,
+<span class="lineNum">     100 </span>            :                 btStackAlloc* stackAlloc,
+<span class="lineNum">     101 </span>            :                 btDispatcher* dispatcher)
+<span class="lineNum">     102 </span><span class="lineCov">          1 :                 :m_solverInfo(NULL),</span>
+<span class="lineNum">     103 </span>            :                 m_solver(solver),
+<span class="lineNum">     104 </span>            :                 m_sortedConstraints(NULL),
+<span class="lineNum">     105 </span>            :                 m_numConstraints(0),
+<span class="lineNum">     106 </span>            :                 m_debugDrawer(NULL),
+<span class="lineNum">     107 </span>            :                 m_stackAlloc(stackAlloc),
+<span class="lineNum">     108 </span><span class="lineCov">          4 :                 m_dispatcher(dispatcher)</span>
+<span class="lineNum">     109 </span>            :         {
+<span class="lineNum">     110 </span>            : 
+<span class="lineNum">     111 </span>            :         }
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span>            :         InplaceSolverIslandCallback&amp; operator=(InplaceSolverIslandCallback&amp; other)
+<span class="lineNum">     114 </span>            :         {
+<span class="lineNum">     115 </span>            :                 btAssert(0);
+<span class="lineNum">     116 </span>            :                 (void)other;
+<span class="lineNum">     117 </span>            :                 return *this;
+<a name="118"><span class="lineNum">     118 </span>            :         }</a>
+<span class="lineNum">     119 </span>            : 
+<span class="lineNum">     120 </span><span class="lineCov">       1558 :         SIMD_FORCE_INLINE void setup ( btContactSolverInfo* solverInfo, btTypedConstraint** sortedConstraints,  int     numConstraints, btIDebugDraw* debugDrawer)</span>
+<span class="lineNum">     121 </span>            :         {
+<span class="lineNum">     122 </span>            :                 btAssert(solverInfo);
+<span class="lineNum">     123 </span><span class="lineCov">       1558 :                 m_solverInfo = solverInfo;</span>
+<span class="lineNum">     124 </span><span class="lineCov">       1558 :                 m_sortedConstraints = sortedConstraints;</span>
+<span class="lineNum">     125 </span><span class="lineCov">       1558 :                 m_numConstraints = numConstraints;</span>
+<span class="lineNum">     126 </span><span class="lineCov">       1558 :                 m_debugDrawer = debugDrawer;</span>
+<span class="lineNum">     127 </span><span class="lineCov">       1558 :                 m_bodies.resize (0);</span>
+<span class="lineNum">     128 </span><span class="lineCov">       1558 :                 m_manifolds.resize (0);</span>
+<span class="lineNum">     129 </span><span class="lineCov">       1558 :                 m_constraints.resize (0);</span>
+<span class="lineNum">     130 </span><span class="lineCov">       1558 :         }</span>
+<a name="131"><span class="lineNum">     131 </span>            : </a>
+<span class="lineNum">     132 </span>            :         
+<span class="lineNum">     133 </span><span class="lineCov">      28437 :         virtual void    processIsland(btCollisionObject** bodies,int numBodies,btPersistentManifold**   manifolds,int numManifolds, int islandId)</span>
+<span class="lineNum">     134 </span>            :         {
+<span class="lineNum">     135 </span><span class="lineCov">      28437 :                 if (islandId&lt;0)</span>
+<span class="lineNum">     136 </span>            :                 {
+<span class="lineNum">     137 </span>            :                         ///we don't split islands, so all constraints/contact manifolds/bodies are passed into the solver regardless the island id
+<span class="lineNum">     138 </span><span class="lineNoCov">          0 :                         m_solver-&gt;solveGroup( bodies,numBodies,manifolds, numManifolds,&amp;m_sortedConstraints[0],m_numConstraints,*m_solverInfo,m_debugDrawer,m_stackAlloc,m_dispatcher);</span>
+<span class="lineNum">     139 </span>            :                 } else
+<span class="lineNum">     140 </span>            :                 {
+<span class="lineNum">     141 </span>            :                                 //also add all non-contact constraints/joints for this island
+<span class="lineNum">     142 </span>            :                         btTypedConstraint** startConstraint = 0;
+<span class="lineNum">     143 </span>            :                         int numCurConstraints = 0;
+<span class="lineNum">     144 </span>            :                         int i;
+<span class="lineNum">     145 </span>            :                         
+<span class="lineNum">     146 </span>            :                         //find the first constraint for this island
+<span class="lineNum">     147 </span><span class="lineCov">      28545 :                         for (i=0;i&lt;m_numConstraints;i++)</span>
+<span class="lineNum">     148 </span>            :                         {
+<span class="lineNum">     149 </span><span class="lineCov">        130 :                                 if (btGetConstraintIslandId(m_sortedConstraints[i]) == islandId)</span>
+<span class="lineNum">     150 </span>            :                                 {
+<span class="lineNum">     151 </span>            :                                         startConstraint = &amp;m_sortedConstraints[i];
+<span class="lineNum">     152 </span>            :                                         break;
+<span class="lineNum">     153 </span>            :                                 }
+<span class="lineNum">     154 </span>            :                         }
+<span class="lineNum">     155 </span>            :                         //count the number of constraints in this island
+<span class="lineNum">     156 </span><span class="lineCov">      28459 :                         for (;i&lt;m_numConstraints;i++)</span>
+<span class="lineNum">     157 </span>            :                         {
+<span class="lineNum">     158 </span><span class="lineCov">         22 :                                 if (btGetConstraintIslandId(m_sortedConstraints[i]) == islandId)</span>
+<span class="lineNum">     159 </span>            :                                 {
+<span class="lineNum">     160 </span><span class="lineCov">         11 :                                         numCurConstraints++;</span>
+<span class="lineNum">     161 </span>            :                                 }
+<span class="lineNum">     162 </span>            :                         }
+<span class="lineNum">     163 </span>            : 
+<span class="lineNum">     164 </span><span class="lineCov">      28437 :                         if (m_solverInfo-&gt;m_minimumSolverBatchSize&lt;=1)</span>
+<span class="lineNum">     165 </span>            :                         {
+<span class="lineNum">     166 </span><span class="lineNoCov">          0 :                                 m_solver-&gt;solveGroup( bodies,numBodies,manifolds, numManifolds,startConstraint,numCurConstraints,*m_solverInfo,m_debugDrawer,m_stackAlloc,m_dispatcher);</span>
+<span class="lineNum">     167 </span>            :                         } else
+<span class="lineNum">     168 </span>            :                         {
+<span class="lineNum">     169 </span>            :                                 
+<span class="lineNum">     170 </span><span class="lineCov">     241959 :                                 for (i=0;i&lt;numBodies;i++)</span>
+<span class="lineNum">     171 </span><span class="lineCov">     106761 :                                         m_bodies.push_back(bodies[i]);</span>
+<span class="lineNum">     172 </span><span class="lineCov">     451691 :                                 for (i=0;i&lt;numManifolds;i++)</span>
+<span class="lineNum">     173 </span><span class="lineCov">     211627 :                                         m_manifolds.push_back(manifolds[i]);</span>
+<span class="lineNum">     174 </span><span class="lineCov">      28459 :                                 for (i=0;i&lt;numCurConstraints;i++)</span>
+<span class="lineNum">     175 </span><span class="lineCov">         11 :                                         m_constraints.push_back(startConstraint[i]);</span>
+<span class="lineNum">     176 </span><span class="lineCov">      28437 :                                 if ((m_constraints.size()+m_manifolds.size())&gt;m_solverInfo-&gt;m_minimumSolverBatchSize)</span>
+<span class="lineNum">     177 </span>            :                                 {
+<span class="lineNum">     178 </span><span class="lineCov">        954 :                                         processConstraints();</span>
+<span class="lineNum">     179 </span>            :                                 } else
+<span class="lineNum">     180 </span>            :                                 {
+<span class="lineNum">     181 </span>            :                                         //printf(&quot;deferred\n&quot;);
+<span class="lineNum">     182 </span>            :                                 }
+<span class="lineNum">     183 </span>            :                         }
+<a name="184"><span class="lineNum">     184 </span>            :                 }</a>
+<span class="lineNum">     185 </span><span class="lineCov">      28437 :         }</span>
+<span class="lineNum">     186 </span><span class="lineCov">       2512 :         void    processConstraints()</span>
+<span class="lineNum">     187 </span>            :         {
+<span class="lineNum">     188 </span>            : 
+<span class="lineNum">     189 </span><span class="lineCov">       2512 :                 btCollisionObject** bodies = m_bodies.size()? &amp;m_bodies[0]:0;</span>
+<span class="lineNum">     190 </span><span class="lineCov">       2512 :                 btPersistentManifold** manifold = m_manifolds.size()?&amp;m_manifolds[0]:0;</span>
+<span class="lineNum">     191 </span><span class="lineCov">       2512 :                 btTypedConstraint** constraints = m_constraints.size()?&amp;m_constraints[0]:0;</span>
+<span class="lineNum">     192 </span>            :                         
+<span class="lineNum">     193 </span><span class="lineCov">       2512 :                 m_solver-&gt;solveGroup( bodies,m_bodies.size(),manifold, m_manifolds.size(),constraints, m_constraints.size() ,*m_solverInfo,m_debugDrawer,m_stackAlloc,m_dispatcher);</span>
+<span class="lineNum">     194 </span><span class="lineCov">       2512 :                 m_bodies.resize(0);</span>
+<span class="lineNum">     195 </span><span class="lineCov">       2512 :                 m_manifolds.resize(0);</span>
+<span class="lineNum">     196 </span><span class="lineCov">       2512 :                 m_constraints.resize(0);</span>
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span><span class="lineCov">       2512 :         }</span>
+<span class="lineNum">     199 </span>            : 
+<span class="lineNum">     200 </span>            : };
+<span class="lineNum">     201 </span>            : 
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span>            : 
+<span class="lineNum">     204 </span><span class="lineCov">          1 : btDiscreteDynamicsWorld::btDiscreteDynamicsWorld(btDispatcher* dispatcher,btBroadphaseInterface* pairCache,btConstraintSolver* constraintSolver, btCollisionConfiguration* collisionConfiguration)</span>
+<span class="lineNum">     205 </span>            : :btDynamicsWorld(dispatcher,pairCache,collisionConfiguration),
+<span class="lineNum">     206 </span>            : m_sortedConstraints     (),
+<span class="lineNum">     207 </span>            : m_solverIslandCallback ( NULL ),
+<span class="lineNum">     208 </span>            : m_constraintSolver(constraintSolver),
+<span class="lineNum">     209 </span>            : m_gravity(0,-10,0),
+<span class="lineNum">     210 </span>            : m_localTime(0),
+<span class="lineNum">     211 </span>            : m_synchronizeAllMotionStates(false),
+<span class="lineNum">     212 </span>            : m_applySpeculativeContactRestitution(false),
+<span class="lineNum">     213 </span><span class="lineCov">          7 : m_profileTimings(0)</span>
+<span class="lineNum">     214 </span>            : 
+<span class="lineNum">     215 </span>            : {
+<span class="lineNum">     216 </span><span class="lineCov">          1 :         if (!m_constraintSolver)</span>
+<span class="lineNum">     217 </span>            :         {
+<span class="lineNum">     218 </span><span class="lineNoCov">          0 :                 void* mem = btAlignedAlloc(sizeof(btSequentialImpulseConstraintSolver),16);</span>
+<span class="lineNum">     219 </span><span class="lineNoCov">          0 :                 m_constraintSolver = new (mem) btSequentialImpulseConstraintSolver;</span>
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :                 m_ownsConstraintSolver = true;</span>
+<span class="lineNum">     221 </span>            :         } else
+<span class="lineNum">     222 </span>            :         {
+<span class="lineNum">     223 </span><span class="lineCov">          1 :                 m_ownsConstraintSolver = false;</span>
+<span class="lineNum">     224 </span>            :         }
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span>            :         {
+<span class="lineNum">     227 </span><span class="lineCov">          1 :                 void* mem = btAlignedAlloc(sizeof(btSimulationIslandManager),16);</span>
+<span class="lineNum">     228 </span><span class="lineCov">          1 :                 m_islandManager = new (mem) btSimulationIslandManager();</span>
+<span class="lineNum">     229 </span>            :         }
+<span class="lineNum">     230 </span>            : 
+<span class="lineNum">     231 </span><span class="lineCov">          1 :         m_ownsIslandManager = true;</span>
+<span class="lineNum">     232 </span>            : 
+<span class="lineNum">     233 </span>            :         {
+<span class="lineNum">     234 </span><span class="lineCov">          1 :                 void* mem = btAlignedAlloc(sizeof(InplaceSolverIslandCallback),16);</span>
+<span class="lineNum">     235 </span><span class="lineCov">          2 :                 m_solverIslandCallback = new (mem) InplaceSolverIslandCallback (m_constraintSolver, m_stackAlloc, dispatcher);</span>
+<span class="lineNum">     236 </span>            :         }
+<span class="lineNum">     237 </span><span class="lineCov">          1 : }</span>
+<a name="238"><span class="lineNum">     238 </span>            : </a>
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span><span class="lineNoCov">          0 : btDiscreteDynamicsWorld::~btDiscreteDynamicsWorld()</span>
+<span class="lineNum">     241 </span>            : {
+<span class="lineNum">     242 </span>            :         //only delete it when we created it
+<span class="lineNum">     243 </span><span class="lineNoCov">          0 :         if (m_ownsIslandManager)</span>
+<span class="lineNum">     244 </span>            :         {
+<span class="lineNum">     245 </span><span class="lineNoCov">          0 :                 m_islandManager-&gt;~btSimulationIslandManager();</span>
+<span class="lineNum">     246 </span><span class="lineNoCov">          0 :                 btAlignedFree( m_islandManager);</span>
+<span class="lineNum">     247 </span>            :         }
+<span class="lineNum">     248 </span><span class="lineNoCov">          0 :         if (m_solverIslandCallback)</span>
+<span class="lineNum">     249 </span>            :         {
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :                 m_solverIslandCallback-&gt;~InplaceSolverIslandCallback();</span>
+<span class="lineNum">     251 </span><span class="lineNoCov">          0 :                 btAlignedFree(m_solverIslandCallback);</span>
+<span class="lineNum">     252 </span>            :         }
+<span class="lineNum">     253 </span><span class="lineNoCov">          0 :         if (m_ownsConstraintSolver)</span>
+<span class="lineNum">     254 </span>            :         {
+<span class="lineNum">     255 </span>            : 
+<span class="lineNum">     256 </span><span class="lineNoCov">          0 :                 m_constraintSolver-&gt;~btConstraintSolver();</span>
+<span class="lineNum">     257 </span><span class="lineNoCov">          0 :                 btAlignedFree(m_constraintSolver);</span>
+<span class="lineNum">     258 </span>            :         }
+<span class="lineNum">     259 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     260 </span>            : 
+<span class="lineNum">     261 </span><span class="lineCov">       1558 : void    btDiscreteDynamicsWorld::saveKinematicState(btScalar timeStep)</span>
+<span class="lineNum">     262 </span>            : {
+<span class="lineNum">     263 </span>            : ///would like to iterate over m_nonStaticRigidBodies, but unfortunately old API allows
+<span class="lineNum">     264 </span>            : ///to switch status _after_ adding kinematic objects to the world
+<span class="lineNum">     265 </span>            : ///fix it for Bullet 3.x release
+<span class="lineNum">     266 </span><span class="lineCov">     122119 :         for (int i=0;i&lt;m_collisionObjects.size();i++)</span>
+<span class="lineNum">     267 </span>            :         {
+<span class="lineNum">     268 </span><span class="lineCov">     241122 :                 btCollisionObject* colObj = m_collisionObjects[i];</span>
+<span class="lineNum">     269 </span><span class="lineCov">     120561 :                 btRigidBody* body = btRigidBody::upcast(colObj);</span>
+<span class="lineNum">     270 </span><span class="lineCov">     120561 :                 if (body &amp;&amp; body-&gt;getActivationState() != ISLAND_SLEEPING)</span>
+<span class="lineNum">     271 </span>            :                 {
+<span class="lineNum">     272 </span><span class="lineCov">     213582 :                         if (body-&gt;isKinematicObject())</span>
+<span class="lineNum">     273 </span>            :                         {
+<span class="lineNum">     274 </span>            :                                 //to calculate velocities next frame
+<span class="lineNum">     275 </span><span class="lineNoCov">          0 :                                 body-&gt;saveKinematicState(timeStep);</span>
+<span class="lineNum">     276 </span>            :                         }
+<span class="lineNum">     277 </span>            :                 }
+<span class="lineNum">     278 </span>            :         }
+<span class="lineNum">     279 </span>            : 
+<span class="lineNum">     280 </span><span class="lineCov">       1558 : }</span>
+<span class="lineNum">     281 </span>            : 
+<span class="lineNum">     282 </span><span class="lineCov">       6106 : void    btDiscreteDynamicsWorld::debugDrawWorld()</span>
+<span class="lineNum">     283 </span>            : {
+<span class="lineNum">     284 </span><span class="lineCov">       6106 :         BT_PROFILE(&quot;debugDrawWorld&quot;);</span>
+<span class="lineNum">     285 </span>            : 
+<span class="lineNum">     286 </span><span class="lineCov">       6106 :         btCollisionWorld::debugDrawWorld();</span>
+<span class="lineNum">     287 </span>            : 
+<span class="lineNum">     288 </span><span class="lineCov">       6106 :         bool drawConstraints = false;</span>
+<span class="lineNum">     289 </span><span class="lineCov">       6106 :         if (getDebugDrawer())</span>
+<span class="lineNum">     290 </span>            :         {
+<span class="lineNum">     291 </span><span class="lineCov">       6106 :                 int mode = getDebugDrawer()-&gt;getDebugMode();</span>
+<span class="lineNum">     292 </span><span class="lineCov">       6106 :                 if(mode  &amp; (btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits))</span>
+<span class="lineNum">     293 </span>            :                 {
+<span class="lineNum">     294 </span><span class="lineNoCov">          0 :                         drawConstraints = true;</span>
+<span class="lineNum">     295 </span>            :                 }
+<span class="lineNum">     296 </span>            :         }
+<span class="lineNum">     297 </span>            :         if(drawConstraints)
+<span class="lineNum">     298 </span>            :         {
+<span class="lineNum">     299 </span><span class="lineNoCov">          0 :                 for(int i = getNumConstraints()-1; i&gt;=0 ;i--)</span>
+<span class="lineNum">     300 </span>            :                 {
+<span class="lineNum">     301 </span><span class="lineNoCov">          0 :                         btTypedConstraint* constraint = getConstraint(i);</span>
+<span class="lineNum">     302 </span><span class="lineNoCov">          0 :                         debugDrawConstraint(constraint);</span>
+<span class="lineNum">     303 </span>            :                 }
+<span class="lineNum">     304 </span>            :         }
+<span class="lineNum">     305 </span>            : 
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span>            : 
+<span class="lineNum">     308 </span><span class="lineCov">       6106 :     if (getDebugDrawer() &amp;&amp; (getDebugDrawer()-&gt;getDebugMode() &amp; (btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawAabb | btIDebugDraw::DBG_DrawNormals)))</span>
+<span class="lineNum">     309 </span>            :         {
+<span class="lineNum">     310 </span>            :                 int i;
+<span class="lineNum">     311 </span>            : 
+<span class="lineNum">     312 </span><span class="lineNoCov">          0 :                 if (getDebugDrawer() &amp;&amp; getDebugDrawer()-&gt;getDebugMode())</span>
+<span class="lineNum">     313 </span>            :                 {
+<span class="lineNum">     314 </span><span class="lineNoCov">          0 :                         for (i=0;i&lt;m_actions.size();i++)</span>
+<span class="lineNum">     315 </span>            :                         {
+<span class="lineNum">     316 </span><span class="lineNoCov">          0 :                                 m_actions[i]-&gt;debugDraw(m_debugDrawer);</span>
+<span class="lineNum">     317 </span>            :                         }
+<span class="lineNum">     318 </span>            :                 }
+<span class="lineNum">     319 </span>            :         }
+<span class="lineNum">     320 </span><span class="lineCov">       6106 : }</span>
+<span class="lineNum">     321 </span>            : 
+<span class="lineNum">     322 </span><span class="lineCov">       6106 : void    btDiscreteDynamicsWorld::clearForces()</span>
+<span class="lineNum">     323 </span>            : {
+<span class="lineNum">     324 </span>            :         ///@todo: iterate over awake simulation islands!
+<span class="lineNum">     325 </span><span class="lineCov">     467340 :         for ( int i=0;i&lt;m_nonStaticRigidBodies.size();i++)</span>
+<span class="lineNum">     326 </span>            :         {
+<span class="lineNum">     327 </span><span class="lineCov">     922468 :                 btRigidBody* body = m_nonStaticRigidBodies[i];</span>
+<span class="lineNum">     328 </span>            :                 //need to check if next line is ok
+<span class="lineNum">     329 </span>            :                 //it might break backward compatibility (people applying forces on sleeping objects get never cleared and accumulate on wake-up
+<span class="lineNum">     330 </span><span class="lineCov">     461234 :                 body-&gt;clearForces();</span>
+<span class="lineNum">     331 </span>            :         }
+<span class="lineNum">     332 </span><span class="lineCov">       6106 : }       </span>
+<span class="lineNum">     333 </span>            : 
+<span class="lineNum">     334 </span>            : ///apply gravity, call this once per timestep
+<span class="lineNum">     335 </span><span class="lineCov">       1558 : void    btDiscreteDynamicsWorld::applyGravity()</span>
+<span class="lineNum">     336 </span>            : {
+<span class="lineNum">     337 </span>            :         ///@todo: iterate over awake simulation islands!
+<span class="lineNum">     338 </span><span class="lineCov">     120561 :         for ( int i=0;i&lt;m_nonStaticRigidBodies.size();i++)</span>
+<span class="lineNum">     339 </span>            :         {
+<span class="lineNum">     340 </span><span class="lineCov">     238006 :                 btRigidBody* body = m_nonStaticRigidBodies[i];</span>
+<span class="lineNum">     341 </span><span class="lineCov">     225794 :                 if (body-&gt;isActive())</span>
+<span class="lineNum">     342 </span>            :                 {
+<span class="lineNum">     343 </span><span class="lineCov">     106791 :                         body-&gt;applyGravity();</span>
+<span class="lineNum">     344 </span>            :                 }
+<span class="lineNum">     345 </span>            :         }
+<span class="lineNum">     346 </span><span class="lineCov">       1558 : }</span>
+<a name="347"><span class="lineNum">     347 </span>            : </a>
+<span class="lineNum">     348 </span>            : 
+<span class="lineNum">     349 </span><span class="lineCov">     416121 : void    btDiscreteDynamicsWorld::synchronizeSingleMotionState(btRigidBody* body)</span>
+<span class="lineNum">     350 </span>            : {
+<span class="lineNum">     351 </span>            :         btAssert(body);
+<span class="lineNum">     352 </span>            : 
+<span class="lineNum">     353 </span><span class="lineCov">     832242 :         if (body-&gt;getMotionState() &amp;&amp; !body-&gt;isStaticOrKinematicObject())</span>
+<span class="lineNum">     354 </span>            :         {
+<span class="lineNum">     355 </span>            :                 //we need to call the update at least once, even for sleeping objects
+<span class="lineNum">     356 </span>            :                 //otherwise the 'graphics' transform never updates properly
+<span class="lineNum">     357 </span>            :                 ///@todo: add 'dirty' flag
+<span class="lineNum">     358 </span>            :                 //if (body-&gt;getActivationState() != ISLAND_SLEEPING)
+<span class="lineNum">     359 </span>            :                 {
+<span class="lineNum">     360 </span><span class="lineCov">     416121 :                         btTransform interpolatedTransform;</span>
+<span class="lineNum">     361 </span><span class="lineCov">    1664484 :                         btTransformUtil::integrateTransform(body-&gt;getInterpolationWorldTransform(),</span>
+<span class="lineNum">     362 </span><span class="lineCov">     416121 :                                 body-&gt;getInterpolationLinearVelocity(),body-&gt;getInterpolationAngularVelocity(),m_localTime*body-&gt;getHitFraction(),interpolatedTransform);</span>
+<span class="lineNum">     363 </span><span class="lineCov">     416121 :                         body-&gt;getMotionState()-&gt;setWorldTransform(interpolatedTransform);</span>
+<span class="lineNum">     364 </span>            :                 }
+<span class="lineNum">     365 </span>            :         }
+<span class="lineNum">     366 </span><span class="lineCov">     416121 : }</span>
+<span class="lineNum">     367 </span>            : 
+<span class="lineNum">     368 </span>            : 
+<span class="lineNum">     369 </span><span class="lineCov">       6106 : void    btDiscreteDynamicsWorld::synchronizeMotionStates()</span>
+<span class="lineNum">     370 </span>            : {
+<span class="lineNum">     371 </span><span class="lineCov">       6106 :         BT_PROFILE(&quot;synchronizeMotionStates&quot;);</span>
+<span class="lineNum">     372 </span><span class="lineCov">       6106 :         if (m_synchronizeAllMotionStates)</span>
+<span class="lineNum">     373 </span>            :         {
+<span class="lineNum">     374 </span>            :                 //iterate  over all collision objects
+<span class="lineNum">     375 </span><span class="lineNoCov">          0 :                 for ( int i=0;i&lt;m_collisionObjects.size();i++)</span>
+<span class="lineNum">     376 </span>            :                 {
+<span class="lineNum">     377 </span><span class="lineNoCov">          0 :                         btCollisionObject* colObj = m_collisionObjects[i];</span>
+<span class="lineNum">     378 </span><span class="lineNoCov">          0 :                         btRigidBody* body = btRigidBody::upcast(colObj);</span>
+<span class="lineNum">     379 </span>            :                         if (body)
+<span class="lineNum">     380 </span><span class="lineNoCov">          0 :                                 synchronizeSingleMotionState(body);</span>
+<span class="lineNum">     381 </span>            :                 }
+<span class="lineNum">     382 </span>            :         } else
+<span class="lineNum">     383 </span>            :         {
+<span class="lineNum">     384 </span>            :                 //iterate over all active rigid bodies
+<span class="lineNum">     385 </span><span class="lineCov">     928574 :                 for ( int i=0;i&lt;m_nonStaticRigidBodies.size();i++)</span>
+<span class="lineNum">     386 </span>            :                 {
+<span class="lineNum">     387 </span><span class="lineCov">     922468 :                         btRigidBody* body = m_nonStaticRigidBodies[i];</span>
+<span class="lineNum">     388 </span><span class="lineCov">     877355 :                         if (body-&gt;isActive())</span>
+<span class="lineNum">     389 </span><span class="lineCov">     416121 :                                 synchronizeSingleMotionState(body);</span>
+<span class="lineNum">     390 </span>            :                 }
+<span class="lineNum">     391 </span>            :         }
+<span class="lineNum">     392 </span><span class="lineCov">       6106 : }</span>
+<a name="393"><span class="lineNum">     393 </span>            : </a>
+<span class="lineNum">     394 </span>            : 
+<span class="lineNum">     395 </span><span class="lineCov">       6106 : int     btDiscreteDynamicsWorld::stepSimulation( btScalar timeStep,int maxSubSteps, btScalar fixedTimeStep)</span>
+<span class="lineNum">     396 </span>            : {
+<span class="lineNum">     397 </span><span class="lineCov">       6106 :         startProfiling(timeStep);</span>
+<span class="lineNum">     398 </span>            : 
+<span class="lineNum">     399 </span><span class="lineCov">       6106 :         BT_PROFILE(&quot;stepSimulation&quot;);</span>
+<span class="lineNum">     400 </span>            : 
+<span class="lineNum">     401 </span><span class="lineCov">       6106 :         int numSimulationSubSteps = 0;</span>
+<span class="lineNum">     402 </span>            : 
+<span class="lineNum">     403 </span><span class="lineCov">       6106 :         if (maxSubSteps)</span>
+<span class="lineNum">     404 </span>            :         {
+<span class="lineNum">     405 </span>            :                 //fixed timestep with interpolation
+<span class="lineNum">     406 </span><span class="lineCov">       6106 :                 m_localTime += timeStep;</span>
+<span class="lineNum">     407 </span><span class="lineCov">       6106 :                 if (m_localTime &gt;= fixedTimeStep)</span>
+<span class="lineNum">     408 </span>            :                 {
+<span class="lineNum">     409 </span><span class="lineCov">       1558 :                         numSimulationSubSteps = int( m_localTime / fixedTimeStep);</span>
+<span class="lineNum">     410 </span><span class="lineCov">       1558 :                         m_localTime -= numSimulationSubSteps * fixedTimeStep;</span>
+<span class="lineNum">     411 </span>            :                 }
+<span class="lineNum">     412 </span>            :         } else
+<span class="lineNum">     413 </span>            :         {
+<span class="lineNum">     414 </span>            :                 //variable timestep
+<span class="lineNum">     415 </span><span class="lineNoCov">          0 :                 fixedTimeStep = timeStep;</span>
+<span class="lineNum">     416 </span><span class="lineNoCov">          0 :                 m_localTime = timeStep;</span>
+<span class="lineNum">     417 </span><span class="lineNoCov">          0 :                 if (btFuzzyZero(timeStep))</span>
+<span class="lineNum">     418 </span>            :                 {
+<span class="lineNum">     419 </span>            :                         numSimulationSubSteps = 0;
+<span class="lineNum">     420 </span>            :                         maxSubSteps = 0;
+<span class="lineNum">     421 </span>            :                 } else
+<span class="lineNum">     422 </span>            :                 {
+<span class="lineNum">     423 </span><span class="lineNoCov">          0 :                         numSimulationSubSteps = 1;</span>
+<span class="lineNum">     424 </span><span class="lineNoCov">          0 :                         maxSubSteps = 1;</span>
+<span class="lineNum">     425 </span>            :                 }
+<span class="lineNum">     426 </span>            :         }
+<span class="lineNum">     427 </span>            : 
+<span class="lineNum">     428 </span>            :         //process some debugging flags
+<span class="lineNum">     429 </span><span class="lineCov">       6106 :         if (getDebugDrawer())</span>
+<span class="lineNum">     430 </span>            :         {
+<span class="lineNum">     431 </span><span class="lineCov">       6106 :                 btIDebugDraw* debugDrawer = getDebugDrawer ();</span>
+<span class="lineNum">     432 </span><span class="lineCov">       6106 :                 gDisableDeactivation = (debugDrawer-&gt;getDebugMode() &amp; btIDebugDraw::DBG_NoDeactivation) != 0;</span>
+<span class="lineNum">     433 </span>            :         }
+<span class="lineNum">     434 </span><span class="lineCov">       6106 :         if (numSimulationSubSteps)</span>
+<span class="lineNum">     435 </span>            :         {
+<span class="lineNum">     436 </span>            : 
+<span class="lineNum">     437 </span>            :                 //clamp the number of substeps, to prevent simulation grinding spiralling down to a halt
+<span class="lineNum">     438 </span><span class="lineCov">       1558 :                 int clampedSimulationSteps = (numSimulationSubSteps &gt; maxSubSteps)? maxSubSteps : numSimulationSubSteps;</span>
+<span class="lineNum">     439 </span>            : 
+<span class="lineNum">     440 </span><span class="lineCov">       1558 :                 saveKinematicState(fixedTimeStep*clampedSimulationSteps);</span>
+<span class="lineNum">     441 </span>            : 
+<span class="lineNum">     442 </span><span class="lineCov">       1558 :                 applyGravity();</span>
+<span class="lineNum">     443 </span>            : 
+<span class="lineNum">     444 </span>            :                 
+<span class="lineNum">     445 </span>            : 
+<span class="lineNum">     446 </span><span class="lineCov">       4674 :                 for (int i=0;i&lt;clampedSimulationSteps;i++)</span>
+<span class="lineNum">     447 </span>            :                 {
+<span class="lineNum">     448 </span><span class="lineCov">       1558 :                         internalSingleStepSimulation(fixedTimeStep);</span>
+<span class="lineNum">     449 </span><span class="lineCov">       1558 :                         synchronizeMotionStates();</span>
+<span class="lineNum">     450 </span>            :                 }
+<span class="lineNum">     451 </span>            : 
+<span class="lineNum">     452 </span>            :         } else
+<span class="lineNum">     453 </span>            :         {
+<span class="lineNum">     454 </span><span class="lineCov">       4548 :                 synchronizeMotionStates();</span>
+<span class="lineNum">     455 </span>            :         }
+<span class="lineNum">     456 </span>            : 
+<span class="lineNum">     457 </span><span class="lineCov">       6106 :         clearForces();</span>
+<span class="lineNum">     458 </span>            : 
+<span class="lineNum">     459 </span>            : #ifndef BT_NO_PROFILE
+<span class="lineNum">     460 </span><span class="lineCov">       6106 :         CProfileManager::Increment_Frame_Counter();</span>
+<span class="lineNum">     461 </span>            : #endif //BT_NO_PROFILE
+<span class="lineNum">     462 </span>            :         
+<span class="lineNum">     463 </span><span class="lineCov">      12212 :         return numSimulationSubSteps;</span>
+<a name="464"><span class="lineNum">     464 </span>            : }</a>
+<span class="lineNum">     465 </span>            : 
+<span class="lineNum">     466 </span><span class="lineCov">       1558 : void    btDiscreteDynamicsWorld::internalSingleStepSimulation(btScalar timeStep)</span>
+<span class="lineNum">     467 </span>            : {
+<span class="lineNum">     468 </span>            :         
+<span class="lineNum">     469 </span><span class="lineCov">       1558 :         BT_PROFILE(&quot;internalSingleStepSimulation&quot;);</span>
+<span class="lineNum">     470 </span>            : 
+<span class="lineNum">     471 </span><span class="lineCov">       1558 :         if(0 != m_internalPreTickCallback) {</span>
+<span class="lineNum">     472 </span><span class="lineNoCov">          0 :                 (*m_internalPreTickCallback)(this, timeStep);</span>
+<span class="lineNum">     473 </span>            :         }       
+<span class="lineNum">     474 </span>            : 
+<span class="lineNum">     475 </span>            :         ///apply gravity, predict motion
+<span class="lineNum">     476 </span><span class="lineCov">       1558 :         predictUnconstraintMotion(timeStep);</span>
+<span class="lineNum">     477 </span>            : 
+<span class="lineNum">     478 </span><span class="lineCov">       1558 :         btDispatcherInfo&amp; dispatchInfo = getDispatchInfo();</span>
+<span class="lineNum">     479 </span>            : 
+<span class="lineNum">     480 </span><span class="lineCov">       1558 :         dispatchInfo.m_timeStep = timeStep;</span>
+<span class="lineNum">     481 </span><span class="lineCov">       1558 :         dispatchInfo.m_stepCount = 0;</span>
+<span class="lineNum">     482 </span><span class="lineCov">       1558 :         dispatchInfo.m_debugDraw = getDebugDrawer();</span>
+<span class="lineNum">     483 </span>            : 
+<span class="lineNum">     484 </span>            : 
+<span class="lineNum">     485 </span><span class="lineCov">       1558 :     createPredictiveContacts(timeStep);</span>
+<span class="lineNum">     486 </span>            :     
+<span class="lineNum">     487 </span>            :         ///perform collision detection
+<span class="lineNum">     488 </span><span class="lineCov">       1558 :         performDiscreteCollisionDetection();</span>
+<span class="lineNum">     489 </span>            : 
+<span class="lineNum">     490 </span><span class="lineCov">       1558 :         calculateSimulationIslands();</span>
+<span class="lineNum">     491 </span>            : 
+<span class="lineNum">     492 </span>            :         
+<span class="lineNum">     493 </span><span class="lineCov">       1558 :         getSolverInfo().m_timeStep = timeStep;</span>
+<span class="lineNum">     494 </span>            :         
+<span class="lineNum">     495 </span>            : 
+<span class="lineNum">     496 </span>            : 
+<span class="lineNum">     497 </span>            :         ///solve contact and other joint constraints
+<span class="lineNum">     498 </span><span class="lineCov">       3116 :         solveConstraints(getSolverInfo());</span>
+<span class="lineNum">     499 </span>            :         
+<span class="lineNum">     500 </span>            :         ///CallbackTriggers();
+<span class="lineNum">     501 </span>            : 
+<span class="lineNum">     502 </span>            :         ///integrate transforms
+<span class="lineNum">     503 </span>            : 
+<span class="lineNum">     504 </span><span class="lineCov">       1558 :         integrateTransforms(timeStep);</span>
+<span class="lineNum">     505 </span>            : 
+<span class="lineNum">     506 </span>            :         ///update vehicle simulation
+<span class="lineNum">     507 </span><span class="lineCov">       1558 :         updateActions(timeStep);</span>
+<span class="lineNum">     508 </span>            :         
+<span class="lineNum">     509 </span><span class="lineCov">       1558 :         updateActivationState( timeStep );</span>
+<span class="lineNum">     510 </span>            : 
+<span class="lineNum">     511 </span><span class="lineCov">       1558 :         if(0 != m_internalTickCallback) {</span>
+<span class="lineNum">     512 </span><span class="lineNoCov">          0 :                 (*m_internalTickCallback)(this, timeStep);</span>
+<span class="lineNum">     513 </span>            :         }       
+<span class="lineNum">     514 </span><span class="lineCov">       1558 : }</span>
+<span class="lineNum">     515 </span>            : 
+<span class="lineNum">     516 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::setGravity(const btVector3&amp; gravity)</span>
+<span class="lineNum">     517 </span>            : {
+<span class="lineNum">     518 </span><span class="lineNoCov">          0 :         m_gravity = gravity;</span>
+<span class="lineNum">     519 </span><span class="lineNoCov">          0 :         for ( int i=0;i&lt;m_nonStaticRigidBodies.size();i++)</span>
+<span class="lineNum">     520 </span>            :         {
+<span class="lineNum">     521 </span><span class="lineNoCov">          0 :                 btRigidBody* body = m_nonStaticRigidBodies[i];</span>
+<span class="lineNum">     522 </span><span class="lineNoCov">          0 :                 if (body-&gt;isActive() &amp;&amp; !(body-&gt;getFlags() &amp;BT_DISABLE_WORLD_GRAVITY))</span>
+<span class="lineNum">     523 </span>            :                 {
+<span class="lineNum">     524 </span><span class="lineNoCov">          0 :                         body-&gt;setGravity(gravity);</span>
+<span class="lineNum">     525 </span>            :                 }
+<span class="lineNum">     526 </span>            :         }
+<a name="527"><span class="lineNum">     527 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     528 </span>            : 
+<span class="lineNum">     529 </span><span class="lineNoCov">          0 : btVector3 btDiscreteDynamicsWorld::getGravity () const</span>
+<span class="lineNum">     530 </span>            : {
+<span class="lineNum">     531 </span><span class="lineNoCov">          0 :         return m_gravity;</span>
+<a name="532"><span class="lineNum">     532 </span>            : }</a>
+<span class="lineNum">     533 </span>            : 
+<span class="lineNum">     534 </span><span class="lineCov">        101 : void    btDiscreteDynamicsWorld::addCollisionObject(btCollisionObject* collisionObject,short int collisionFilterGroup,short int collisionFilterMask)</span>
+<span class="lineNum">     535 </span>            : {
+<span class="lineNum">     536 </span><span class="lineCov">        101 :         btCollisionWorld::addCollisionObject(collisionObject,collisionFilterGroup,collisionFilterMask);</span>
+<a name="537"><span class="lineNum">     537 </span><span class="lineCov">        101 : }</span></a>
+<span class="lineNum">     538 </span>            : 
+<span class="lineNum">     539 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::removeCollisionObject(btCollisionObject* collisionObject)</span>
+<span class="lineNum">     540 </span>            : {
+<span class="lineNum">     541 </span><span class="lineNoCov">          0 :         btRigidBody* body = btRigidBody::upcast(collisionObject);</span>
+<span class="lineNum">     542 </span>            :         if (body)
+<span class="lineNum">     543 </span><span class="lineNoCov">          0 :                 removeRigidBody(body);</span>
+<span class="lineNum">     544 </span>            :         else
+<span class="lineNum">     545 </span><span class="lineNoCov">          0 :                 btCollisionWorld::removeCollisionObject(collisionObject);</span>
+<a name="546"><span class="lineNum">     546 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     547 </span>            : 
+<span class="lineNum">     548 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::removeRigidBody(btRigidBody* body)</span>
+<span class="lineNum">     549 </span>            : {
+<span class="lineNum">     550 </span><span class="lineNoCov">          0 :         m_nonStaticRigidBodies.remove(body);</span>
+<span class="lineNum">     551 </span><span class="lineNoCov">          0 :         btCollisionWorld::removeCollisionObject(body);</span>
+<span class="lineNum">     552 </span><span class="lineNoCov">          0 : }</span>
+<a name="553"><span class="lineNum">     553 </span>            : </a>
+<span class="lineNum">     554 </span>            : 
+<span class="lineNum">     555 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::addRigidBody(btRigidBody* body)</span>
+<span class="lineNum">     556 </span>            : {
+<span class="lineNum">     557 </span><span class="lineNoCov">          0 :         if (!body-&gt;isStaticOrKinematicObject() &amp;&amp; !(body-&gt;getFlags() &amp;BT_DISABLE_WORLD_GRAVITY))</span>
+<span class="lineNum">     558 </span>            :         {
+<span class="lineNum">     559 </span><span class="lineNoCov">          0 :                 body-&gt;setGravity(m_gravity);</span>
+<span class="lineNum">     560 </span>            :         }
+<span class="lineNum">     561 </span>            : 
+<span class="lineNum">     562 </span><span class="lineNoCov">          0 :         if (body-&gt;getCollisionShape())</span>
+<span class="lineNum">     563 </span>            :         {
+<span class="lineNum">     564 </span><span class="lineNoCov">          0 :                 if (!body-&gt;isStaticObject())</span>
+<span class="lineNum">     565 </span>            :                 {
+<span class="lineNum">     566 </span><span class="lineNoCov">          0 :                         m_nonStaticRigidBodies.push_back(body);</span>
+<span class="lineNum">     567 </span>            :                 } else
+<span class="lineNum">     568 </span>            :                 {
+<span class="lineNum">     569 </span><span class="lineNoCov">          0 :                         body-&gt;setActivationState(ISLAND_SLEEPING);</span>
+<span class="lineNum">     570 </span>            :                 }
+<span class="lineNum">     571 </span>            : 
+<span class="lineNum">     572 </span><span class="lineNoCov">          0 :                 bool isDynamic = !(body-&gt;isStaticObject() || body-&gt;isKinematicObject());</span>
+<span class="lineNum">     573 </span><span class="lineNoCov">          0 :                 short collisionFilterGroup = isDynamic? short(btBroadphaseProxy::DefaultFilter) : short(btBroadphaseProxy::StaticFilter);</span>
+<span class="lineNum">     574 </span><span class="lineNoCov">          0 :                 short collisionFilterMask = isDynamic?  short(btBroadphaseProxy::AllFilter) :   short(btBroadphaseProxy::AllFilter ^ btBroadphaseProxy::StaticFilter);</span>
+<span class="lineNum">     575 </span>            : 
+<span class="lineNum">     576 </span><span class="lineNoCov">          0 :                 addCollisionObject(body,collisionFilterGroup,collisionFilterMask);</span>
+<span class="lineNum">     577 </span>            :         }
+<a name="578"><span class="lineNum">     578 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     579 </span>            : 
+<span class="lineNum">     580 </span><span class="lineCov">        101 : void    btDiscreteDynamicsWorld::addRigidBody(btRigidBody* body, short group, short mask)</span>
+<span class="lineNum">     581 </span>            : {
+<span class="lineNum">     582 </span><span class="lineCov">        202 :         if (!body-&gt;isStaticOrKinematicObject() &amp;&amp; !(body-&gt;getFlags() &amp;BT_DISABLE_WORLD_GRAVITY))</span>
+<span class="lineNum">     583 </span>            :         {
+<span class="lineNum">     584 </span><span class="lineCov">        100 :                 body-&gt;setGravity(m_gravity);</span>
+<span class="lineNum">     585 </span>            :         }
+<span class="lineNum">     586 </span>            : 
+<span class="lineNum">     587 </span><span class="lineCov">        101 :         if (body-&gt;getCollisionShape())</span>
+<span class="lineNum">     588 </span>            :         {
+<span class="lineNum">     589 </span><span class="lineCov">        202 :                 if (!body-&gt;isStaticObject())</span>
+<span class="lineNum">     590 </span>            :                 {
+<span class="lineNum">     591 </span><span class="lineCov">        100 :                         m_nonStaticRigidBodies.push_back(body);</span>
+<span class="lineNum">     592 </span>            :                 }
+<span class="lineNum">     593 </span>            :                  else
+<span class="lineNum">     594 </span>            :                 {
+<span class="lineNum">     595 </span><span class="lineCov">          1 :                         body-&gt;setActivationState(ISLAND_SLEEPING);</span>
+<span class="lineNum">     596 </span>            :                 }
+<span class="lineNum">     597 </span><span class="lineCov">        101 :                 addCollisionObject(body,group,mask);</span>
+<span class="lineNum">     598 </span>            :         }
+<span class="lineNum">     599 </span><span class="lineCov">        101 : }</span>
+<span class="lineNum">     600 </span>            : 
+<span class="lineNum">     601 </span>            : 
+<span class="lineNum">     602 </span><span class="lineCov">       1558 : void    btDiscreteDynamicsWorld::updateActions(btScalar timeStep)</span>
+<span class="lineNum">     603 </span>            : {
+<span class="lineNum">     604 </span>            :         BT_PROFILE(&quot;updateActions&quot;);
+<span class="lineNum">     605 </span>            :         
+<span class="lineNum">     606 </span><span class="lineCov">       1558 :         for ( int i=0;i&lt;m_actions.size();i++)</span>
+<span class="lineNum">     607 </span>            :         {
+<span class="lineNum">     608 </span><span class="lineNoCov">          0 :                 m_actions[i]-&gt;updateAction( this, timeStep);</span>
+<span class="lineNum">     609 </span>            :         }
+<span class="lineNum">     610 </span><span class="lineCov">       1558 : }</span>
+<span class="lineNum">     611 </span>            :         
+<span class="lineNum">     612 </span>            :         
+<span class="lineNum">     613 </span><span class="lineCov">       1558 : void    btDiscreteDynamicsWorld::updateActivationState(btScalar timeStep)</span>
+<span class="lineNum">     614 </span>            : {
+<span class="lineNum">     615 </span>            :         BT_PROFILE(&quot;updateActivationState&quot;);
+<span class="lineNum">     616 </span>            : 
+<span class="lineNum">     617 </span><span class="lineCov">     239564 :         for ( int i=0;i&lt;m_nonStaticRigidBodies.size();i++)</span>
+<span class="lineNum">     618 </span>            :         {
+<span class="lineNum">     619 </span><span class="lineCov">     238006 :                 btRigidBody* body = m_nonStaticRigidBodies[i];</span>
+<span class="lineNum">     620 </span><span class="lineCov">     119003 :                 if (body)</span>
+<span class="lineNum">     621 </span>            :                 {
+<span class="lineNum">     622 </span><span class="lineCov">     119003 :                         body-&gt;updateDeactivation(timeStep);</span>
+<span class="lineNum">     623 </span>            : 
+<span class="lineNum">     624 </span>            :                         if (body-&gt;wantsSleeping())
+<span class="lineNum">     625 </span>            :                         {
+<span class="lineNum">     626 </span><span class="lineCov">      78454 :                                 if (body-&gt;isStaticOrKinematicObject())</span>
+<span class="lineNum">     627 </span>            :                                 {
+<span class="lineNum">     628 </span><span class="lineNoCov">          0 :                                         body-&gt;setActivationState(ISLAND_SLEEPING);</span>
+<span class="lineNum">     629 </span>            :                                 } else
+<span class="lineNum">     630 </span>            :                                 {
+<span class="lineNum">     631 </span><span class="lineCov">      39227 :                                         if (body-&gt;getActivationState() == ACTIVE_TAG)</span>
+<span class="lineNum">     632 </span><span class="lineCov">        172 :                                                 body-&gt;setActivationState( WANTS_DEACTIVATION );</span>
+<span class="lineNum">     633 </span><span class="lineCov">      39227 :                                         if (body-&gt;getActivationState() == ISLAND_SLEEPING) </span>
+<span class="lineNum">     634 </span>            :                                         {
+<span class="lineNum">     635 </span><span class="lineCov">      24484 :                                                 body-&gt;setAngularVelocity(btVector3(0,0,0));</span>
+<span class="lineNum">     636 </span><span class="lineCov">      24484 :                                                 body-&gt;setLinearVelocity(btVector3(0,0,0));</span>
+<span class="lineNum">     637 </span>            :                                         }
+<span class="lineNum">     638 </span>            : 
+<span class="lineNum">     639 </span>            :                                 }
+<span class="lineNum">     640 </span>            :                         } else
+<span class="lineNum">     641 </span>            :                         {
+<span class="lineNum">     642 </span><span class="lineCov">      79776 :                                 if (body-&gt;getActivationState() != DISABLE_DEACTIVATION)</span>
+<span class="lineNum">     643 </span><span class="lineCov">      79765 :                                         body-&gt;setActivationState( ACTIVE_TAG );</span>
+<span class="lineNum">     644 </span>            :                         }
+<span class="lineNum">     645 </span>            :                 }
+<span class="lineNum">     646 </span>            :         }
+<a name="647"><span class="lineNum">     647 </span><span class="lineCov">       1558 : }</span></a>
+<span class="lineNum">     648 </span>            : 
+<span class="lineNum">     649 </span><span class="lineCov">          2 : void    btDiscreteDynamicsWorld::addConstraint(btTypedConstraint* constraint,bool disableCollisionsBetweenLinkedBodies)</span>
+<span class="lineNum">     650 </span>            : {
+<span class="lineNum">     651 </span><span class="lineCov">          2 :         m_constraints.push_back(constraint);</span>
+<span class="lineNum">     652 </span><span class="lineCov">          2 :         if (disableCollisionsBetweenLinkedBodies)</span>
+<span class="lineNum">     653 </span>            :         {
+<span class="lineNum">     654 </span><span class="lineCov">          2 :                 constraint-&gt;getRigidBodyA().addConstraintRef(constraint);</span>
+<span class="lineNum">     655 </span><span class="lineCov">          2 :                 constraint-&gt;getRigidBodyB().addConstraintRef(constraint);</span>
+<span class="lineNum">     656 </span>            :         }
+<a name="657"><span class="lineNum">     657 </span><span class="lineCov">          2 : }</span></a>
+<span class="lineNum">     658 </span>            : 
+<span class="lineNum">     659 </span><span class="lineCov">          2 : void    btDiscreteDynamicsWorld::removeConstraint(btTypedConstraint* constraint)</span>
+<span class="lineNum">     660 </span>            : {
+<span class="lineNum">     661 </span><span class="lineCov">          2 :         m_constraints.remove(constraint);</span>
+<span class="lineNum">     662 </span><span class="lineCov">          2 :         constraint-&gt;getRigidBodyA().removeConstraintRef(constraint);</span>
+<span class="lineNum">     663 </span><span class="lineCov">          2 :         constraint-&gt;getRigidBodyB().removeConstraintRef(constraint);</span>
+<a name="664"><span class="lineNum">     664 </span><span class="lineCov">          2 : }</span></a>
+<span class="lineNum">     665 </span>            : 
+<span class="lineNum">     666 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::addAction(btActionInterface* action)</span>
+<span class="lineNum">     667 </span>            : {
+<span class="lineNum">     668 </span><span class="lineNoCov">          0 :         m_actions.push_back(action);</span>
+<a name="669"><span class="lineNum">     669 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     670 </span>            : 
+<span class="lineNum">     671 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::removeAction(btActionInterface* action)</span>
+<span class="lineNum">     672 </span>            : {
+<span class="lineNum">     673 </span><span class="lineNoCov">          0 :         m_actions.remove(action);</span>
+<span class="lineNum">     674 </span><span class="lineNoCov">          0 : }</span>
+<a name="675"><span class="lineNum">     675 </span>            : </a>
+<span class="lineNum">     676 </span>            : 
+<span class="lineNum">     677 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::addVehicle(btActionInterface* vehicle)</span>
+<span class="lineNum">     678 </span>            : {
+<span class="lineNum">     679 </span><span class="lineNoCov">          0 :         addAction(vehicle);</span>
+<a name="680"><span class="lineNum">     680 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     681 </span>            : 
+<span class="lineNum">     682 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::removeVehicle(btActionInterface* vehicle)</span>
+<span class="lineNum">     683 </span>            : {
+<span class="lineNum">     684 </span><span class="lineNoCov">          0 :         removeAction(vehicle);</span>
+<a name="685"><span class="lineNum">     685 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     686 </span>            : 
+<span class="lineNum">     687 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::addCharacter(btActionInterface* character)</span>
+<span class="lineNum">     688 </span>            : {
+<span class="lineNum">     689 </span><span class="lineNoCov">          0 :         addAction(character);</span>
+<a name="690"><span class="lineNum">     690 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     691 </span>            : 
+<span class="lineNum">     692 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::removeCharacter(btActionInterface* character)</span>
+<span class="lineNum">     693 </span>            : {
+<span class="lineNum">     694 </span><span class="lineNoCov">          0 :         removeAction(character);</span>
+<span class="lineNum">     695 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     696 </span>            : 
+<span class="lineNum">     697 </span>            : 
+<span class="lineNum">     698 </span>            : 
+<span class="lineNum">     699 </span>            : 
+<span class="lineNum">     700 </span><span class="lineCov">       1558 : void    btDiscreteDynamicsWorld::solveConstraints(btContactSolverInfo&amp; solverInfo)</span>
+<span class="lineNum">     701 </span>            : {
+<span class="lineNum">     702 </span><span class="lineCov">       1558 :         BT_PROFILE(&quot;solveConstraints&quot;);</span>
+<span class="lineNum">     703 </span>            :         
+<span class="lineNum">     704 </span><span class="lineCov">       1558 :         m_sortedConstraints.resize( m_constraints.size());</span>
+<span class="lineNum">     705 </span>            :         int i; 
+<span class="lineNum">     706 </span><span class="lineCov">       1569 :         for (i=0;i&lt;getNumConstraints();i++)</span>
+<span class="lineNum">     707 </span>            :         {
+<span class="lineNum">     708 </span><span class="lineCov">         33 :                 m_sortedConstraints[i] = m_constraints[i];</span>
+<span class="lineNum">     709 </span>            :         }
+<span class="lineNum">     710 </span>            : 
+<span class="lineNum">     711 </span>            : //      btAssert(0);
+<span class="lineNum">     712 </span>            :                 
+<span class="lineNum">     713 </span>            :         
+<span class="lineNum">     714 </span>            : 
+<span class="lineNum">     715 </span><span class="lineCov">       3116 :         m_sortedConstraints.quickSort(btSortConstraintOnIslandPredicate());</span>
+<span class="lineNum">     716 </span>            :         
+<span class="lineNum">     717 </span><span class="lineCov">       1558 :         btTypedConstraint** constraintsPtr = getNumConstraints() ? &amp;m_sortedConstraints[0] : 0;</span>
+<span class="lineNum">     718 </span>            :         
+<span class="lineNum">     719 </span><span class="lineCov">       1558 :         m_solverIslandCallback-&gt;setup(&amp;solverInfo,constraintsPtr,m_sortedConstraints.size(),getDebugDrawer());</span>
+<span class="lineNum">     720 </span><span class="lineCov">       3116 :         m_constraintSolver-&gt;prepareSolve(getCollisionWorld()-&gt;getNumCollisionObjects(), getCollisionWorld()-&gt;getDispatcher()-&gt;getNumManifolds());</span>
+<span class="lineNum">     721 </span>            :         
+<span class="lineNum">     722 </span>            :         /// solve all the constraints for this island
+<span class="lineNum">     723 </span><span class="lineCov">       1558 :         m_islandManager-&gt;buildAndProcessIslands(getCollisionWorld()-&gt;getDispatcher(),getCollisionWorld(),m_solverIslandCallback);</span>
+<span class="lineNum">     724 </span>            : 
+<span class="lineNum">     725 </span><span class="lineCov">       1558 :         m_solverIslandCallback-&gt;processConstraints();</span>
+<span class="lineNum">     726 </span>            : 
+<span class="lineNum">     727 </span><span class="lineCov">       1558 :         m_constraintSolver-&gt;allSolved(solverInfo, m_debugDrawer, m_stackAlloc);</span>
+<span class="lineNum">     728 </span><span class="lineCov">       1558 : }</span>
+<span class="lineNum">     729 </span>            : 
+<span class="lineNum">     730 </span>            : 
+<span class="lineNum">     731 </span><span class="lineCov">       1558 : void    btDiscreteDynamicsWorld::calculateSimulationIslands()</span>
+<span class="lineNum">     732 </span>            : {
+<span class="lineNum">     733 </span><span class="lineCov">       1558 :         BT_PROFILE(&quot;calculateSimulationIslands&quot;);</span>
+<span class="lineNum">     734 </span>            : 
+<span class="lineNum">     735 </span><span class="lineCov">       3116 :         getSimulationIslandManager()-&gt;updateActivationState(getCollisionWorld(),getCollisionWorld()-&gt;getDispatcher());</span>
+<span class="lineNum">     736 </span>            : 
+<span class="lineNum">     737 </span>            :     {
+<span class="lineNum">     738 </span>            :         //merge islands based on speculative contact manifolds too
+<span class="lineNum">     739 </span><span class="lineCov">       1558 :         for (int i=0;i&lt;this-&gt;m_predictiveManifolds.size();i++)</span>
+<span class="lineNum">     740 </span>            :         {
+<span class="lineNum">     741 </span><span class="lineNoCov">          0 :             btPersistentManifold* manifold = m_predictiveManifolds[i];</span>
+<span class="lineNum">     742 </span>            :             
+<span class="lineNum">     743 </span><span class="lineNoCov">          0 :             const btCollisionObject* colObj0 = manifold-&gt;getBody0();</span>
+<span class="lineNum">     744 </span><span class="lineNoCov">          0 :             const btCollisionObject* colObj1 = manifold-&gt;getBody1();</span>
+<span class="lineNum">     745 </span>            :             
+<span class="lineNum">     746 </span><span class="lineNoCov">          0 :             if (((colObj0) &amp;&amp; (!(colObj0)-&gt;isStaticOrKinematicObject())) &amp;&amp;</span>
+<span class="lineNum">     747 </span><span class="lineNoCov">          0 :                 ((colObj1) &amp;&amp; (!(colObj1)-&gt;isStaticOrKinematicObject())))</span>
+<span class="lineNum">     748 </span>            :             {
+<span class="lineNum">     749 </span><span class="lineNoCov">          0 :                 if (colObj0-&gt;isActive() || colObj1-&gt;isActive())</span>
+<span class="lineNum">     750 </span>            :                 {
+<span class="lineNum">     751 </span>            :                     
+<span class="lineNum">     752 </span><span class="lineNoCov">          0 :                     getSimulationIslandManager()-&gt;getUnionFind().unite((colObj0)-&gt;getIslandTag(),</span>
+<span class="lineNum">     753 </span>            :                                                                        (colObj1)-&gt;getIslandTag());
+<span class="lineNum">     754 </span>            :                 }
+<span class="lineNum">     755 </span>            :             }
+<span class="lineNum">     756 </span>            :         }
+<span class="lineNum">     757 </span>            :     }
+<span class="lineNum">     758 </span>            :     
+<span class="lineNum">     759 </span>            :         {
+<span class="lineNum">     760 </span>            :                 int i;
+<span class="lineNum">     761 </span><span class="lineCov">       1558 :                 int numConstraints = int(m_constraints.size());</span>
+<span class="lineNum">     762 </span><span class="lineCov">       1569 :                 for (i=0;i&lt; numConstraints ; i++ )</span>
+<span class="lineNum">     763 </span>            :                 {
+<span class="lineNum">     764 </span><span class="lineCov">         22 :                         btTypedConstraint* constraint = m_constraints[i];</span>
+<span class="lineNum">     765 </span><span class="lineCov">         11 :                         if (constraint-&gt;isEnabled())</span>
+<span class="lineNum">     766 </span>            :                         {
+<span class="lineNum">     767 </span><span class="lineCov">         11 :                                 const btRigidBody* colObj0 = &amp;constraint-&gt;getRigidBodyA();</span>
+<span class="lineNum">     768 </span><span class="lineCov">         11 :                                 const btRigidBody* colObj1 = &amp;constraint-&gt;getRigidBodyB();</span>
+<span class="lineNum">     769 </span>            : 
+<span class="lineNum">     770 </span><span class="lineCov">         22 :                                 if (((colObj0) &amp;&amp; (!(colObj0)-&gt;isStaticOrKinematicObject())) &amp;&amp;</span>
+<span class="lineNum">     771 </span><span class="lineNoCov">          0 :                                         ((colObj1) &amp;&amp; (!(colObj1)-&gt;isStaticOrKinematicObject())))</span>
+<span class="lineNum">     772 </span>            :                                 {
+<span class="lineNum">     773 </span><span class="lineNoCov">          0 :                                         if (colObj0-&gt;isActive() || colObj1-&gt;isActive())</span>
+<span class="lineNum">     774 </span>            :                                         {
+<span class="lineNum">     775 </span>            : 
+<span class="lineNum">     776 </span><span class="lineNoCov">          0 :                                                 getSimulationIslandManager()-&gt;getUnionFind().unite((colObj0)-&gt;getIslandTag(),</span>
+<span class="lineNum">     777 </span>            :                                                         (colObj1)-&gt;getIslandTag());
+<span class="lineNum">     778 </span>            :                                         }
+<span class="lineNum">     779 </span>            :                                 }
+<span class="lineNum">     780 </span>            :                         }
+<span class="lineNum">     781 </span>            :                 }
+<span class="lineNum">     782 </span>            :         }
+<span class="lineNum">     783 </span>            : 
+<span class="lineNum">     784 </span>            :         //Store the island id in each body
+<span class="lineNum">     785 </span><span class="lineCov">       1558 :         getSimulationIslandManager()-&gt;storeIslandActivationState(getCollisionWorld());</span>
+<span class="lineNum">     786 </span>            : 
+<span class="lineNum">     787 </span>            :         
+<span class="lineNum">     788 </span><span class="lineCov">       1558 : }</span>
+<span class="lineNum">     789 </span>            : 
+<span class="lineNum">     790 </span>            : 
+<a name="791"><span class="lineNum">     791 </span>            : </a>
+<span class="lineNum">     792 </span>            : 
+<span class="lineNum">     793 </span><span class="lineNoCov">          0 : class btClosestNotMeConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback</span>
+<span class="lineNum">     794 </span>            : {
+<span class="lineNum">     795 </span>            : public:
+<span class="lineNum">     796 </span>            : 
+<span class="lineNum">     797 </span>            :         btCollisionObject* m_me;
+<span class="lineNum">     798 </span>            :         btScalar m_allowedPenetration;
+<span class="lineNum">     799 </span>            :         btOverlappingPairCache* m_pairCache;
+<span class="lineNum">     800 </span>            :         btDispatcher* m_dispatcher;
+<span class="lineNum">     801 </span>            : 
+<span class="lineNum">     802 </span>            : public:
+<span class="lineNum">     803 </span><span class="lineNoCov">          0 :         btClosestNotMeConvexResultCallback (btCollisionObject* me,const btVector3&amp; fromA,const btVector3&amp; toA,btOverlappingPairCache* pairCache,btDispatcher* dispatcher) : </span>
+<span class="lineNum">     804 </span>            :           btCollisionWorld::ClosestConvexResultCallback(fromA,toA),
+<span class="lineNum">     805 </span>            :                 m_me(me),
+<span class="lineNum">     806 </span>            :                 m_allowedPenetration(0.0f),
+<span class="lineNum">     807 </span>            :                 m_pairCache(pairCache),
+<span class="lineNum">     808 </span><span class="lineNoCov">          0 :                 m_dispatcher(dispatcher)</span>
+<span class="lineNum">     809 </span>            :         {
+<a name="810"><span class="lineNum">     810 </span>            :         }</a>
+<span class="lineNum">     811 </span>            : 
+<span class="lineNum">     812 </span><span class="lineNoCov">          0 :         virtual btScalar addSingleResult(btCollisionWorld::LocalConvexResult&amp; convexResult,bool normalInWorldSpace)</span>
+<span class="lineNum">     813 </span>            :         {
+<span class="lineNum">     814 </span><span class="lineNoCov">          0 :                 if (convexResult.m_hitCollisionObject == m_me)</span>
+<span class="lineNum">     815 </span>            :                         return 1.0f;
+<span class="lineNum">     816 </span>            : 
+<span class="lineNum">     817 </span>            :                 //ignore result if there is no contact response
+<span class="lineNum">     818 </span><span class="lineNoCov">          0 :                 if(!convexResult.m_hitCollisionObject-&gt;hasContactResponse())</span>
+<span class="lineNum">     819 </span>            :                         return 1.0f;
+<span class="lineNum">     820 </span>            : 
+<span class="lineNum">     821 </span><span class="lineNoCov">          0 :                 btVector3 linVelA,linVelB;</span>
+<span class="lineNum">     822 </span><span class="lineNoCov">          0 :                 linVelA = m_convexToWorld-m_convexFromWorld;</span>
+<span class="lineNum">     823 </span><span class="lineNoCov">          0 :                 linVelB = btVector3(0,0,0);//toB.getOrigin()-fromB.getOrigin();</span>
+<span class="lineNum">     824 </span>            : 
+<span class="lineNum">     825 </span><span class="lineNoCov">          0 :                 btVector3 relativeVelocity = (linVelA-linVelB);</span>
+<span class="lineNum">     826 </span>            :                 //don't report time of impact for motion away from the contact normal (or causes minor penetration)
+<span class="lineNum">     827 </span><span class="lineNoCov">          0 :                 if (convexResult.m_hitNormalLocal.dot(relativeVelocity)&gt;=-m_allowedPenetration)</span>
+<span class="lineNum">     828 </span>            :                         return 1.f;
+<span class="lineNum">     829 </span>            : 
+<span class="lineNum">     830 </span><span class="lineNoCov">          0 :                 return ClosestConvexResultCallback::addSingleResult (convexResult, normalInWorldSpace);</span>
+<a name="831"><span class="lineNum">     831 </span>            :         }</a>
+<span class="lineNum">     832 </span>            : 
+<span class="lineNum">     833 </span><span class="lineNoCov">          0 :         virtual bool needsCollision(btBroadphaseProxy* proxy0) const</span>
+<span class="lineNum">     834 </span>            :         {
+<span class="lineNum">     835 </span>            :                 //don't collide with itself
+<span class="lineNum">     836 </span><span class="lineNoCov">          0 :                 if (proxy0-&gt;m_clientObject == m_me)</span>
+<span class="lineNum">     837 </span>            :                         return false;
+<span class="lineNum">     838 </span>            : 
+<span class="lineNum">     839 </span>            :                 ///don't do CCD when the collision filters are not matching
+<span class="lineNum">     840 </span><span class="lineNoCov">          0 :                 if (!ClosestConvexResultCallback::needsCollision(proxy0))</span>
+<span class="lineNum">     841 </span>            :                         return false;
+<span class="lineNum">     842 </span>            : 
+<span class="lineNum">     843 </span><span class="lineNoCov">          0 :                 btCollisionObject* otherObj = (btCollisionObject*) proxy0-&gt;m_clientObject;</span>
+<span class="lineNum">     844 </span>            : 
+<span class="lineNum">     845 </span>            :                 //call needsResponse, see http://code.google.com/p/bullet/issues/detail?id=179
+<span class="lineNum">     846 </span><span class="lineNoCov">          0 :                 if (m_dispatcher-&gt;needsResponse(m_me,otherObj))</span>
+<span class="lineNum">     847 </span>            :                 {
+<span class="lineNum">     848 </span>            : #if 0
+<span class="lineNum">     849 </span>            :                         ///don't do CCD when there are already contact points (touching contact/penetration)
+<span class="lineNum">     850 </span>            :                         btAlignedObjectArray&lt;btPersistentManifold*&gt; manifoldArray;
+<span class="lineNum">     851 </span>            :                         btBroadphasePair* collisionPair = m_pairCache-&gt;findPair(m_me-&gt;getBroadphaseHandle(),proxy0);
+<span class="lineNum">     852 </span>            :                         if (collisionPair)
+<span class="lineNum">     853 </span>            :                         {
+<span class="lineNum">     854 </span>            :                                 if (collisionPair-&gt;m_algorithm)
+<span class="lineNum">     855 </span>            :                                 {
+<span class="lineNum">     856 </span>            :                                         manifoldArray.resize(0);
+<span class="lineNum">     857 </span>            :                                         collisionPair-&gt;m_algorithm-&gt;getAllContactManifolds(manifoldArray);
+<span class="lineNum">     858 </span>            :                                         for (int j=0;j&lt;manifoldArray.size();j++)
+<span class="lineNum">     859 </span>            :                                         {
+<span class="lineNum">     860 </span>            :                                                 btPersistentManifold* manifold = manifoldArray[j];
+<span class="lineNum">     861 </span>            :                                                 if (manifold-&gt;getNumContacts()&gt;0)
+<span class="lineNum">     862 </span>            :                                                         return false;
+<span class="lineNum">     863 </span>            :                                         }
+<span class="lineNum">     864 </span>            :                                 }
+<span class="lineNum">     865 </span>            :                         }
+<span class="lineNum">     866 </span>            : #endif
+<span class="lineNum">     867 </span>            :                         return true;
+<span class="lineNum">     868 </span>            :                 }
+<span class="lineNum">     869 </span>            : 
+<span class="lineNum">     870 </span><span class="lineNoCov">          0 :                 return false;</span>
+<span class="lineNum">     871 </span>            :         }
+<span class="lineNum">     872 </span>            : 
+<span class="lineNum">     873 </span>            : 
+<span class="lineNum">     874 </span>            : };
+<span class="lineNum">     875 </span>            : 
+<span class="lineNum">     876 </span>            : ///internal debugging variable. this value shouldn't be too high
+<span class="lineNum">     877 </span>            : int gNumClampedCcdMotions=0;
+<span class="lineNum">     878 </span>            : 
+<span class="lineNum">     879 </span>            : 
+<span class="lineNum">     880 </span><span class="lineCov">       1558 : void    btDiscreteDynamicsWorld::createPredictiveContacts(btScalar timeStep)</span>
+<span class="lineNum">     881 </span>            : {
+<span class="lineNum">     882 </span><span class="lineCov">       1558 :         BT_PROFILE(&quot;createPredictiveContacts&quot;);</span>
+<span class="lineNum">     883 </span>            :         
+<span class="lineNum">     884 </span>            :         {
+<span class="lineNum">     885 </span>            :                 BT_PROFILE(&quot;release predictive contact manifolds&quot;);
+<span class="lineNum">     886 </span>            : 
+<span class="lineNum">     887 </span><span class="lineCov">       1558 :                 for (int i=0;i&lt;m_predictiveManifolds.size();i++)</span>
+<span class="lineNum">     888 </span>            :                 {
+<span class="lineNum">     889 </span><span class="lineNoCov">          0 :                         btPersistentManifold* manifold = m_predictiveManifolds[i];</span>
+<span class="lineNum">     890 </span><span class="lineNoCov">          0 :                         this-&gt;m_dispatcher1-&gt;releaseManifold(manifold);</span>
+<span class="lineNum">     891 </span>            :                 }
+<span class="lineNum">     892 </span><span class="lineCov">       3116 :                 m_predictiveManifolds.clear();</span>
+<span class="lineNum">     893 </span>            :         }
+<span class="lineNum">     894 </span>            : 
+<span class="lineNum">     895 </span><span class="lineCov">       1558 :         btTransform predictedTrans;</span>
+<span class="lineNum">     896 </span><span class="lineCov">     120561 :         for ( int i=0;i&lt;m_nonStaticRigidBodies.size();i++)</span>
+<span class="lineNum">     897 </span>            :         {
+<span class="lineNum">     898 </span><span class="lineCov">     238006 :                 btRigidBody* body = m_nonStaticRigidBodies[i];</span>
+<span class="lineNum">     899 </span><span class="lineCov">     238006 :                 body-&gt;setHitFraction(1.f);</span>
+<span class="lineNum">     900 </span>            : 
+<span class="lineNum">     901 </span><span class="lineCov">     332585 :                 if (body-&gt;isActive() &amp;&amp; (!body-&gt;isStaticOrKinematicObject()))</span>
+<span class="lineNum">     902 </span>            :                 {
+<span class="lineNum">     903 </span>            : 
+<span class="lineNum">     904 </span><span class="lineCov">     106791 :                         body-&gt;predictIntegratedTransform(timeStep, predictedTrans);</span>
+<span class="lineNum">     905 </span>            :                         
+<span class="lineNum">     906 </span><span class="lineCov">     320373 :                         btScalar squareMotion = (predictedTrans.getOrigin()-body-&gt;getWorldTransform().getOrigin()).length2();</span>
+<span class="lineNum">     907 </span>            : 
+<span class="lineNum">     908 </span><span class="lineCov">     213582 :                         if (getDispatchInfo().m_useContinuous &amp;&amp; body-&gt;getCcdSquareMotionThreshold() &amp;&amp; body-&gt;getCcdSquareMotionThreshold() &lt; squareMotion)</span>
+<span class="lineNum">     909 </span>            :                         {
+<span class="lineNum">     910 </span><span class="lineNoCov">          0 :                                 BT_PROFILE(&quot;predictive convexSweepTest&quot;);</span>
+<span class="lineNum">     911 </span><span class="lineNoCov">          0 :                                 if (body-&gt;getCollisionShape()-&gt;isConvex())</span>
+<span class="lineNum">     912 </span>            :                                 {
+<span class="lineNum">     913 </span><span class="lineNoCov">          0 :                                         gNumClampedCcdMotions++;</span>
+<span class="lineNum">     914 </span>            : #ifdef PREDICTIVE_CONTACT_USE_STATIC_ONLY
+<span class="lineNum">     915 </span>            :                                         class StaticOnlyCallback : public btClosestNotMeConvexResultCallback
+<span class="lineNum">     916 </span>            :                                         {
+<span class="lineNum">     917 </span>            :                                         public:
+<span class="lineNum">     918 </span>            : 
+<span class="lineNum">     919 </span>            :                                                 StaticOnlyCallback (btCollisionObject* me,const btVector3&amp; fromA,const btVector3&amp; toA,btOverlappingPairCache* pairCache,btDispatcher* dispatcher) : 
+<span class="lineNum">     920 </span>            :                                                   btClosestNotMeConvexResultCallback(me,fromA,toA,pairCache,dispatcher)
+<span class="lineNum">     921 </span>            :                                                 {
+<span class="lineNum">     922 </span>            :                                                 }
+<span class="lineNum">     923 </span>            : 
+<span class="lineNum">     924 </span>            :                                                 virtual bool needsCollision(btBroadphaseProxy* proxy0) const
+<span class="lineNum">     925 </span>            :                                                 {
+<span class="lineNum">     926 </span>            :                                                         btCollisionObject* otherObj = (btCollisionObject*) proxy0-&gt;m_clientObject;
+<span class="lineNum">     927 </span>            :                                                         if (!otherObj-&gt;isStaticOrKinematicObject())
+<span class="lineNum">     928 </span>            :                                                                 return false;
+<span class="lineNum">     929 </span>            :                                                         return btClosestNotMeConvexResultCallback::needsCollision(proxy0);
+<span class="lineNum">     930 </span>            :                                                 }
+<span class="lineNum">     931 </span>            :                                         };
+<span class="lineNum">     932 </span>            : 
+<span class="lineNum">     933 </span>            :                                         StaticOnlyCallback sweepResults(body,body-&gt;getWorldTransform().getOrigin(),predictedTrans.getOrigin(),getBroadphase()-&gt;getOverlappingPairCache(),getDispatcher());
+<span class="lineNum">     934 </span>            : #else
+<span class="lineNum">     935 </span><span class="lineNoCov">          0 :                                         btClosestNotMeConvexResultCallback sweepResults(body,body-&gt;getWorldTransform().getOrigin(),predictedTrans.getOrigin(),getBroadphase()-&gt;getOverlappingPairCache(),getDispatcher());</span>
+<span class="lineNum">     936 </span>            : #endif
+<span class="lineNum">     937 </span>            :                                         //btConvexShape* convexShape = static_cast&lt;btConvexShape*&gt;(body-&gt;getCollisionShape());
+<span class="lineNum">     938 </span><span class="lineNoCov">          0 :                                         btSphereShape tmpSphere(body-&gt;getCcdSweptSphereRadius());//btConvexShape* convexShape = static_cast&lt;btConvexShape*&gt;(body-&gt;getCollisionShape());</span>
+<span class="lineNum">     939 </span><span class="lineNoCov">          0 :                                         sweepResults.m_allowedPenetration=getDispatchInfo().m_allowedCcdPenetration;</span>
+<span class="lineNum">     940 </span>            : 
+<span class="lineNum">     941 </span><span class="lineNoCov">          0 :                                         sweepResults.m_collisionFilterGroup = body-&gt;getBroadphaseProxy()-&gt;m_collisionFilterGroup;</span>
+<span class="lineNum">     942 </span><span class="lineNoCov">          0 :                                         sweepResults.m_collisionFilterMask  = body-&gt;getBroadphaseProxy()-&gt;m_collisionFilterMask;</span>
+<span class="lineNum">     943 </span><span class="lineNoCov">          0 :                                         btTransform modifiedPredictedTrans = predictedTrans;</span>
+<span class="lineNum">     944 </span><span class="lineNoCov">          0 :                                         modifiedPredictedTrans.setBasis(body-&gt;getWorldTransform().getBasis());</span>
+<span class="lineNum">     945 </span>            : 
+<span class="lineNum">     946 </span><span class="lineNoCov">          0 :                                         convexSweepTest(&amp;tmpSphere,body-&gt;getWorldTransform(),modifiedPredictedTrans,sweepResults);</span>
+<span class="lineNum">     947 </span><span class="lineNoCov">          0 :                                         if (sweepResults.hasHit() &amp;&amp; (sweepResults.m_closestHitFraction &lt; 1.f))</span>
+<span class="lineNum">     948 </span>            :                                         {
+<span class="lineNum">     949 </span>            :                                         
+<span class="lineNum">     950 </span><span class="lineNoCov">          0 :                                                 btVector3 distVec = (predictedTrans.getOrigin()-body-&gt;getWorldTransform().getOrigin())*sweepResults.m_closestHitFraction;</span>
+<span class="lineNum">     951 </span><span class="lineNoCov">          0 :                                                 btScalar distance = distVec.dot(-sweepResults.m_hitNormalWorld);</span>
+<span class="lineNum">     952 </span>            : 
+<span class="lineNum">     953 </span>            :                                                 
+<span class="lineNum">     954 </span><span class="lineNoCov">          0 :                                                 btPersistentManifold* manifold = m_dispatcher1-&gt;getNewManifold(body,sweepResults.m_hitCollisionObject);</span>
+<span class="lineNum">     955 </span><span class="lineNoCov">          0 :                                                 m_predictiveManifolds.push_back(manifold);</span>
+<span class="lineNum">     956 </span>            :                                                 
+<span class="lineNum">     957 </span><span class="lineNoCov">          0 :                                                 btVector3 worldPointB = body-&gt;getWorldTransform().getOrigin()+distVec;</span>
+<span class="lineNum">     958 </span><span class="lineNoCov">          0 :                                                 btVector3 localPointB = sweepResults.m_hitCollisionObject-&gt;getWorldTransform().inverse()*worldPointB;</span>
+<span class="lineNum">     959 </span>            : 
+<span class="lineNum">     960 </span><span class="lineNoCov">          0 :                                                 btManifoldPoint newPoint(btVector3(0,0,0), localPointB,sweepResults.m_hitNormalWorld,distance);</span>
+<span class="lineNum">     961 </span>            : 
+<span class="lineNum">     962 </span><span class="lineNoCov">          0 :                                                 bool isPredictive = true;</span>
+<span class="lineNum">     963 </span><span class="lineNoCov">          0 :                                                 int index = manifold-&gt;addManifoldPoint(newPoint, isPredictive);</span>
+<span class="lineNum">     964 </span><span class="lineNoCov">          0 :                                                 btManifoldPoint&amp; pt = manifold-&gt;getContactPoint(index);</span>
+<span class="lineNum">     965 </span><span class="lineNoCov">          0 :                                                 pt.m_combinedRestitution = 0;</span>
+<span class="lineNum">     966 </span><span class="lineNoCov">          0 :                                                 pt.m_combinedFriction = btManifoldResult::calculateCombinedFriction(body,sweepResults.m_hitCollisionObject);</span>
+<span class="lineNum">     967 </span><span class="lineNoCov">          0 :                                                 pt.m_positionWorldOnA = body-&gt;getWorldTransform().getOrigin();</span>
+<span class="lineNum">     968 </span><span class="lineNoCov">          0 :                                                 pt.m_positionWorldOnB = worldPointB;</span>
+<span class="lineNum">     969 </span>            : 
+<span class="lineNum">     970 </span>            :                                         }
+<span class="lineNum">     971 </span>            :                                 }
+<span class="lineNum">     972 </span>            :                         }
+<span class="lineNum">     973 </span>            :                 }
+<span class="lineNum">     974 </span>            :         }
+<span class="lineNum">     975 </span><span class="lineCov">       1558 : }</span>
+<span class="lineNum">     976 </span><span class="lineCov">       1558 : void    btDiscreteDynamicsWorld::integrateTransforms(btScalar timeStep)</span>
+<span class="lineNum">     977 </span>            : {
+<span class="lineNum">     978 </span><span class="lineCov">       1558 :         BT_PROFILE(&quot;integrateTransforms&quot;);</span>
+<span class="lineNum">     979 </span><span class="lineCov">       1558 :         btTransform predictedTrans;</span>
+<span class="lineNum">     980 </span><span class="lineCov">     120561 :         for ( int i=0;i&lt;m_nonStaticRigidBodies.size();i++)</span>
+<span class="lineNum">     981 </span>            :         {
+<span class="lineNum">     982 </span><span class="lineCov">     238006 :                 btRigidBody* body = m_nonStaticRigidBodies[i];</span>
+<span class="lineNum">     983 </span><span class="lineCov">     238006 :                 body-&gt;setHitFraction(1.f);</span>
+<span class="lineNum">     984 </span>            : 
+<span class="lineNum">     985 </span><span class="lineCov">     332525 :                 if (body-&gt;isActive() &amp;&amp; (!body-&gt;isStaticOrKinematicObject()))</span>
+<span class="lineNum">     986 </span>            :                 {
+<span class="lineNum">     987 </span>            : 
+<span class="lineNum">     988 </span><span class="lineCov">     106761 :                         body-&gt;predictIntegratedTransform(timeStep, predictedTrans);</span>
+<span class="lineNum">     989 </span>            :                         
+<span class="lineNum">     990 </span><span class="lineCov">     320283 :                         btScalar squareMotion = (predictedTrans.getOrigin()-body-&gt;getWorldTransform().getOrigin()).length2();</span>
+<span class="lineNum">     991 </span>            : 
+<span class="lineNum">     992 </span>            :                         
+<span class="lineNum">     993 </span>            : 
+<span class="lineNum">     994 </span><span class="lineCov">     213522 :                         if (getDispatchInfo().m_useContinuous &amp;&amp; body-&gt;getCcdSquareMotionThreshold() &amp;&amp; body-&gt;getCcdSquareMotionThreshold() &lt; squareMotion)</span>
+<span class="lineNum">     995 </span>            :                         {
+<span class="lineNum">     996 </span><span class="lineNoCov">          0 :                                 BT_PROFILE(&quot;CCD motion clamping&quot;);</span>
+<span class="lineNum">     997 </span><span class="lineNoCov">          0 :                                 if (body-&gt;getCollisionShape()-&gt;isConvex())</span>
+<span class="lineNum">     998 </span>            :                                 {
+<span class="lineNum">     999 </span><span class="lineNoCov">          0 :                                         gNumClampedCcdMotions++;</span>
+<span class="lineNum">    1000 </span>            : #ifdef USE_STATIC_ONLY
+<span class="lineNum">    1001 </span>            :                                         class StaticOnlyCallback : public btClosestNotMeConvexResultCallback
+<span class="lineNum">    1002 </span>            :                                         {
+<span class="lineNum">    1003 </span>            :                                         public:
+<span class="lineNum">    1004 </span>            : 
+<span class="lineNum">    1005 </span>            :                                                 StaticOnlyCallback (btCollisionObject* me,const btVector3&amp; fromA,const btVector3&amp; toA,btOverlappingPairCache* pairCache,btDispatcher* dispatcher) : 
+<span class="lineNum">    1006 </span>            :                                                   btClosestNotMeConvexResultCallback(me,fromA,toA,pairCache,dispatcher)
+<span class="lineNum">    1007 </span>            :                                                 {
+<span class="lineNum">    1008 </span>            :                                                 }
+<span class="lineNum">    1009 </span>            : 
+<span class="lineNum">    1010 </span>            :                                                 virtual bool needsCollision(btBroadphaseProxy* proxy0) const
+<span class="lineNum">    1011 </span>            :                                                 {
+<span class="lineNum">    1012 </span>            :                                                         btCollisionObject* otherObj = (btCollisionObject*) proxy0-&gt;m_clientObject;
+<span class="lineNum">    1013 </span>            :                                                         if (!otherObj-&gt;isStaticOrKinematicObject())
+<span class="lineNum">    1014 </span>            :                                                                 return false;
+<span class="lineNum">    1015 </span>            :                                                         return btClosestNotMeConvexResultCallback::needsCollision(proxy0);
+<span class="lineNum">    1016 </span>            :                                                 }
+<span class="lineNum">    1017 </span>            :                                         };
+<span class="lineNum">    1018 </span>            : 
+<span class="lineNum">    1019 </span>            :                                         StaticOnlyCallback sweepResults(body,body-&gt;getWorldTransform().getOrigin(),predictedTrans.getOrigin(),getBroadphase()-&gt;getOverlappingPairCache(),getDispatcher());
+<span class="lineNum">    1020 </span>            : #else
+<span class="lineNum">    1021 </span><span class="lineNoCov">          0 :                                         btClosestNotMeConvexResultCallback sweepResults(body,body-&gt;getWorldTransform().getOrigin(),predictedTrans.getOrigin(),getBroadphase()-&gt;getOverlappingPairCache(),getDispatcher());</span>
+<span class="lineNum">    1022 </span>            : #endif
+<span class="lineNum">    1023 </span>            :                                         //btConvexShape* convexShape = static_cast&lt;btConvexShape*&gt;(body-&gt;getCollisionShape());
+<span class="lineNum">    1024 </span><span class="lineNoCov">          0 :                                         btSphereShape tmpSphere(body-&gt;getCcdSweptSphereRadius());//btConvexShape* convexShape = static_cast&lt;btConvexShape*&gt;(body-&gt;getCollisionShape());</span>
+<span class="lineNum">    1025 </span><span class="lineNoCov">          0 :                                         sweepResults.m_allowedPenetration=getDispatchInfo().m_allowedCcdPenetration;</span>
+<span class="lineNum">    1026 </span>            : 
+<span class="lineNum">    1027 </span><span class="lineNoCov">          0 :                                         sweepResults.m_collisionFilterGroup = body-&gt;getBroadphaseProxy()-&gt;m_collisionFilterGroup;</span>
+<span class="lineNum">    1028 </span><span class="lineNoCov">          0 :                                         sweepResults.m_collisionFilterMask  = body-&gt;getBroadphaseProxy()-&gt;m_collisionFilterMask;</span>
+<span class="lineNum">    1029 </span><span class="lineNoCov">          0 :                                         btTransform modifiedPredictedTrans = predictedTrans;</span>
+<span class="lineNum">    1030 </span><span class="lineNoCov">          0 :                                         modifiedPredictedTrans.setBasis(body-&gt;getWorldTransform().getBasis());</span>
+<span class="lineNum">    1031 </span>            : 
+<span class="lineNum">    1032 </span><span class="lineNoCov">          0 :                                         convexSweepTest(&amp;tmpSphere,body-&gt;getWorldTransform(),modifiedPredictedTrans,sweepResults);</span>
+<span class="lineNum">    1033 </span><span class="lineNoCov">          0 :                                         if (sweepResults.hasHit() &amp;&amp; (sweepResults.m_closestHitFraction &lt; 1.f))</span>
+<span class="lineNum">    1034 </span>            :                                         {
+<span class="lineNum">    1035 </span>            :                                                 
+<span class="lineNum">    1036 </span>            :                                                 //printf(&quot;clamped integration to hit fraction = %f\n&quot;,fraction);
+<span class="lineNum">    1037 </span><span class="lineNoCov">          0 :                                                 body-&gt;setHitFraction(sweepResults.m_closestHitFraction);</span>
+<span class="lineNum">    1038 </span><span class="lineNoCov">          0 :                                                 body-&gt;predictIntegratedTransform(timeStep*body-&gt;getHitFraction(), predictedTrans);</span>
+<span class="lineNum">    1039 </span><span class="lineNoCov">          0 :                                                 body-&gt;setHitFraction(0.f);</span>
+<span class="lineNum">    1040 </span><span class="lineNoCov">          0 :                                                 body-&gt;proceedToTransform( predictedTrans);</span>
+<span class="lineNum">    1041 </span>            : 
+<span class="lineNum">    1042 </span>            : #if 0
+<span class="lineNum">    1043 </span>            :                                                 btVector3 linVel = body-&gt;getLinearVelocity();
+<span class="lineNum">    1044 </span>            : 
+<span class="lineNum">    1045 </span>            :                                                 btScalar maxSpeed = body-&gt;getCcdMotionThreshold()/getSolverInfo().m_timeStep;
+<span class="lineNum">    1046 </span>            :                                                 btScalar maxSpeedSqr = maxSpeed*maxSpeed;
+<span class="lineNum">    1047 </span>            :                                                 if (linVel.length2()&gt;maxSpeedSqr)
+<span class="lineNum">    1048 </span>            :                                                 {
+<span class="lineNum">    1049 </span>            :                                                         linVel.normalize();
+<span class="lineNum">    1050 </span>            :                                                         linVel*= maxSpeed;
+<span class="lineNum">    1051 </span>            :                                                         body-&gt;setLinearVelocity(linVel);
+<span class="lineNum">    1052 </span>            :                                                         btScalar ms2 = body-&gt;getLinearVelocity().length2();
+<span class="lineNum">    1053 </span>            :                                                         body-&gt;predictIntegratedTransform(timeStep, predictedTrans);
+<span class="lineNum">    1054 </span>            : 
+<span class="lineNum">    1055 </span>            :                                                         btScalar sm2 = (predictedTrans.getOrigin()-body-&gt;getWorldTransform().getOrigin()).length2();
+<span class="lineNum">    1056 </span>            :                                                         btScalar smt = body-&gt;getCcdSquareMotionThreshold();
+<span class="lineNum">    1057 </span>            :                                                         printf(&quot;sm2=%f\n&quot;,sm2);
+<span class="lineNum">    1058 </span>            :                                                 }
+<span class="lineNum">    1059 </span>            : #else
+<span class="lineNum">    1060 </span>            :                                                 
+<span class="lineNum">    1061 </span>            :                                                 //don't apply the collision response right now, it will happen next frame
+<span class="lineNum">    1062 </span>            :                                                 //if you really need to, you can uncomment next 3 lines. Note that is uses zero restitution.
+<span class="lineNum">    1063 </span>            :                                                 //btScalar appliedImpulse = 0.f;
+<span class="lineNum">    1064 </span>            :                                                 //btScalar depth = 0.f;
+<span class="lineNum">    1065 </span>            :                                                 //appliedImpulse = resolveSingleCollision(body,(btCollisionObject*)sweepResults.m_hitCollisionObject,sweepResults.m_hitPointWorld,sweepResults.m_hitNormalWorld,getSolverInfo(), depth);
+<span class="lineNum">    1066 </span>            :                                                 
+<span class="lineNum">    1067 </span>            : 
+<span class="lineNum">    1068 </span>            : #endif
+<span class="lineNum">    1069 </span>            : 
+<span class="lineNum">    1070 </span><span class="lineNoCov">          0 :                                         continue;</span>
+<span class="lineNum">    1071 </span>            :                                         }
+<span class="lineNum">    1072 </span>            :                                 }
+<span class="lineNum">    1073 </span>            :                         }
+<span class="lineNum">    1074 </span>            :                         
+<span class="lineNum">    1075 </span>            : 
+<span class="lineNum">    1076 </span><span class="lineCov">     106761 :                         body-&gt;proceedToTransform( predictedTrans);</span>
+<span class="lineNum">    1077 </span>            :                 
+<span class="lineNum">    1078 </span>            :                 }
+<span class="lineNum">    1079 </span>            : 
+<span class="lineNum">    1080 </span>            :         }
+<span class="lineNum">    1081 </span>            : 
+<span class="lineNum">    1082 </span>            :         ///this should probably be switched on by default, but it is not well tested yet
+<span class="lineNum">    1083 </span><span class="lineCov">       1558 :         if (m_applySpeculativeContactRestitution)</span>
+<span class="lineNum">    1084 </span>            :         {
+<span class="lineNum">    1085 </span>            :                 BT_PROFILE(&quot;apply speculative contact restitution&quot;);
+<span class="lineNum">    1086 </span><span class="lineNoCov">          0 :                 for (int i=0;i&lt;m_predictiveManifolds.size();i++)</span>
+<span class="lineNum">    1087 </span>            :                 {
+<span class="lineNum">    1088 </span><span class="lineNoCov">          0 :                         btPersistentManifold* manifold = m_predictiveManifolds[i];</span>
+<span class="lineNum">    1089 </span><span class="lineNoCov">          0 :                         btRigidBody* body0 = btRigidBody::upcast((btCollisionObject*)manifold-&gt;getBody0());</span>
+<span class="lineNum">    1090 </span><span class="lineNoCov">          0 :                         btRigidBody* body1 = btRigidBody::upcast((btCollisionObject*)manifold-&gt;getBody1());</span>
+<span class="lineNum">    1091 </span>            :                         
+<span class="lineNum">    1092 </span><span class="lineNoCov">          0 :                         for (int p=0;p&lt;manifold-&gt;getNumContacts();p++)</span>
+<span class="lineNum">    1093 </span>            :                         {
+<span class="lineNum">    1094 </span><span class="lineNoCov">          0 :                                 const btManifoldPoint&amp; pt = manifold-&gt;getContactPoint(p);</span>
+<span class="lineNum">    1095 </span><span class="lineNoCov">          0 :                                 btScalar combinedRestitution = btManifoldResult::calculateCombinedRestitution(body0, body1);</span>
+<span class="lineNum">    1096 </span>            : 
+<span class="lineNum">    1097 </span><span class="lineNoCov">          0 :                                 if (combinedRestitution&gt;0 &amp;&amp; pt.m_appliedImpulse != 0.f)</span>
+<span class="lineNum">    1098 </span>            :                                 //if (pt.getDistance()&gt;0 &amp;&amp; combinedRestitution&gt;0 &amp;&amp; pt.m_appliedImpulse != 0.f)
+<span class="lineNum">    1099 </span>            :                                 {
+<span class="lineNum">    1100 </span><span class="lineNoCov">          0 :                                         btVector3 imp = -pt.m_normalWorldOnB * pt.m_appliedImpulse* combinedRestitution;</span>
+<span class="lineNum">    1101 </span>            :                                 
+<span class="lineNum">    1102 </span><span class="lineNoCov">          0 :                                         const btVector3&amp; pos1 = pt.getPositionWorldOnA();</span>
+<span class="lineNum">    1103 </span><span class="lineNoCov">          0 :                                         const btVector3&amp; pos2 = pt.getPositionWorldOnB();</span>
+<span class="lineNum">    1104 </span>            : 
+<span class="lineNum">    1105 </span><span class="lineNoCov">          0 :                                         btVector3 rel_pos0 = pos1 - body0-&gt;getWorldTransform().getOrigin(); </span>
+<span class="lineNum">    1106 </span><span class="lineNoCov">          0 :                                         btVector3 rel_pos1 = pos2 - body1-&gt;getWorldTransform().getOrigin();</span>
+<span class="lineNum">    1107 </span>            : 
+<span class="lineNum">    1108 </span>            :                                         if (body0)
+<span class="lineNum">    1109 </span><span class="lineNoCov">          0 :                                                 body0-&gt;applyImpulse(imp,rel_pos0);</span>
+<span class="lineNum">    1110 </span>            :                                         if (body1)
+<span class="lineNum">    1111 </span><span class="lineNoCov">          0 :                                                 body1-&gt;applyImpulse(-imp,rel_pos1);</span>
+<span class="lineNum">    1112 </span>            :                                 }
+<span class="lineNum">    1113 </span>            :                         }
+<span class="lineNum">    1114 </span>            :                 }
+<span class="lineNum">    1115 </span>            :         }
+<span class="lineNum">    1116 </span>            :         
+<span class="lineNum">    1117 </span><span class="lineCov">       1558 : }</span>
+<span class="lineNum">    1118 </span>            : 
+<span class="lineNum">    1119 </span>            : 
+<span class="lineNum">    1120 </span>            : 
+<span class="lineNum">    1121 </span>            : 
+<span class="lineNum">    1122 </span>            : 
+<span class="lineNum">    1123 </span>            : 
+<span class="lineNum">    1124 </span><span class="lineCov">       1558 : void    btDiscreteDynamicsWorld::predictUnconstraintMotion(btScalar timeStep)</span>
+<span class="lineNum">    1125 </span>            : {
+<span class="lineNum">    1126 </span>            :         BT_PROFILE(&quot;predictUnconstraintMotion&quot;);
+<span class="lineNum">    1127 </span><span class="lineCov">     239564 :         for ( int i=0;i&lt;m_nonStaticRigidBodies.size();i++)</span>
+<span class="lineNum">    1128 </span>            :         {
+<span class="lineNum">    1129 </span><span class="lineCov">     238006 :                 btRigidBody* body = m_nonStaticRigidBodies[i];</span>
+<span class="lineNum">    1130 </span><span class="lineCov">     238006 :                 if (!body-&gt;isStaticOrKinematicObject())</span>
+<span class="lineNum">    1131 </span>            :                 {
+<span class="lineNum">    1132 </span>            :                         //don't integrate/update velocities here, it happens in the constraint solver
+<span class="lineNum">    1133 </span>            : 
+<span class="lineNum">    1134 </span>            :                         //damping
+<span class="lineNum">    1135 </span><span class="lineCov">     119003 :                         body-&gt;applyDamping(timeStep);</span>
+<span class="lineNum">    1136 </span>            : 
+<span class="lineNum">    1137 </span><span class="lineCov">     238006 :                         body-&gt;predictIntegratedTransform(timeStep,body-&gt;getInterpolationWorldTransform());</span>
+<span class="lineNum">    1138 </span>            :                 }
+<span class="lineNum">    1139 </span>            :         }
+<span class="lineNum">    1140 </span><span class="lineCov">       1558 : }</span>
+<a name="1141"><span class="lineNum">    1141 </span>            : </a>
+<span class="lineNum">    1142 </span>            : 
+<span class="lineNum">    1143 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::startProfiling(btScalar timeStep)</span>
+<span class="lineNum">    1144 </span>            : {
+<span class="lineNum">    1145 </span>            :         (void)timeStep;
+<span class="lineNum">    1146 </span>            : 
+<span class="lineNum">    1147 </span>            : #ifndef BT_NO_PROFILE
+<span class="lineNum">    1148 </span><span class="lineCov">       6106 :         CProfileManager::Reset();</span>
+<span class="lineNum">    1149 </span>            : #endif //BT_NO_PROFILE
+<span class="lineNum">    1150 </span>            : 
+<span class="lineNum">    1151 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">    1152 </span>            : 
+<span class="lineNum">    1153 </span>            : 
+<span class="lineNum">    1154 </span>            : 
+<span class="lineNum">    1155 </span>            : 
+<a name="1156"><span class="lineNum">    1156 </span>            :         </a>
+<span class="lineNum">    1157 </span>            : 
+<span class="lineNum">    1158 </span><span class="lineNoCov">          0 : void btDiscreteDynamicsWorld::debugDrawConstraint(btTypedConstraint* constraint)</span>
+<span class="lineNum">    1159 </span>            : {
+<span class="lineNum">    1160 </span><span class="lineNoCov">          0 :         bool drawFrames = (getDebugDrawer()-&gt;getDebugMode() &amp; btIDebugDraw::DBG_DrawConstraints) != 0;</span>
+<span class="lineNum">    1161 </span><span class="lineNoCov">          0 :         bool drawLimits = (getDebugDrawer()-&gt;getDebugMode() &amp; btIDebugDraw::DBG_DrawConstraintLimits) != 0;</span>
+<span class="lineNum">    1162 </span><span class="lineNoCov">          0 :         btScalar dbgDrawSize = constraint-&gt;getDbgDrawSize();</span>
+<span class="lineNum">    1163 </span><span class="lineNoCov">          0 :         if(dbgDrawSize &lt;= btScalar(0.f))</span>
+<span class="lineNum">    1164 </span>            :         {
+<span class="lineNum">    1165 </span>            :                 return;
+<span class="lineNum">    1166 </span>            :         }
+<span class="lineNum">    1167 </span>            : 
+<span class="lineNum">    1168 </span><span class="lineNoCov">          0 :         switch(constraint-&gt;getConstraintType())</span>
+<span class="lineNum">    1169 </span>            :         {
+<span class="lineNum">    1170 </span><span class="lineNoCov">          0 :                 case POINT2POINT_CONSTRAINT_TYPE:</span>
+<span class="lineNum">    1171 </span>            :                         {
+<span class="lineNum">    1172 </span><span class="lineNoCov">          0 :                                 btPoint2PointConstraint* p2pC = (btPoint2PointConstraint*)constraint;</span>
+<span class="lineNum">    1173 </span><span class="lineNoCov">          0 :                                 btTransform tr;</span>
+<span class="lineNum">    1174 </span><span class="lineNoCov">          0 :                                 tr.setIdentity();</span>
+<span class="lineNum">    1175 </span><span class="lineNoCov">          0 :                                 btVector3 pivot = p2pC-&gt;getPivotInA();</span>
+<span class="lineNum">    1176 </span><span class="lineNoCov">          0 :                                 pivot = p2pC-&gt;getRigidBodyA().getCenterOfMassTransform() * pivot; </span>
+<span class="lineNum">    1177 </span><span class="lineNoCov">          0 :                                 tr.setOrigin(pivot);</span>
+<span class="lineNum">    1178 </span><span class="lineNoCov">          0 :                                 getDebugDrawer()-&gt;drawTransform(tr, dbgDrawSize);</span>
+<span class="lineNum">    1179 </span>            :                                 // that ideally should draw the same frame      
+<span class="lineNum">    1180 </span><span class="lineNoCov">          0 :                                 pivot = p2pC-&gt;getPivotInB();</span>
+<span class="lineNum">    1181 </span><span class="lineNoCov">          0 :                                 pivot = p2pC-&gt;getRigidBodyB().getCenterOfMassTransform() * pivot; </span>
+<span class="lineNum">    1182 </span><span class="lineNoCov">          0 :                                 tr.setOrigin(pivot);</span>
+<span class="lineNum">    1183 </span><span class="lineNoCov">          0 :                                 if(drawFrames) getDebugDrawer()-&gt;drawTransform(tr, dbgDrawSize);</span>
+<span class="lineNum">    1184 </span>            :                         }
+<span class="lineNum">    1185 </span><span class="lineNoCov">          0 :                         break;</span>
+<span class="lineNum">    1186 </span><span class="lineNoCov">          0 :                 case HINGE_CONSTRAINT_TYPE:</span>
+<span class="lineNum">    1187 </span>            :                         {
+<span class="lineNum">    1188 </span><span class="lineNoCov">          0 :                                 btHingeConstraint* pHinge = (btHingeConstraint*)constraint;</span>
+<span class="lineNum">    1189 </span><span class="lineNoCov">          0 :                                 btTransform tr = pHinge-&gt;getRigidBodyA().getCenterOfMassTransform() * pHinge-&gt;getAFrame();</span>
+<span class="lineNum">    1190 </span><span class="lineNoCov">          0 :                                 if(drawFrames) getDebugDrawer()-&gt;drawTransform(tr, dbgDrawSize);</span>
+<span class="lineNum">    1191 </span><span class="lineNoCov">          0 :                                 tr = pHinge-&gt;getRigidBodyB().getCenterOfMassTransform() * pHinge-&gt;getBFrame();</span>
+<span class="lineNum">    1192 </span><span class="lineNoCov">          0 :                                 if(drawFrames) getDebugDrawer()-&gt;drawTransform(tr, dbgDrawSize);</span>
+<span class="lineNum">    1193 </span><span class="lineNoCov">          0 :                                 btScalar minAng = pHinge-&gt;getLowerLimit();</span>
+<span class="lineNum">    1194 </span><span class="lineNoCov">          0 :                                 btScalar maxAng = pHinge-&gt;getUpperLimit();</span>
+<span class="lineNum">    1195 </span><span class="lineNoCov">          0 :                                 if(minAng == maxAng)</span>
+<span class="lineNum">    1196 </span>            :                                 {
+<span class="lineNum">    1197 </span>            :                                         break;
+<span class="lineNum">    1198 </span>            :                                 }
+<span class="lineNum">    1199 </span><span class="lineNoCov">          0 :                                 bool drawSect = true;</span>
+<span class="lineNum">    1200 </span><span class="lineNoCov">          0 :                                 if(minAng &gt; maxAng)</span>
+<span class="lineNum">    1201 </span>            :                                 {
+<span class="lineNum">    1202 </span><span class="lineNoCov">          0 :                                         minAng = btScalar(0.f);</span>
+<span class="lineNum">    1203 </span><span class="lineNoCov">          0 :                                         maxAng = SIMD_2_PI;</span>
+<span class="lineNum">    1204 </span><span class="lineNoCov">          0 :                                         drawSect = false;</span>
+<span class="lineNum">    1205 </span>            :                                 }
+<span class="lineNum">    1206 </span><span class="lineNoCov">          0 :                                 if(drawLimits) </span>
+<span class="lineNum">    1207 </span>            :                                 {
+<span class="lineNum">    1208 </span><span class="lineNoCov">          0 :                                         btVector3&amp; center = tr.getOrigin();</span>
+<span class="lineNum">    1209 </span><span class="lineNoCov">          0 :                                         btVector3 normal = tr.getBasis().getColumn(2);</span>
+<span class="lineNum">    1210 </span><span class="lineNoCov">          0 :                                         btVector3 axis = tr.getBasis().getColumn(0);</span>
+<span class="lineNum">    1211 </span><span class="lineNoCov">          0 :                                         getDebugDrawer()-&gt;drawArc(center, normal, axis, dbgDrawSize, dbgDrawSize, minAng, maxAng, btVector3(0,0,0), drawSect);</span>
+<span class="lineNum">    1212 </span>            :                                 }
+<span class="lineNum">    1213 </span>            :                         }
+<span class="lineNum">    1214 </span><span class="lineNoCov">          0 :                         break;</span>
+<span class="lineNum">    1215 </span><span class="lineNoCov">          0 :                 case CONETWIST_CONSTRAINT_TYPE:</span>
+<span class="lineNum">    1216 </span>            :                         {
+<span class="lineNum">    1217 </span><span class="lineNoCov">          0 :                                 btConeTwistConstraint* pCT = (btConeTwistConstraint*)constraint;</span>
+<span class="lineNum">    1218 </span><span class="lineNoCov">          0 :                                 btTransform tr = pCT-&gt;getRigidBodyA().getCenterOfMassTransform() * pCT-&gt;getAFrame();</span>
+<span class="lineNum">    1219 </span><span class="lineNoCov">          0 :                                 if(drawFrames) getDebugDrawer()-&gt;drawTransform(tr, dbgDrawSize);</span>
+<span class="lineNum">    1220 </span><span class="lineNoCov">          0 :                                 tr = pCT-&gt;getRigidBodyB().getCenterOfMassTransform() * pCT-&gt;getBFrame();</span>
+<span class="lineNum">    1221 </span><span class="lineNoCov">          0 :                                 if(drawFrames) getDebugDrawer()-&gt;drawTransform(tr, dbgDrawSize);</span>
+<span class="lineNum">    1222 </span><span class="lineNoCov">          0 :                                 if(drawLimits)</span>
+<span class="lineNum">    1223 </span>            :                                 {
+<span class="lineNum">    1224 </span>            :                                         //const btScalar length = btScalar(5);
+<span class="lineNum">    1225 </span><span class="lineNoCov">          0 :                                         const btScalar length = dbgDrawSize;</span>
+<span class="lineNum">    1226 </span>            :                                         static int nSegments = 8*4;
+<span class="lineNum">    1227 </span><span class="lineNoCov">          0 :                                         btScalar fAngleInRadians = btScalar(2.*3.1415926) * (btScalar)(nSegments-1)/btScalar(nSegments);</span>
+<span class="lineNum">    1228 </span><span class="lineNoCov">          0 :                                         btVector3 pPrev = pCT-&gt;GetPointForAngle(fAngleInRadians, length);</span>
+<span class="lineNum">    1229 </span><span class="lineNoCov">          0 :                                         pPrev = tr * pPrev;</span>
+<span class="lineNum">    1230 </span><span class="lineNoCov">          0 :                                         for (int i=0; i&lt;nSegments; i++)</span>
+<span class="lineNum">    1231 </span>            :                                         {
+<span class="lineNum">    1232 </span><span class="lineNoCov">          0 :                                                 fAngleInRadians = btScalar(2.*3.1415926) * (btScalar)i/btScalar(nSegments);</span>
+<span class="lineNum">    1233 </span><span class="lineNoCov">          0 :                                                 btVector3 pCur = pCT-&gt;GetPointForAngle(fAngleInRadians, length);</span>
+<span class="lineNum">    1234 </span><span class="lineNoCov">          0 :                                                 pCur = tr * pCur;</span>
+<span class="lineNum">    1235 </span><span class="lineNoCov">          0 :                                                 getDebugDrawer()-&gt;drawLine(pPrev, pCur, btVector3(0,0,0));</span>
+<span class="lineNum">    1236 </span>            : 
+<span class="lineNum">    1237 </span><span class="lineNoCov">          0 :                                                 if (i%(nSegments/8) == 0)</span>
+<span class="lineNum">    1238 </span><span class="lineNoCov">          0 :                                                         getDebugDrawer()-&gt;drawLine(tr.getOrigin(), pCur, btVector3(0,0,0));</span>
+<span class="lineNum">    1239 </span>            : 
+<span class="lineNum">    1240 </span><span class="lineNoCov">          0 :                                                 pPrev = pCur;</span>
+<span class="lineNum">    1241 </span>            :                                         }                                               
+<span class="lineNum">    1242 </span><span class="lineNoCov">          0 :                                         btScalar tws = pCT-&gt;getTwistSpan();</span>
+<span class="lineNum">    1243 </span><span class="lineNoCov">          0 :                                         btScalar twa = pCT-&gt;getTwistAngle();</span>
+<span class="lineNum">    1244 </span><span class="lineNoCov">          0 :                                         bool useFrameB = (pCT-&gt;getRigidBodyB().getInvMass() &gt; btScalar(0.f));</span>
+<span class="lineNum">    1245 </span><span class="lineNoCov">          0 :                                         if(useFrameB)</span>
+<span class="lineNum">    1246 </span>            :                                         {
+<span class="lineNum">    1247 </span><span class="lineNoCov">          0 :                                                 tr = pCT-&gt;getRigidBodyB().getCenterOfMassTransform() * pCT-&gt;getBFrame();</span>
+<span class="lineNum">    1248 </span>            :                                         }
+<span class="lineNum">    1249 </span>            :                                         else
+<span class="lineNum">    1250 </span>            :                                         {
+<span class="lineNum">    1251 </span><span class="lineNoCov">          0 :                                                 tr = pCT-&gt;getRigidBodyA().getCenterOfMassTransform() * pCT-&gt;getAFrame();</span>
+<span class="lineNum">    1252 </span>            :                                         }
+<span class="lineNum">    1253 </span><span class="lineNoCov">          0 :                                         btVector3 pivot = tr.getOrigin();</span>
+<span class="lineNum">    1254 </span><span class="lineNoCov">          0 :                                         btVector3 normal = tr.getBasis().getColumn(0);</span>
+<span class="lineNum">    1255 </span><span class="lineNoCov">          0 :                                         btVector3 axis1 = tr.getBasis().getColumn(1);</span>
+<span class="lineNum">    1256 </span><span class="lineNoCov">          0 :                                         getDebugDrawer()-&gt;drawArc(pivot, normal, axis1, dbgDrawSize, dbgDrawSize, -twa-tws, -twa+tws, btVector3(0,0,0), true);</span>
+<span class="lineNum">    1257 </span>            : 
+<span class="lineNum">    1258 </span>            :                                 }
+<span class="lineNum">    1259 </span>            :                         }
+<span class="lineNum">    1260 </span><span class="lineNoCov">          0 :                         break;</span>
+<span class="lineNum">    1261 </span><span class="lineNoCov">          0 :                 case D6_SPRING_CONSTRAINT_TYPE:</span>
+<span class="lineNum">    1262 </span>            :                 case D6_CONSTRAINT_TYPE:
+<span class="lineNum">    1263 </span>            :                         {
+<span class="lineNum">    1264 </span><span class="lineNoCov">          0 :                                 btGeneric6DofConstraint* p6DOF = (btGeneric6DofConstraint*)constraint;</span>
+<span class="lineNum">    1265 </span><span class="lineNoCov">          0 :                                 btTransform tr = p6DOF-&gt;getCalculatedTransformA();</span>
+<span class="lineNum">    1266 </span><span class="lineNoCov">          0 :                                 if(drawFrames) getDebugDrawer()-&gt;drawTransform(tr, dbgDrawSize);</span>
+<span class="lineNum">    1267 </span><span class="lineNoCov">          0 :                                 tr = p6DOF-&gt;getCalculatedTransformB();</span>
+<span class="lineNum">    1268 </span><span class="lineNoCov">          0 :                                 if(drawFrames) getDebugDrawer()-&gt;drawTransform(tr, dbgDrawSize);</span>
+<span class="lineNum">    1269 </span><span class="lineNoCov">          0 :                                 if(drawLimits) </span>
+<span class="lineNum">    1270 </span>            :                                 {
+<span class="lineNum">    1271 </span><span class="lineNoCov">          0 :                                         tr = p6DOF-&gt;getCalculatedTransformA();</span>
+<span class="lineNum">    1272 </span><span class="lineNoCov">          0 :                                         const btVector3&amp; center = p6DOF-&gt;getCalculatedTransformB().getOrigin();</span>
+<span class="lineNum">    1273 </span><span class="lineNoCov">          0 :                                         btVector3 up = tr.getBasis().getColumn(2);</span>
+<span class="lineNum">    1274 </span><span class="lineNoCov">          0 :                                         btVector3 axis = tr.getBasis().getColumn(0);</span>
+<span class="lineNum">    1275 </span><span class="lineNoCov">          0 :                                         btScalar minTh = p6DOF-&gt;getRotationalLimitMotor(1)-&gt;m_loLimit;</span>
+<span class="lineNum">    1276 </span><span class="lineNoCov">          0 :                                         btScalar maxTh = p6DOF-&gt;getRotationalLimitMotor(1)-&gt;m_hiLimit;</span>
+<span class="lineNum">    1277 </span><span class="lineNoCov">          0 :                                         btScalar minPs = p6DOF-&gt;getRotationalLimitMotor(2)-&gt;m_loLimit;</span>
+<span class="lineNum">    1278 </span><span class="lineNoCov">          0 :                                         btScalar maxPs = p6DOF-&gt;getRotationalLimitMotor(2)-&gt;m_hiLimit;</span>
+<span class="lineNum">    1279 </span><span class="lineNoCov">          0 :                                         getDebugDrawer()-&gt;drawSpherePatch(center, up, axis, dbgDrawSize * btScalar(.9f), minTh, maxTh, minPs, maxPs, btVector3(0,0,0));</span>
+<span class="lineNum">    1280 </span><span class="lineNoCov">          0 :                                         axis = tr.getBasis().getColumn(1);</span>
+<span class="lineNum">    1281 </span><span class="lineNoCov">          0 :                                         btScalar ay = p6DOF-&gt;getAngle(1);</span>
+<span class="lineNum">    1282 </span><span class="lineNoCov">          0 :                                         btScalar az = p6DOF-&gt;getAngle(2);</span>
+<span class="lineNum">    1283 </span><span class="lineNoCov">          0 :                                         btScalar cy = btCos(ay);</span>
+<span class="lineNum">    1284 </span><span class="lineNoCov">          0 :                                         btScalar sy = btSin(ay);</span>
+<span class="lineNum">    1285 </span><span class="lineNoCov">          0 :                                         btScalar cz = btCos(az);</span>
+<span class="lineNum">    1286 </span><span class="lineNoCov">          0 :                                         btScalar sz = btSin(az);</span>
+<span class="lineNum">    1287 </span><span class="lineNoCov">          0 :                                         btVector3 ref;</span>
+<span class="lineNum">    1288 </span><span class="lineNoCov">          0 :                                         ref[0] = cy*cz*axis[0] + cy*sz*axis[1] - sy*axis[2];</span>
+<span class="lineNum">    1289 </span><span class="lineNoCov">          0 :                                         ref[1] = -sz*axis[0] + cz*axis[1];</span>
+<span class="lineNum">    1290 </span><span class="lineNoCov">          0 :                                         ref[2] = cz*sy*axis[0] + sz*sy*axis[1] + cy*axis[2];</span>
+<span class="lineNum">    1291 </span><span class="lineNoCov">          0 :                                         tr = p6DOF-&gt;getCalculatedTransformB();</span>
+<span class="lineNum">    1292 </span><span class="lineNoCov">          0 :                                         btVector3 normal = -tr.getBasis().getColumn(0);</span>
+<span class="lineNum">    1293 </span><span class="lineNoCov">          0 :                                         btScalar minFi = p6DOF-&gt;getRotationalLimitMotor(0)-&gt;m_loLimit;</span>
+<span class="lineNum">    1294 </span><span class="lineNoCov">          0 :                                         btScalar maxFi = p6DOF-&gt;getRotationalLimitMotor(0)-&gt;m_hiLimit;</span>
+<span class="lineNum">    1295 </span><span class="lineNoCov">          0 :                                         if(minFi &gt; maxFi)</span>
+<span class="lineNum">    1296 </span>            :                                         {
+<span class="lineNum">    1297 </span><span class="lineNoCov">          0 :                                                 getDebugDrawer()-&gt;drawArc(center, normal, ref, dbgDrawSize, dbgDrawSize, -SIMD_PI, SIMD_PI, btVector3(0,0,0), false);</span>
+<span class="lineNum">    1298 </span>            :                                         }
+<span class="lineNum">    1299 </span><span class="lineNoCov">          0 :                                         else if(minFi &lt; maxFi)</span>
+<span class="lineNum">    1300 </span>            :                                         {
+<span class="lineNum">    1301 </span><span class="lineNoCov">          0 :                                                 getDebugDrawer()-&gt;drawArc(center, normal, ref, dbgDrawSize, dbgDrawSize, minFi, maxFi, btVector3(0,0,0), true);</span>
+<span class="lineNum">    1302 </span>            :                                         }
+<span class="lineNum">    1303 </span><span class="lineNoCov">          0 :                                         tr = p6DOF-&gt;getCalculatedTransformA();</span>
+<span class="lineNum">    1304 </span><span class="lineNoCov">          0 :                                         btVector3 bbMin = p6DOF-&gt;getTranslationalLimitMotor()-&gt;m_lowerLimit;</span>
+<span class="lineNum">    1305 </span><span class="lineNoCov">          0 :                                         btVector3 bbMax = p6DOF-&gt;getTranslationalLimitMotor()-&gt;m_upperLimit;</span>
+<span class="lineNum">    1306 </span><span class="lineNoCov">          0 :                                         getDebugDrawer()-&gt;drawBox(bbMin, bbMax, tr, btVector3(0,0,0));</span>
+<span class="lineNum">    1307 </span>            :                                 }
+<span class="lineNum">    1308 </span>            :                         }
+<span class="lineNum">    1309 </span><span class="lineNoCov">          0 :                         break;</span>
+<span class="lineNum">    1310 </span><span class="lineNoCov">          0 :                 case SLIDER_CONSTRAINT_TYPE:</span>
+<span class="lineNum">    1311 </span>            :                         {
+<span class="lineNum">    1312 </span><span class="lineNoCov">          0 :                                 btSliderConstraint* pSlider = (btSliderConstraint*)constraint;</span>
+<span class="lineNum">    1313 </span><span class="lineNoCov">          0 :                                 btTransform tr = pSlider-&gt;getCalculatedTransformA();</span>
+<span class="lineNum">    1314 </span><span class="lineNoCov">          0 :                                 if(drawFrames) getDebugDrawer()-&gt;drawTransform(tr, dbgDrawSize);</span>
+<span class="lineNum">    1315 </span><span class="lineNoCov">          0 :                                 tr = pSlider-&gt;getCalculatedTransformB();</span>
+<span class="lineNum">    1316 </span><span class="lineNoCov">          0 :                                 if(drawFrames) getDebugDrawer()-&gt;drawTransform(tr, dbgDrawSize);</span>
+<span class="lineNum">    1317 </span><span class="lineNoCov">          0 :                                 if(drawLimits)</span>
+<span class="lineNum">    1318 </span>            :                                 {
+<span class="lineNum">    1319 </span><span class="lineNoCov">          0 :                                         btTransform tr = pSlider-&gt;getUseLinearReferenceFrameA() ? pSlider-&gt;getCalculatedTransformA() : pSlider-&gt;getCalculatedTransformB();</span>
+<span class="lineNum">    1320 </span><span class="lineNoCov">          0 :                                         btVector3 li_min = tr * btVector3(pSlider-&gt;getLowerLinLimit(), 0.f, 0.f);</span>
+<span class="lineNum">    1321 </span><span class="lineNoCov">          0 :                                         btVector3 li_max = tr * btVector3(pSlider-&gt;getUpperLinLimit(), 0.f, 0.f);</span>
+<span class="lineNum">    1322 </span><span class="lineNoCov">          0 :                                         getDebugDrawer()-&gt;drawLine(li_min, li_max, btVector3(0, 0, 0));</span>
+<span class="lineNum">    1323 </span><span class="lineNoCov">          0 :                                         btVector3 normal = tr.getBasis().getColumn(0);</span>
+<span class="lineNum">    1324 </span><span class="lineNoCov">          0 :                                         btVector3 axis = tr.getBasis().getColumn(1);</span>
+<span class="lineNum">    1325 </span><span class="lineNoCov">          0 :                                         btScalar a_min = pSlider-&gt;getLowerAngLimit();</span>
+<span class="lineNum">    1326 </span><span class="lineNoCov">          0 :                                         btScalar a_max = pSlider-&gt;getUpperAngLimit();</span>
+<span class="lineNum">    1327 </span><span class="lineNoCov">          0 :                                         const btVector3&amp; center = pSlider-&gt;getCalculatedTransformB().getOrigin();</span>
+<span class="lineNum">    1328 </span><span class="lineNoCov">          0 :                                         getDebugDrawer()-&gt;drawArc(center, normal, axis, dbgDrawSize, dbgDrawSize, a_min, a_max, btVector3(0,0,0), true);</span>
+<span class="lineNum">    1329 </span>            :                                 }
+<span class="lineNum">    1330 </span>            :                         }
+<span class="lineNum">    1331 </span><span class="lineNoCov">          0 :                         break;</span>
+<span class="lineNum">    1332 </span>            :                 default : 
+<span class="lineNum">    1333 </span>            :                         break;
+<span class="lineNum">    1334 </span>            :         }
+<span class="lineNum">    1335 </span>            :         return;
+<span class="lineNum">    1336 </span>            : }
+<span class="lineNum">    1337 </span>            : 
+<span class="lineNum">    1338 </span>            : 
+<span class="lineNum">    1339 </span>            : 
+<a name="1340"><span class="lineNum">    1340 </span>            : </a>
+<span class="lineNum">    1341 </span>            : 
+<span class="lineNum">    1342 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::setConstraintSolver(btConstraintSolver* solver)</span>
+<span class="lineNum">    1343 </span>            : {
+<span class="lineNum">    1344 </span><span class="lineNoCov">          0 :         if (m_ownsConstraintSolver)</span>
+<span class="lineNum">    1345 </span>            :         {
+<span class="lineNum">    1346 </span><span class="lineNoCov">          0 :                 btAlignedFree( m_constraintSolver);</span>
+<span class="lineNum">    1347 </span>            :         }
+<span class="lineNum">    1348 </span><span class="lineNoCov">          0 :         m_ownsConstraintSolver = false;</span>
+<span class="lineNum">    1349 </span><span class="lineNoCov">          0 :         m_constraintSolver = solver;</span>
+<span class="lineNum">    1350 </span><span class="lineNoCov">          0 :         m_solverIslandCallback-&gt;m_solver = solver;</span>
+<a name="1351"><span class="lineNum">    1351 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">    1352 </span>            : 
+<span class="lineNum">    1353 </span><span class="lineNoCov">          0 : btConstraintSolver* btDiscreteDynamicsWorld::getConstraintSolver()</span>
+<span class="lineNum">    1354 </span>            : {
+<span class="lineNum">    1355 </span><span class="lineNoCov">          0 :         return m_constraintSolver;</span>
+<span class="lineNum">    1356 </span>            : }
+<a name="1357"><span class="lineNum">    1357 </span>            : </a>
+<span class="lineNum">    1358 </span>            : 
+<span class="lineNum">    1359 </span><span class="lineCov">       3127 : int             btDiscreteDynamicsWorld::getNumConstraints() const</span>
+<span class="lineNum">    1360 </span>            : {
+<span class="lineNum">    1361 </span><span class="lineCov">       3127 :         return int(m_constraints.size());</span>
+<span class="lineNum">    1362 </span>            : }
+<span class="lineNum">    1363 </span><span class="lineNoCov">          0 : btTypedConstraint* btDiscreteDynamicsWorld::getConstraint(int index)</span>
+<span class="lineNum">    1364 </span>            : {
+<span class="lineNum">    1365 </span><span class="lineNoCov">          0 :         return m_constraints[index];</span>
+<span class="lineNum">    1366 </span>            : }
+<span class="lineNum">    1367 </span><span class="lineNoCov">          0 : const btTypedConstraint* btDiscreteDynamicsWorld::getConstraint(int index) const</span>
+<span class="lineNum">    1368 </span>            : {
+<span class="lineNum">    1369 </span><span class="lineNoCov">          0 :         return m_constraints[index];</span>
+<span class="lineNum">    1370 </span>            : }
+<span class="lineNum">    1371 </span>            : 
+<span class="lineNum">    1372 </span>            : 
+<span class="lineNum">    1373 </span>            : 
+<span class="lineNum">    1374 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::serializeRigidBodies(btSerializer* serializer)</span>
+<span class="lineNum">    1375 </span>            : {
+<span class="lineNum">    1376 </span>            :         int i;
+<span class="lineNum">    1377 </span>            :         //serialize all collision objects
+<span class="lineNum">    1378 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;m_collisionObjects.size();i++)</span>
+<span class="lineNum">    1379 </span>            :         {
+<span class="lineNum">    1380 </span><span class="lineNoCov">          0 :                 btCollisionObject* colObj = m_collisionObjects[i];</span>
+<span class="lineNum">    1381 </span><span class="lineNoCov">          0 :                 if (colObj-&gt;getInternalType() &amp; btCollisionObject::CO_RIGID_BODY)</span>
+<span class="lineNum">    1382 </span>            :                 {
+<span class="lineNum">    1383 </span><span class="lineNoCov">          0 :                         int len = colObj-&gt;calculateSerializeBufferSize();</span>
+<span class="lineNum">    1384 </span><span class="lineNoCov">          0 :                         btChunk* chunk = serializer-&gt;allocate(len,1);</span>
+<span class="lineNum">    1385 </span><span class="lineNoCov">          0 :                         const char* structType = colObj-&gt;serialize(chunk-&gt;m_oldPtr, serializer);</span>
+<span class="lineNum">    1386 </span><span class="lineNoCov">          0 :                         serializer-&gt;finalizeChunk(chunk,structType,BT_RIGIDBODY_CODE,colObj);</span>
+<span class="lineNum">    1387 </span>            :                 }
+<span class="lineNum">    1388 </span>            :         }
+<span class="lineNum">    1389 </span>            : 
+<span class="lineNum">    1390 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;m_constraints.size();i++)</span>
+<span class="lineNum">    1391 </span>            :         {
+<span class="lineNum">    1392 </span><span class="lineNoCov">          0 :                 btTypedConstraint* constraint = m_constraints[i];</span>
+<span class="lineNum">    1393 </span><span class="lineNoCov">          0 :                 int size = constraint-&gt;calculateSerializeBufferSize();</span>
+<span class="lineNum">    1394 </span><span class="lineNoCov">          0 :                 btChunk* chunk = serializer-&gt;allocate(size,1);</span>
+<span class="lineNum">    1395 </span><span class="lineNoCov">          0 :                 const char* structType = constraint-&gt;serialize(chunk-&gt;m_oldPtr,serializer);</span>
+<span class="lineNum">    1396 </span><span class="lineNoCov">          0 :                 serializer-&gt;finalizeChunk(chunk,structType,BT_CONSTRAINT_CODE,constraint);</span>
+<span class="lineNum">    1397 </span>            :         }
+<span class="lineNum">    1398 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">    1399 </span>            : 
+<span class="lineNum">    1400 </span>            : 
+<a name="1401"><span class="lineNum">    1401 </span>            : </a>
+<span class="lineNum">    1402 </span>            : 
+<span class="lineNum">    1403 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::serializeDynamicsWorldInfo(btSerializer* serializer)</span>
+<span class="lineNum">    1404 </span>            : {
+<span class="lineNum">    1405 </span>            : #ifdef BT_USE_DOUBLE_PRECISION
+<span class="lineNum">    1406 </span>            :                 int len = sizeof(btDynamicsWorldDoubleData);
+<span class="lineNum">    1407 </span>            :                 btChunk* chunk = serializer-&gt;allocate(len,1);
+<span class="lineNum">    1408 </span>            :                 btDynamicsWorldDoubleData* worldInfo = (btDynamicsWorldDoubleData*)chunk-&gt;m_oldPtr;
+<span class="lineNum">    1409 </span>            : #else//BT_USE_DOUBLE_PRECISION
+<span class="lineNum">    1410 </span><span class="lineNoCov">          0 :                 int len = sizeof(btDynamicsWorldFloatData);</span>
+<span class="lineNum">    1411 </span><span class="lineNoCov">          0 :                 btChunk* chunk = serializer-&gt;allocate(len,1);</span>
+<span class="lineNum">    1412 </span><span class="lineNoCov">          0 :                 btDynamicsWorldFloatData* worldInfo = (btDynamicsWorldFloatData*)chunk-&gt;m_oldPtr;</span>
+<span class="lineNum">    1413 </span>            : #endif//BT_USE_DOUBLE_PRECISION
+<span class="lineNum">    1414 </span>            : 
+<span class="lineNum">    1415 </span><span class="lineNoCov">          0 :                 memset(worldInfo ,0x00,len);</span>
+<span class="lineNum">    1416 </span>            : 
+<span class="lineNum">    1417 </span><span class="lineNoCov">          0 :                 m_gravity.serialize(worldInfo-&gt;m_gravity);</span>
+<span class="lineNum">    1418 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_tau = getSolverInfo().m_tau;</span>
+<span class="lineNum">    1419 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_damping = getSolverInfo().m_damping;</span>
+<span class="lineNum">    1420 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_friction = getSolverInfo().m_friction;</span>
+<span class="lineNum">    1421 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_timeStep = getSolverInfo().m_timeStep;</span>
+<span class="lineNum">    1422 </span>            : 
+<span class="lineNum">    1423 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_restitution = getSolverInfo().m_restitution;</span>
+<span class="lineNum">    1424 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_maxErrorReduction = getSolverInfo().m_maxErrorReduction;</span>
+<span class="lineNum">    1425 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_sor = getSolverInfo().m_sor;</span>
+<span class="lineNum">    1426 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_erp = getSolverInfo().m_erp;</span>
+<span class="lineNum">    1427 </span>            : 
+<span class="lineNum">    1428 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_erp2 = getSolverInfo().m_erp2;</span>
+<span class="lineNum">    1429 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_globalCfm = getSolverInfo().m_globalCfm;</span>
+<span class="lineNum">    1430 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_splitImpulsePenetrationThreshold = getSolverInfo().m_splitImpulsePenetrationThreshold;</span>
+<span class="lineNum">    1431 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_splitImpulseTurnErp = getSolverInfo().m_splitImpulseTurnErp;</span>
+<span class="lineNum">    1432 </span>            :                 
+<span class="lineNum">    1433 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_linearSlop = getSolverInfo().m_linearSlop;</span>
+<span class="lineNum">    1434 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_warmstartingFactor = getSolverInfo().m_warmstartingFactor;</span>
+<span class="lineNum">    1435 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_maxGyroscopicForce = getSolverInfo().m_maxGyroscopicForce;</span>
+<span class="lineNum">    1436 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_singleAxisRollingFrictionThreshold = getSolverInfo().m_singleAxisRollingFrictionThreshold;</span>
+<span class="lineNum">    1437 </span>            :                 
+<span class="lineNum">    1438 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_numIterations = getSolverInfo().m_numIterations;</span>
+<span class="lineNum">    1439 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_solverMode = getSolverInfo().m_solverMode;</span>
+<span class="lineNum">    1440 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_restingContactRestitutionThreshold = getSolverInfo().m_restingContactRestitutionThreshold;</span>
+<span class="lineNum">    1441 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_minimumSolverBatchSize = getSolverInfo().m_minimumSolverBatchSize;</span>
+<span class="lineNum">    1442 </span>            :                 
+<span class="lineNum">    1443 </span><span class="lineNoCov">          0 :                 worldInfo-&gt;m_solverInfo.m_splitImpulse = getSolverInfo().m_splitImpulse;</span>
+<span class="lineNum">    1444 </span>            :         
+<span class="lineNum">    1445 </span>            : #ifdef BT_USE_DOUBLE_PRECISION
+<span class="lineNum">    1446 </span>            :                 const char* structType = &quot;btDynamicsWorldDoubleData&quot;;
+<span class="lineNum">    1447 </span>            : #else//BT_USE_DOUBLE_PRECISION
+<span class="lineNum">    1448 </span><span class="lineNoCov">          0 :                 const char* structType = &quot;btDynamicsWorldFloatData&quot;;</span>
+<span class="lineNum">    1449 </span>            : #endif//BT_USE_DOUBLE_PRECISION
+<span class="lineNum">    1450 </span><span class="lineNoCov">          0 :                 serializer-&gt;finalizeChunk(chunk,structType,BT_DYNAMICSWORLD_CODE,worldInfo);</span>
+<a name="1451"><span class="lineNum">    1451 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">    1452 </span>            : 
+<span class="lineNum">    1453 </span><span class="lineNoCov">          0 : void    btDiscreteDynamicsWorld::serialize(btSerializer* serializer)</span>
+<span class="lineNum">    1454 </span>            : {
+<span class="lineNum">    1455 </span>            : 
+<span class="lineNum">    1456 </span><span class="lineNoCov">          0 :         serializer-&gt;startSerialization();</span>
+<span class="lineNum">    1457 </span>            : 
+<span class="lineNum">    1458 </span><span class="lineNoCov">          0 :         serializeDynamicsWorldInfo(serializer);</span>
+<span class="lineNum">    1459 </span>            : 
+<span class="lineNum">    1460 </span><span class="lineNoCov">          0 :         serializeRigidBodies(serializer);</span>
+<span class="lineNum">    1461 </span>            : 
+<span class="lineNum">    1462 </span><span class="lineNoCov">          0 :         serializeCollisionObjects(serializer);</span>
+<span class="lineNum">    1463 </span>            : 
+<span class="lineNum">    1464 </span><span class="lineNoCov">          0 :         serializer-&gt;finishSerialization();</span>
+<span class="lineNum">    1465 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">    1466 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

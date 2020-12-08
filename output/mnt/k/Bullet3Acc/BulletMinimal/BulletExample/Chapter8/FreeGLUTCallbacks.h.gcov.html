@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - /mnt/k/Bullet3Acc/BulletMinimal/BulletExample/Chapter8/FreeGLUTCallbacks.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../../index.html">top level</a> - <a href="index.html">mnt/k/Bullet3Acc/BulletMinimal/BulletExample/Chapter8</a> - FreeGLUTCallbacks.h<span style="font-size: 80%;"> (source / <a href="FreeGLUTCallbacks.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">49</td>
+            <td class="headerCovTableEntry">49</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : #ifndef _FREEGLUTCALLBACKS_H_</a>
+<span class="lineNum">       2 </span>            : #define _FREEGLUTCALLBACKS_H_
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : #include &quot;BulletOpenGLApplication.h&quot;
+<span class="lineNum">       5 </span>            : 
+<span class="lineNum">       6 </span>            : // global pointer to our application object
+<span class="lineNum">       7 </span>            : static BulletOpenGLApplication* g_pApp;
+<span class="lineNum">       8 </span>            : 
+<span class="lineNum">       9 </span>            : /** Various static functions that will be handed to FreeGLUT to be called
+<a name="10"><span class="lineNum">      10 </span>            :         during various events (our callbacks). Each calls an equivalent function</a>
+<span class="lineNum">      11 </span>            :         in our (global) application object. **/
+<span class="lineNum">      12 </span><span class="lineCov">         49 : static void KeyboardCallback(unsigned char key, int x, int y) {</span>
+<a name="13"><span class="lineNum">      13 </span><span class="lineCov">         49 :         g_pApp-&gt;Keyboard(key, x, y);</span></a>
+<span class="lineNum">      14 </span><span class="lineCov">         49 : }</span>
+<span class="lineNum">      15 </span><span class="lineCov">         49 : static void KeyboardUpCallback(unsigned char key, int x, int y) {</span>
+<a name="16"><span class="lineNum">      16 </span><span class="lineCov">         49 :         g_pApp-&gt;KeyboardUp(key, x, y);</span></a>
+<span class="lineNum">      17 </span><span class="lineCov">         49 : }</span>
+<span class="lineNum">      18 </span><span class="lineCov">        102 : static void SpecialCallback(int key, int x, int y) {</span>
+<a name="19"><span class="lineNum">      19 </span><span class="lineCov">        102 :         g_pApp-&gt;Special(key, x, y);</span></a>
+<span class="lineNum">      20 </span><span class="lineCov">        102 : }</span>
+<span class="lineNum">      21 </span><span class="lineCov">        102 : static void SpecialUpCallback(int key, int x, int y) {</span>
+<a name="22"><span class="lineNum">      22 </span><span class="lineCov">        102 :         g_pApp-&gt;SpecialUp(key, x, y);</span></a>
+<span class="lineNum">      23 </span><span class="lineCov">        102 : }</span>
+<span class="lineNum">      24 </span><span class="lineCov">          2 : static void ReshapeCallback(int w, int h) {</span>
+<a name="25"><span class="lineNum">      25 </span><span class="lineCov">          2 :         g_pApp-&gt;Reshape(w, h);</span></a>
+<span class="lineNum">      26 </span><span class="lineCov">          2 : }</span>
+<span class="lineNum">      27 </span><span class="lineCov">       6105 : static void IdleCallback() {</span>
+<a name="28"><span class="lineNum">      28 </span><span class="lineCov">       6105 :         g_pApp-&gt;Idle();</span></a>
+<span class="lineNum">      29 </span><span class="lineCov">       6105 : }</span>
+<span class="lineNum">      30 </span><span class="lineCov">        106 : static void MouseCallback(int button, int state, int x, int y) {</span>
+<a name="31"><span class="lineNum">      31 </span><span class="lineCov">        106 :         g_pApp-&gt;Mouse(button, state, x, y);</span></a>
+<span class="lineNum">      32 </span><span class="lineCov">        106 : }</span>
+<span class="lineNum">      33 </span><span class="lineCov">       1403 : static void MotionCallback(int x,int y) {</span>
+<a name="34"><span class="lineNum">      34 </span><span class="lineCov">       1403 :         g_pApp-&gt;Motion(x, y);</span></a>
+<span class="lineNum">      35 </span><span class="lineCov">       1403 : }</span>
+<span class="lineNum">      36 </span><span class="lineCov">          2 : static void DisplayCallback(void) {</span>
+<span class="lineNum">      37 </span><span class="lineCov">          2 :         g_pApp-&gt;Display();</span>
+<span class="lineNum">      38 </span><span class="lineCov">          2 : }</span>
+<span class="lineNum">      39 </span>            : 
+<a name="40"><span class="lineNum">      40 </span>            : // our custom-built 'main' function, which accepts a reference to a </a>
+<span class="lineNum">      41 </span>            : // BulletOpenGLApplication object.
+<span class="lineNum">      42 </span><span class="lineCov">          1 : int glutmain(int argc, char **argv, int width, int height, const char* title, BulletOpenGLApplication* pApp) {</span>
+<span class="lineNum">      43 </span>            :     // store the application object so we can
+<span class="lineNum">      44 </span>            :         // access it globally
+<span class="lineNum">      45 </span><span class="lineCov">          1 :         g_pApp = pApp;</span>
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span>            :         // initialize the window
+<span class="lineNum">      48 </span><span class="lineCov">          1 :         glutInit(&amp;argc, argv);</span>
+<span class="lineNum">      49 </span><span class="lineCov">          1 :         glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);</span>
+<span class="lineNum">      50 </span><span class="lineCov">          1 :         glutInitWindowPosition(0, 0);</span>
+<span class="lineNum">      51 </span><span class="lineCov">          1 :         glutInitWindowSize(width, height);</span>
+<span class="lineNum">      52 </span><span class="lineCov">          1 :         glutCreateWindow(title);</span>
+<span class="lineNum">      53 </span><span class="lineCov">          1 :         glutSetOption (GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);</span>
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            :         // perform custom initialization our of application
+<span class="lineNum">      56 </span><span class="lineCov">          1 :         g_pApp-&gt;Initialize();</span>
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span>            :         // give our static
+<span class="lineNum">      59 </span><span class="lineCov">          1 :         glutKeyboardFunc(KeyboardCallback);</span>
+<span class="lineNum">      60 </span><span class="lineCov">          1 :         glutKeyboardUpFunc(KeyboardUpCallback);</span>
+<span class="lineNum">      61 </span><span class="lineCov">          1 :         glutSpecialFunc(SpecialCallback);</span>
+<span class="lineNum">      62 </span><span class="lineCov">          1 :         glutSpecialUpFunc(SpecialUpCallback);</span>
+<span class="lineNum">      63 </span><span class="lineCov">          1 :         glutReshapeFunc(ReshapeCallback);</span>
+<span class="lineNum">      64 </span><span class="lineCov">          1 :         glutIdleFunc(IdleCallback);</span>
+<span class="lineNum">      65 </span><span class="lineCov">          1 :         glutMouseFunc(MouseCallback);</span>
+<span class="lineNum">      66 </span><span class="lineCov">          1 :         glutPassiveMotionFunc(MotionCallback);</span>
+<span class="lineNum">      67 </span><span class="lineCov">          1 :         glutMotionFunc(MotionCallback);</span>
+<span class="lineNum">      68 </span><span class="lineCov">          1 :         glutDisplayFunc(DisplayCallback );</span>
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span>            :         // perform one render before we launch the application
+<span class="lineNum">      71 </span><span class="lineCov">          1 :         g_pApp-&gt;Idle();</span>
+<span class="lineNum">      72 </span>            :         
+<span class="lineNum">      73 </span>            :         // hand application control over to the FreeGLUT library.
+<span class="lineNum">      74 </span>            :         // This function remains in a while-loop until the
+<span class="lineNum">      75 </span>            :         // application is exited.
+<span class="lineNum">      76 </span><span class="lineCov">          1 :         glutMainLoop();</span>
+<span class="lineNum">      77 </span><span class="lineCov">          1 :         return 0;</span>
+<span class="lineNum">      78 </span>            : }
+<span class="lineNum">      79 </span>            : #endif
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

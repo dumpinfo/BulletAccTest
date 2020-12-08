@@ -1,0 +1,296 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/CollisionShapes/btCompoundShape.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/CollisionShapes</a> - btCompoundShape.h<span style="font-size: 80%;"> (source / <a href="btCompoundShape.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">20</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : #ifndef BT_COMPOUND_SHAPE_H
+<span class="lineNum">      17 </span>            : #define BT_COMPOUND_SHAPE_H
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : #include &quot;btCollisionShape.h&quot;
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span>            : #include &quot;LinearMath/btVector3.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;LinearMath/btTransform.h&quot;
+<span class="lineNum">      23 </span>            : #include &quot;LinearMath/btMatrix3x3.h&quot;
+<span class="lineNum">      24 </span>            : #include &quot;btCollisionMargin.h&quot;
+<span class="lineNum">      25 </span>            : #include &quot;LinearMath/btAlignedObjectArray.h&quot;
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span>            : //class btOptimizedBvh;
+<span class="lineNum">      28 </span>            : struct btDbvt;
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span><span class="lineNoCov">          0 : ATTRIBUTE_ALIGNED16(struct) btCompoundShapeChild</span>
+<span class="lineNum">      31 </span>            : {
+<span class="lineNum">      32 </span>            :         BT_DECLARE_ALIGNED_ALLOCATOR();
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            :         btTransform                     m_transform;
+<span class="lineNum">      35 </span>            :         btCollisionShape*       m_childShape;
+<span class="lineNum">      36 </span>            :         int                                     m_childShapeType;
+<span class="lineNum">      37 </span>            :         btScalar                        m_childMargin;
+<span class="lineNum">      38 </span>            :         struct btDbvtNode*      m_node;
+<span class="lineNum">      39 </span>            : };
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            : SIMD_FORCE_INLINE bool operator==(const btCompoundShapeChild&amp; c1, const btCompoundShapeChild&amp; c2)
+<span class="lineNum">      42 </span>            : {
+<span class="lineNum">      43 </span>            :         return  ( c1.m_transform      == c2.m_transform &amp;&amp;
+<span class="lineNum">      44 </span>            :                 c1.m_childShape     == c2.m_childShape &amp;&amp;
+<span class="lineNum">      45 </span>            :                 c1.m_childShapeType == c2.m_childShapeType &amp;&amp;
+<span class="lineNum">      46 </span>            :                 c1.m_childMargin    == c2.m_childMargin );
+<span class="lineNum">      47 </span>            : }
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : /// The btCompoundShape allows to store multiple other btCollisionShapes
+<span class="lineNum">      50 </span>            : /// This allows for moving concave collision objects. This is more general then the static concave btBvhTriangleMeshShape.
+<span class="lineNum">      51 </span>            : /// It has an (optional) dynamic aabb tree to accelerate early rejection tests. 
+<span class="lineNum">      52 </span>            : /// @todo: This aabb tree can also be use to speed up ray tests on btCompoundShape, see http://code.google.com/p/bullet/issues/detail?id=25
+<span class="lineNum">      53 </span>            : /// Currently, removal of child shapes is only supported when disabling the aabb tree (pass 'false' in the constructor of btCompoundShape)
+<span class="lineNum">      54 </span>            : ATTRIBUTE_ALIGNED16(class) btCompoundShape      : public btCollisionShape
+<span class="lineNum">      55 </span>            : {
+<span class="lineNum">      56 </span>            :         btAlignedObjectArray&lt;btCompoundShapeChild&gt; m_children;
+<span class="lineNum">      57 </span>            :         btVector3                                               m_localAabbMin;
+<span class="lineNum">      58 </span>            :         btVector3                                               m_localAabbMax;
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span>            :         btDbvt*                                                 m_dynamicAabbTree;
+<span class="lineNum">      61 </span>            : 
+<span class="lineNum">      62 </span>            :         ///increment m_updateRevision when adding/removing/replacing child shapes, so that some caches can be updated
+<span class="lineNum">      63 </span>            :         int                                                             m_updateRevision;
+<span class="lineNum">      64 </span>            : 
+<span class="lineNum">      65 </span>            :         btScalar        m_collisionMargin;
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span>            : protected:
+<span class="lineNum">      68 </span>            :         btVector3       m_localScaling;
+<a name="69"><span class="lineNum">      69 </span>            : </a>
+<span class="lineNum">      70 </span>            : public:
+<span class="lineNum">      71 </span><span class="lineNoCov">          0 :         BT_DECLARE_ALIGNED_ALLOCATOR();</span>
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span>            :         btCompoundShape(bool enableDynamicAabbTree = true);
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span>            :         virtual ~btCompoundShape();
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            :         void    addChildShape(const btTransform&amp; localTransform,btCollisionShape* shape);
+<span class="lineNum">      78 </span>            : 
+<span class="lineNum">      79 </span>            :         /// Remove all children shapes that contain the specified shape
+<span class="lineNum">      80 </span>            :         virtual void removeChildShape(btCollisionShape* shape);
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span>            :         void removeChildShapeByIndex(int childShapeindex);
+<a name="83"><span class="lineNum">      83 </span>            : </a>
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span><span class="lineNoCov">          0 :         int             getNumChildShapes() const</span>
+<span class="lineNum">      86 </span>            :         {
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :                 return int (m_children.size());</span>
+<span class="lineNum">      88 </span>            :         }
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span>            :         btCollisionShape* getChildShape(int index)
+<span class="lineNum">      91 </span>            :         {
+<a name="92"><span class="lineNum">      92 </span>            :                 return m_children[index].m_childShape;</a>
+<span class="lineNum">      93 </span>            :         }
+<span class="lineNum">      94 </span><span class="lineNoCov">          0 :         const btCollisionShape* getChildShape(int index) const</span>
+<span class="lineNum">      95 </span>            :         {
+<span class="lineNum">      96 </span><span class="lineNoCov">          0 :                 return m_children[index].m_childShape;</span>
+<span class="lineNum">      97 </span>            :         }
+<span class="lineNum">      98 </span>            : 
+<span class="lineNum">      99 </span>            :         btTransform&amp;        getChildTransform(int index)
+<span class="lineNum">     100 </span>            :         {
+<a name="101"><span class="lineNum">     101 </span><span class="lineNoCov">          0 :                 return m_children[index].m_transform;</span></a>
+<span class="lineNum">     102 </span>            :         }
+<span class="lineNum">     103 </span><span class="lineNoCov">          0 :         const btTransform&amp;  getChildTransform(int index) const</span>
+<span class="lineNum">     104 </span>            :         {
+<span class="lineNum">     105 </span><span class="lineNoCov">          0 :                 return m_children[index].m_transform;</span>
+<span class="lineNum">     106 </span>            :         }
+<span class="lineNum">     107 </span>            : 
+<span class="lineNum">     108 </span>            :         ///set a new transform for a child, and update internal data structures (local aabb and dynamic tree)
+<span class="lineNum">     109 </span>            :         void    updateChildTransform(int childIndex, const btTransform&amp; newChildTransform, bool shouldRecalculateLocalAabb = true);
+<span class="lineNum">     110 </span>            : 
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span>            :         btCompoundShapeChild* getChildList()
+<span class="lineNum">     113 </span>            :         {
+<span class="lineNum">     114 </span>            :                 return &amp;m_children[0];
+<span class="lineNum">     115 </span>            :         }
+<span class="lineNum">     116 </span>            : 
+<span class="lineNum">     117 </span>            :         ///getAabb's default implementation is brute force, expected derived classes to implement a fast dedicated version
+<span class="lineNum">     118 </span>            :         virtual void getAabb(const btTransform&amp; t,btVector3&amp; aabbMin,btVector3&amp; aabbMax) const;
+<span class="lineNum">     119 </span>            : 
+<span class="lineNum">     120 </span>            :         /** Re-calculate the local Aabb. Is called at the end of removeChildShapes. 
+<span class="lineNum">     121 </span>            :         Use this yourself if you modify the children or their transforms. */
+<span class="lineNum">     122 </span>            :         virtual void recalculateLocalAabb(); 
+<span class="lineNum">     123 </span>            : 
+<a name="124"><span class="lineNum">     124 </span>            :         virtual void    setLocalScaling(const btVector3&amp; scaling);</a>
+<span class="lineNum">     125 </span>            : 
+<span class="lineNum">     126 </span><span class="lineNoCov">          0 :         virtual const btVector3&amp; getLocalScaling() const </span>
+<span class="lineNum">     127 </span>            :         {
+<span class="lineNum">     128 </span><span class="lineNoCov">          0 :                 return m_localScaling;</span>
+<span class="lineNum">     129 </span>            :         }
+<span class="lineNum">     130 </span>            : 
+<a name="131"><span class="lineNum">     131 </span>            :         virtual void    calculateLocalInertia(btScalar mass,btVector3&amp; inertia) const;</a>
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :         virtual void    setMargin(btScalar margin)</span>
+<span class="lineNum">     134 </span>            :         {
+<a name="135"><span class="lineNum">     135 </span><span class="lineNoCov">          0 :                 m_collisionMargin = margin;</span></a>
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 :         virtual btScalar        getMargin() const</span>
+<span class="lineNum">     138 </span>            :         {
+<a name="139"><span class="lineNum">     139 </span><span class="lineNoCov">          0 :                 return m_collisionMargin;</span></a>
+<span class="lineNum">     140 </span>            :         }
+<span class="lineNum">     141 </span><span class="lineNoCov">          0 :         virtual const char*     getName()const</span>
+<span class="lineNum">     142 </span>            :         {
+<span class="lineNum">     143 </span><span class="lineNoCov">          0 :                 return &quot;Compound&quot;;</span>
+<span class="lineNum">     144 </span>            :         }
+<span class="lineNum">     145 </span>            : 
+<span class="lineNum">     146 </span>            :         const btDbvt*   getDynamicAabbTree() const
+<span class="lineNum">     147 </span>            :         {
+<span class="lineNum">     148 </span>            :                 return m_dynamicAabbTree;
+<span class="lineNum">     149 </span>            :         }
+<span class="lineNum">     150 </span>            :         
+<span class="lineNum">     151 </span>            :         btDbvt* getDynamicAabbTree()
+<span class="lineNum">     152 </span>            :         {
+<span class="lineNum">     153 </span>            :                 return m_dynamicAabbTree;
+<span class="lineNum">     154 </span>            :         }
+<span class="lineNum">     155 </span>            : 
+<span class="lineNum">     156 </span>            :         void createAabbTreeFromChildren();
+<span class="lineNum">     157 </span>            : 
+<span class="lineNum">     158 </span>            :         ///computes the exact moment of inertia and the transform from the coordinate system defined by the principal axes of the moment of inertia
+<span class="lineNum">     159 </span>            :         ///and the center of mass to the current coordinate system. &quot;masses&quot; points to an array of masses of the children. The resulting transform
+<span class="lineNum">     160 </span>            :         ///&quot;principal&quot; has to be applied inversely to all children transforms in order for the local coordinate system of the compound
+<span class="lineNum">     161 </span>            :         ///shape to be centered at the center of mass and to coincide with the principal axes. This also necessitates a correction of the world transform
+<span class="lineNum">     162 </span>            :         ///of the collision object by the principal transform.
+<span class="lineNum">     163 </span>            :         void calculatePrincipalAxisTransform(btScalar* masses, btTransform&amp; principal, btVector3&amp; inertia) const;
+<span class="lineNum">     164 </span>            : 
+<span class="lineNum">     165 </span>            :         int     getUpdateRevision() const
+<span class="lineNum">     166 </span>            :         {
+<span class="lineNum">     167 </span>            :                 return m_updateRevision;
+<span class="lineNum">     168 </span>            :         }
+<span class="lineNum">     169 </span>            : 
+<span class="lineNum">     170 </span>            :         virtual int     calculateSerializeBufferSize() const;
+<span class="lineNum">     171 </span>            : 
+<span class="lineNum">     172 </span>            :         ///fills the dataBuffer and returns the struct name (and 0 on failure)
+<span class="lineNum">     173 </span>            :         virtual const char*     serialize(void* dataBuffer, btSerializer* serializer) const;
+<span class="lineNum">     174 </span>            : 
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span>            : };
+<span class="lineNum">     177 </span>            : 
+<span class="lineNum">     178 </span>            : ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
+<span class="lineNum">     179 </span>            : struct btCompoundShapeChildData
+<span class="lineNum">     180 </span>            : {
+<span class="lineNum">     181 </span>            :         btTransformFloatData    m_transform;
+<span class="lineNum">     182 </span>            :         btCollisionShapeData    *m_childShape;
+<span class="lineNum">     183 </span>            :         int                                             m_childShapeType;
+<span class="lineNum">     184 </span>            :         float                                   m_childMargin;
+<span class="lineNum">     185 </span>            : };
+<span class="lineNum">     186 </span>            : 
+<span class="lineNum">     187 </span>            : ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
+<span class="lineNum">     188 </span>            : struct  btCompoundShapeData
+<span class="lineNum">     189 </span>            : {
+<span class="lineNum">     190 </span>            :         btCollisionShapeData            m_collisionShapeData;
+<span class="lineNum">     191 </span>            : 
+<span class="lineNum">     192 </span>            :         btCompoundShapeChildData        *m_childShapePtr;
+<span class="lineNum">     193 </span>            : 
+<span class="lineNum">     194 </span>            :         int                                                     m_numChildShapes;
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span>            :         float   m_collisionMargin;
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span>            : };
+<a name="199"><span class="lineNum">     199 </span>            : </a>
+<span class="lineNum">     200 </span>            : 
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE       int     btCompoundShape::calculateSerializeBufferSize() const</span>
+<span class="lineNum">     202 </span>            : {
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :         return sizeof(btCompoundShapeData);</span>
+<span class="lineNum">     204 </span>            : }
+<span class="lineNum">     205 </span>            : 
+<span class="lineNum">     206 </span>            : 
+<span class="lineNum">     207 </span>            : 
+<span class="lineNum">     208 </span>            : 
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span>            : 
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span>            : #endif //BT_COMPOUND_SHAPE_H
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

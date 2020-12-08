@@ -1,0 +1,316 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - LinearMath/btAabbUtil2.h</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">LinearMath</a> - btAabbUtil2.h<span style="font-size: 80%;"> (source / <a href="btAabbUtil2.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">25</td>
+            <td class="headerCovTableEntry">56</td>
+            <td class="headerCovTableEntryLo">44.6 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntryLo">40.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Copyright (c) 2003-2006 Gino van den Bergen / Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       5 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       6 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       7 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       8 </span>            : subject to the following restrictions:
+<span class="lineNum">       9 </span>            : 
+<span class="lineNum">      10 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      11 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      12 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      13 </span>            : */
+<span class="lineNum">      14 </span>            : 
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : #ifndef BT_AABB_UTIL2
+<span class="lineNum">      18 </span>            : #define BT_AABB_UTIL2
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : #include &quot;btTransform.h&quot;
+<span class="lineNum">      21 </span>            : #include &quot;btVector3.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;btMinMax.h&quot;
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span>            : SIMD_FORCE_INLINE void AabbExpand (btVector3&amp; aabbMin,
+<span class="lineNum">      27 </span>            :                                                                    btVector3&amp; aabbMax,
+<span class="lineNum">      28 </span>            :                                                                    const btVector3&amp; expansionMin,
+<span class="lineNum">      29 </span>            :                                                                    const btVector3&amp; expansionMax)
+<span class="lineNum">      30 </span>            : {
+<span class="lineNum">      31 </span>            :         aabbMin = aabbMin + expansionMin;
+<span class="lineNum">      32 </span>            :         aabbMax = aabbMax + expansionMax;
+<span class="lineNum">      33 </span>            : }
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : /// conservative test for overlap between two aabbs
+<span class="lineNum">      36 </span>            : SIMD_FORCE_INLINE bool TestPointAgainstAabb2(const btVector3 &amp;aabbMin1, const btVector3 &amp;aabbMax1,
+<span class="lineNum">      37 </span>            :                                                                 const btVector3 &amp;point)
+<span class="lineNum">      38 </span>            : {
+<span class="lineNum">      39 </span>            :         bool overlap = true;
+<span class="lineNum">      40 </span>            :         overlap = (aabbMin1.getX() &gt; point.getX() || aabbMax1.getX() &lt; point.getX()) ? false : overlap;
+<span class="lineNum">      41 </span>            :         overlap = (aabbMin1.getZ() &gt; point.getZ() || aabbMax1.getZ() &lt; point.getZ()) ? false : overlap;
+<span class="lineNum">      42 </span>            :         overlap = (aabbMin1.getY() &gt; point.getY() || aabbMax1.getY() &lt; point.getY()) ? false : overlap;
+<span class="lineNum">      43 </span>            :         return overlap;
+<span class="lineNum">      44 </span>            : }
+<span class="lineNum">      45 </span>            : 
+<a name="46"><span class="lineNum">      46 </span>            : </a>
+<span class="lineNum">      47 </span>            : /// conservative test for overlap between two aabbs
+<span class="lineNum">      48 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE bool TestAabbAgainstAabb2(const btVector3 &amp;aabbMin1, const btVector3 &amp;aabbMax1,</span>
+<span class="lineNum">      49 </span>            :                                                                 const btVector3 &amp;aabbMin2, const btVector3 &amp;aabbMax2)
+<span class="lineNum">      50 </span>            : {
+<span class="lineNum">      51 </span><span class="lineNoCov">          0 :         bool overlap = true;</span>
+<span class="lineNum">      52 </span><span class="lineNoCov">          0 :         overlap = (aabbMin1.getX() &gt; aabbMax2.getX() || aabbMax1.getX() &lt; aabbMin2.getX()) ? false : overlap;</span>
+<span class="lineNum">      53 </span><span class="lineNoCov">          0 :         overlap = (aabbMin1.getZ() &gt; aabbMax2.getZ() || aabbMax1.getZ() &lt; aabbMin2.getZ()) ? false : overlap;</span>
+<span class="lineNum">      54 </span><span class="lineNoCov">          0 :         overlap = (aabbMin1.getY() &gt; aabbMax2.getY() || aabbMax1.getY() &lt; aabbMin2.getY()) ? false : overlap;</span>
+<span class="lineNum">      55 </span><span class="lineNoCov">          0 :         return overlap;</span>
+<span class="lineNum">      56 </span>            : }
+<a name="57"><span class="lineNum">      57 </span>            : </a>
+<span class="lineNum">      58 </span>            : /// conservative test for overlap between triangle and aabb
+<span class="lineNum">      59 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE bool TestTriangleAgainstAabb2(const btVector3 *vertices,</span>
+<span class="lineNum">      60 </span>            :                                                                         const btVector3 &amp;aabbMin, const btVector3 &amp;aabbMax)
+<span class="lineNum">      61 </span>            : {
+<span class="lineNum">      62 </span><span class="lineNoCov">          0 :         const btVector3 &amp;p1 = vertices[0];</span>
+<span class="lineNum">      63 </span><span class="lineNoCov">          0 :         const btVector3 &amp;p2 = vertices[1];</span>
+<span class="lineNum">      64 </span><span class="lineNoCov">          0 :         const btVector3 &amp;p3 = vertices[2];</span>
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span><span class="lineNoCov">          0 :         if (btMin(btMin(p1[0], p2[0]), p3[0]) &gt; aabbMax[0]) return false;</span>
+<span class="lineNum">      67 </span><span class="lineNoCov">          0 :         if (btMax(btMax(p1[0], p2[0]), p3[0]) &lt; aabbMin[0]) return false;</span>
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span><span class="lineNoCov">          0 :         if (btMin(btMin(p1[2], p2[2]), p3[2]) &gt; aabbMax[2]) return false;</span>
+<span class="lineNum">      70 </span><span class="lineNoCov">          0 :         if (btMax(btMax(p1[2], p2[2]), p3[2]) &lt; aabbMin[2]) return false;</span>
+<span class="lineNum">      71 </span>            :   
+<span class="lineNum">      72 </span><span class="lineNoCov">          0 :         if (btMin(btMin(p1[1], p2[1]), p3[1]) &gt; aabbMax[1]) return false;</span>
+<span class="lineNum">      73 </span><span class="lineNoCov">          0 :         if (btMax(btMax(p1[1], p2[1]), p3[1]) &lt; aabbMin[1]) return false;</span>
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 :         return true;</span>
+<span class="lineNum">      75 </span>            : }
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            : SIMD_FORCE_INLINE int   btOutcode(const btVector3&amp; p,const btVector3&amp; halfExtent) 
+<span class="lineNum">      79 </span>            : {
+<span class="lineNum">      80 </span>            :         return (p.getX()  &lt; -halfExtent.getX() ? 0x01 : 0x0) |    
+<span class="lineNum">      81 </span>            :                    (p.getX() &gt;  halfExtent.getX() ? 0x08 : 0x0) |
+<span class="lineNum">      82 </span>            :                    (p.getY() &lt; -halfExtent.getY() ? 0x02 : 0x0) |    
+<span class="lineNum">      83 </span>            :                    (p.getY() &gt;  halfExtent.getY() ? 0x10 : 0x0) |
+<span class="lineNum">      84 </span>            :                    (p.getZ() &lt; -halfExtent.getZ() ? 0x4 : 0x0) |    
+<span class="lineNum">      85 </span>            :                    (p.getZ() &gt;  halfExtent.getZ() ? 0x20 : 0x0);
+<span class="lineNum">      86 </span>            : }
+<span class="lineNum">      87 </span>            : 
+<a name="88"><span class="lineNum">      88 </span>            : </a>
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span><span class="lineCov">         51 : SIMD_FORCE_INLINE bool btRayAabb2(const btVector3&amp; rayFrom,</span>
+<span class="lineNum">      91 </span>            :                                                                   const btVector3&amp; rayInvDirection,
+<span class="lineNum">      92 </span>            :                                                                   const unsigned int raySign[3],
+<span class="lineNum">      93 </span>            :                                                                   const btVector3 bounds[2],
+<span class="lineNum">      94 </span>            :                                                                   btScalar&amp; tmin,
+<span class="lineNum">      95 </span>            :                                                                   btScalar lambda_min,
+<span class="lineNum">      96 </span>            :                                                                   btScalar lambda_max)
+<span class="lineNum">      97 </span>            : {
+<span class="lineNum">      98 </span>            :         btScalar tmax, tymin, tymax, tzmin, tzmax;
+<span class="lineNum">      99 </span><span class="lineCov">         51 :         tmin = (bounds[raySign[0]].getX() - rayFrom.getX()) * rayInvDirection.getX();</span>
+<span class="lineNum">     100 </span><span class="lineCov">         51 :         tmax = (bounds[1-raySign[0]].getX() - rayFrom.getX()) * rayInvDirection.getX();</span>
+<span class="lineNum">     101 </span><span class="lineCov">         51 :         tymin = (bounds[raySign[1]].getY() - rayFrom.getY()) * rayInvDirection.getY();</span>
+<span class="lineNum">     102 </span><span class="lineCov">         51 :         tymax = (bounds[1-raySign[1]].getY() - rayFrom.getY()) * rayInvDirection.getY();</span>
+<span class="lineNum">     103 </span>            : 
+<span class="lineNum">     104 </span><span class="lineCov">         51 :         if ( (tmin &gt; tymax) || (tymin &gt; tmax) )</span>
+<span class="lineNum">     105 </span>            :                 return false;
+<span class="lineNum">     106 </span>            : 
+<span class="lineNum">     107 </span><span class="lineCov">         42 :         if (tymin &gt; tmin)</span>
+<span class="lineNum">     108 </span><span class="lineCov">         34 :                 tmin = tymin;</span>
+<span class="lineNum">     109 </span>            : 
+<span class="lineNum">     110 </span><span class="lineCov">         42 :         if (tymax &lt; tmax)</span>
+<span class="lineNum">     111 </span><span class="lineCov">         25 :                 tmax = tymax;</span>
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span><span class="lineCov">         42 :         tzmin = (bounds[raySign[2]].getZ() - rayFrom.getZ()) * rayInvDirection.getZ();</span>
+<span class="lineNum">     114 </span><span class="lineCov">         42 :         tzmax = (bounds[1-raySign[2]].getZ() - rayFrom.getZ()) * rayInvDirection.getZ();</span>
+<span class="lineNum">     115 </span>            : 
+<span class="lineNum">     116 </span><span class="lineCov">         42 :         if ( (tmin &gt; tzmax) || (tzmin &gt; tmax) )</span>
+<span class="lineNum">     117 </span>            :                 return false;
+<span class="lineNum">     118 </span><span class="lineCov">         30 :         if (tzmin &gt; tmin)</span>
+<span class="lineNum">     119 </span><span class="lineCov">         10 :                 tmin = tzmin;</span>
+<span class="lineNum">     120 </span><span class="lineCov">         30 :         if (tzmax &lt; tmax)</span>
+<span class="lineNum">     121 </span><span class="lineNoCov">          0 :                 tmax = tzmax;</span>
+<span class="lineNum">     122 </span><span class="lineCov">         30 :         return ( (tmin &lt; lambda_max) &amp;&amp; (tmax &gt; lambda_min) );</span>
+<span class="lineNum">     123 </span>            : }
+<span class="lineNum">     124 </span>            : 
+<span class="lineNum">     125 </span>            : SIMD_FORCE_INLINE bool btRayAabb(const btVector3&amp; rayFrom, 
+<span class="lineNum">     126 </span>            :                                                                  const btVector3&amp; rayTo, 
+<span class="lineNum">     127 </span>            :                                                                  const btVector3&amp; aabbMin, 
+<span class="lineNum">     128 </span>            :                                                                  const btVector3&amp; aabbMax,
+<span class="lineNum">     129 </span>            :                                           btScalar&amp; param, btVector3&amp; normal) 
+<span class="lineNum">     130 </span>            : {
+<span class="lineNum">     131 </span>            :         btVector3 aabbHalfExtent = (aabbMax-aabbMin)* btScalar(0.5);
+<span class="lineNum">     132 </span>            :         btVector3 aabbCenter = (aabbMax+aabbMin)* btScalar(0.5);
+<span class="lineNum">     133 </span>            :         btVector3       source = rayFrom - aabbCenter;
+<span class="lineNum">     134 </span>            :         btVector3       target = rayTo - aabbCenter;
+<span class="lineNum">     135 </span>            :         int     sourceOutcode = btOutcode(source,aabbHalfExtent);
+<span class="lineNum">     136 </span>            :         int targetOutcode = btOutcode(target,aabbHalfExtent);
+<span class="lineNum">     137 </span>            :         if ((sourceOutcode &amp; targetOutcode) == 0x0)
+<span class="lineNum">     138 </span>            :         {
+<span class="lineNum">     139 </span>            :                 btScalar lambda_enter = btScalar(0.0);
+<span class="lineNum">     140 </span>            :                 btScalar lambda_exit  = param;
+<span class="lineNum">     141 </span>            :                 btVector3 r = target - source;
+<span class="lineNum">     142 </span>            :                 int i;
+<span class="lineNum">     143 </span>            :                 btScalar        normSign = 1;
+<span class="lineNum">     144 </span>            :                 btVector3       hitNormal(0,0,0);
+<span class="lineNum">     145 </span>            :                 int bit=1;
+<span class="lineNum">     146 </span>            : 
+<span class="lineNum">     147 </span>            :                 for (int j=0;j&lt;2;j++)
+<span class="lineNum">     148 </span>            :                 {
+<span class="lineNum">     149 </span>            :                         for (i = 0; i != 3; ++i)
+<span class="lineNum">     150 </span>            :                         {
+<span class="lineNum">     151 </span>            :                                 if (sourceOutcode &amp; bit)
+<span class="lineNum">     152 </span>            :                                 {
+<span class="lineNum">     153 </span>            :                                         btScalar lambda = (-source[i] - aabbHalfExtent[i]*normSign) / r[i];
+<span class="lineNum">     154 </span>            :                                         if (lambda_enter &lt;= lambda)
+<span class="lineNum">     155 </span>            :                                         {
+<span class="lineNum">     156 </span>            :                                                 lambda_enter = lambda;
+<span class="lineNum">     157 </span>            :                                                 hitNormal.setValue(0,0,0);
+<span class="lineNum">     158 </span>            :                                                 hitNormal[i] = normSign;
+<span class="lineNum">     159 </span>            :                                         }
+<span class="lineNum">     160 </span>            :                                 }
+<span class="lineNum">     161 </span>            :                                 else if (targetOutcode &amp; bit) 
+<span class="lineNum">     162 </span>            :                                 {
+<span class="lineNum">     163 </span>            :                                         btScalar lambda = (-source[i] - aabbHalfExtent[i]*normSign) / r[i];
+<span class="lineNum">     164 </span>            :                                         btSetMin(lambda_exit, lambda);
+<span class="lineNum">     165 </span>            :                                 }
+<span class="lineNum">     166 </span>            :                                 bit&lt;&lt;=1;
+<span class="lineNum">     167 </span>            :                         }
+<span class="lineNum">     168 </span>            :                         normSign = btScalar(-1.);
+<span class="lineNum">     169 </span>            :                 }
+<span class="lineNum">     170 </span>            :                 if (lambda_enter &lt;= lambda_exit)
+<span class="lineNum">     171 </span>            :                 {
+<span class="lineNum">     172 </span>            :                         param = lambda_enter;
+<span class="lineNum">     173 </span>            :                         normal = hitNormal;
+<span class="lineNum">     174 </span>            :                         return true;
+<span class="lineNum">     175 </span>            :                 }
+<span class="lineNum">     176 </span>            :         }
+<span class="lineNum">     177 </span>            :         return false;
+<span class="lineNum">     178 </span>            : }
+<span class="lineNum">     179 </span>            : 
+<a name="180"><span class="lineNum">     180 </span>            : </a>
+<span class="lineNum">     181 </span>            : 
+<span class="lineNum">     182 </span><span class="lineCov">     163355 : SIMD_FORCE_INLINE       void btTransformAabb(const btVector3&amp; halfExtents, btScalar margin,const btTransform&amp; t,btVector3&amp; aabbMinOut,btVector3&amp; aabbMaxOut)</span>
+<span class="lineNum">     183 </span>            : {
+<span class="lineNum">     184 </span><span class="lineCov">     326710 :         btVector3 halfExtentsWithMargin = halfExtents+btVector3(margin,margin,margin);</span>
+<span class="lineNum">     185 </span><span class="lineCov">     163355 :         btMatrix3x3 abs_b = t.getBasis().absolute();  </span>
+<span class="lineNum">     186 </span><span class="lineCov">     163355 :         btVector3 center = t.getOrigin();</span>
+<span class="lineNum">     187 </span><span class="lineCov">     163355 :     btVector3 extent = halfExtentsWithMargin.dot3( abs_b[0], abs_b[1], abs_b[2] );</span>
+<span class="lineNum">     188 </span><span class="lineCov">     326710 :         aabbMinOut = center - extent;</span>
+<span class="lineNum">     189 </span><span class="lineCov">     326710 :         aabbMaxOut = center + extent;</span>
+<span class="lineNum">     190 </span><span class="lineCov">     163355 : }</span>
+<a name="191"><span class="lineNum">     191 </span>            : </a>
+<span class="lineNum">     192 </span>            : 
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE       void btTransformAabb(const btVector3&amp; localAabbMin,const btVector3&amp; localAabbMax, btScalar margin,const btTransform&amp; trans,btVector3&amp; aabbMinOut,btVector3&amp; aabbMaxOut)</span>
+<span class="lineNum">     194 </span>            : {
+<span class="lineNum">     195 </span>            :                 btAssert(localAabbMin.getX() &lt;= localAabbMax.getX());
+<span class="lineNum">     196 </span>            :                 btAssert(localAabbMin.getY() &lt;= localAabbMax.getY());
+<span class="lineNum">     197 </span>            :                 btAssert(localAabbMin.getZ() &lt;= localAabbMax.getZ());
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :                 btVector3 localHalfExtents = btScalar(0.5)*(localAabbMax-localAabbMin);</span>
+<span class="lineNum">     199 </span><span class="lineNoCov">          0 :                 localHalfExtents+=btVector3(margin,margin,margin);</span>
+<span class="lineNum">     200 </span>            : 
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 :                 btVector3 localCenter = btScalar(0.5)*(localAabbMax+localAabbMin);</span>
+<span class="lineNum">     202 </span><span class="lineNoCov">          0 :                 btMatrix3x3 abs_b = trans.getBasis().absolute();  </span>
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :                 btVector3 center = trans(localCenter);</span>
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :         btVector3 extent = localHalfExtents.dot3( abs_b[0], abs_b[1], abs_b[2] );</span>
+<span class="lineNum">     205 </span><span class="lineNoCov">          0 :                 aabbMinOut = center-extent;</span>
+<span class="lineNum">     206 </span><span class="lineNoCov">          0 :                 aabbMaxOut = center+extent;</span>
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     208 </span>            : 
+<span class="lineNum">     209 </span>            : #define USE_BANCHLESS 1
+<span class="lineNum">     210 </span>            : #ifdef USE_BANCHLESS
+<span class="lineNum">     211 </span>            :         //This block replaces the block below and uses no branches, and replaces the 8 bit return with a 32 bit return for improved performance (~3x on XBox 360)
+<span class="lineNum">     212 </span>            :         SIMD_FORCE_INLINE unsigned testQuantizedAabbAgainstQuantizedAabb(const unsigned short int* aabbMin1,const unsigned short int* aabbMax1,const unsigned short int* aabbMin2,const unsigned short int* aabbMax2)
+<span class="lineNum">     213 </span>            :         {               
+<span class="lineNum">     214 </span><span class="lineNoCov">          0 :                 return static_cast&lt;unsigned int&gt;(btSelect((unsigned)((aabbMin1[0] &lt;= aabbMax2[0]) &amp; (aabbMax1[0] &gt;= aabbMin2[0])</span>
+<span class="lineNum">     215 </span><span class="lineNoCov">          0 :                         &amp; (aabbMin1[2] &lt;= aabbMax2[2]) &amp; (aabbMax1[2] &gt;= aabbMin2[2])</span>
+<span class="lineNum">     216 </span><span class="lineNoCov">          0 :                         &amp; (aabbMin1[1] &lt;= aabbMax2[1]) &amp; (aabbMax1[1] &gt;= aabbMin2[1])),</span>
+<span class="lineNum">     217 </span>            :                         1, 0));
+<span class="lineNum">     218 </span>            :         }
+<span class="lineNum">     219 </span>            : #else
+<span class="lineNum">     220 </span>            :         SIMD_FORCE_INLINE bool testQuantizedAabbAgainstQuantizedAabb(const unsigned short int* aabbMin1,const unsigned short int* aabbMax1,const unsigned short int* aabbMin2,const unsigned short int* aabbMax2)
+<span class="lineNum">     221 </span>            :         {
+<span class="lineNum">     222 </span>            :                 bool overlap = true;
+<span class="lineNum">     223 </span>            :                 overlap = (aabbMin1[0] &gt; aabbMax2[0] || aabbMax1[0] &lt; aabbMin2[0]) ? false : overlap;
+<span class="lineNum">     224 </span>            :                 overlap = (aabbMin1[2] &gt; aabbMax2[2] || aabbMax1[2] &lt; aabbMin2[2]) ? false : overlap;
+<span class="lineNum">     225 </span>            :                 overlap = (aabbMin1[1] &gt; aabbMax2[1] || aabbMax1[1] &lt; aabbMin2[1]) ? false : overlap;
+<span class="lineNum">     226 </span>            :                 return overlap;
+<span class="lineNum">     227 </span>            :         }
+<span class="lineNum">     228 </span>            : #endif //USE_BANCHLESS
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span>            : #endif //BT_AABB_UTIL2
+<span class="lineNum">     231 </span>            : 
+<span class="lineNum">     232 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

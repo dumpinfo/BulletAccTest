@@ -1,0 +1,234 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - /mnt/k/Bullet3Acc/BulletMinimal/BulletExample/Chapter8/BulletOpenGLApplication.h</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../../index.html">top level</a> - <a href="index.html">mnt/k/Bullet3Acc/BulletMinimal/BulletExample/Chapter8</a> - BulletOpenGLApplication.h<span style="font-size: 80%;"> (source / <a href="BulletOpenGLApplication.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntryLo">66.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntryLo">66.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : #ifndef _BULLETOPENGLAPP_H_</a>
+<span class="lineNum">       2 </span>            : #define _BULLETOPENGLAPP_H_
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : ////#include &lt;Windows.h&gt;
+<span class="lineNum">       5 </span>            : #include &lt;GL/gl.h&gt;
+<span class="lineNum">       6 </span>            : #include &lt;GL/freeglut.h&gt;
+<span class="lineNum">       7 </span>            : 
+<span class="lineNum">       8 </span>            : #include &quot;BulletDynamics/Dynamics/btDynamicsWorld.h&quot;
+<span class="lineNum">       9 </span>            : // includes for convex hulls
+<span class="lineNum">      10 </span>            : #include &quot;BulletCollision/CollisionShapes/btConvexPolyhedron.h&quot;
+<span class="lineNum">      11 </span>            : #include &quot;BulletCollision/CollisionShapes/btShapeHull.h&quot;
+<span class="lineNum">      12 </span>            : 
+<span class="lineNum">      13 </span>            : // include our custom Motion State object
+<span class="lineNum">      14 </span>            : #include &quot;OpenGLMotionState.h&quot;
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : // Our custom debug renderer
+<span class="lineNum">      17 </span>            : #include &quot;DebugDrawer.h&quot;
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : #include &quot;GameObject.h&quot;
+<span class="lineNum">      20 </span>            : #include &lt;vector&gt;
+<span class="lineNum">      21 </span>            : #include &lt;set&gt;
+<span class="lineNum">      22 </span>            : #include &lt;iterator&gt;
+<span class="lineNum">      23 </span>            : #include &lt;algorithm&gt;
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : // a convenient typedef to reference an STL vector of GameObjects
+<span class="lineNum">      26 </span>            : typedef std::vector&lt;GameObject*&gt; GameObjects;
+<span class="lineNum">      27 </span>            : 
+<span class="lineNum">      28 </span>            : // convenient typedefs for collision events
+<span class="lineNum">      29 </span>            : typedef std::pair&lt;const btRigidBody*, const btRigidBody*&gt; CollisionPair;
+<span class="lineNum">      30 </span>            : typedef std::set&lt;CollisionPair&gt; CollisionPairs;
+<a name="31"><span class="lineNum">      31 </span>            : </a>
+<span class="lineNum">      32 </span>            : // struct to store our raycasting results
+<span class="lineNum">      33 </span><span class="lineCov">          3 : struct RayResult {</span>
+<span class="lineNum">      34 </span>            :         btRigidBody* pBody;
+<span class="lineNum">      35 </span>            :         btVector3 hitPoint;
+<span class="lineNum">      36 </span>            : };
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : /*ADD*/ // Collision groups for different types of objects. Each value
+<span class="lineNum">      39 </span>            : /*ADD*/ // is represented by a single bit
+<span class="lineNum">      40 </span>            : /*ADD*/ enum CollisionGroups {
+<span class="lineNum">      41 </span>            : /*ADD*/         COLGROUP_NONE  = 0,
+<span class="lineNum">      42 </span>            : /*ADD*/         COLGROUP_STATIC = 1 &lt;&lt; 0,
+<span class="lineNum">      43 </span>            : /*ADD*/         COLGROUP_BOX  = 1 &lt;&lt; 1,
+<span class="lineNum">      44 </span>            : /*ADD*/         COLGROUP_SPHERE = 1 &lt;&lt; 2
+<span class="lineNum">      45 </span>            : /*ADD*/ };
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span>            : class BulletOpenGLApplication {
+<span class="lineNum">      48 </span>            : public:
+<span class="lineNum">      49 </span>            :         BulletOpenGLApplication();
+<span class="lineNum">      50 </span>            :         ~BulletOpenGLApplication();
+<span class="lineNum">      51 </span>            :         void Initialize();
+<span class="lineNum">      52 </span>            :         // FreeGLUT callbacks //
+<span class="lineNum">      53 </span>            :         virtual void Keyboard(unsigned char key, int x, int y);
+<span class="lineNum">      54 </span>            :         virtual void KeyboardUp(unsigned char key, int x, int y);
+<span class="lineNum">      55 </span>            :         virtual void Special(int key, int x, int y);
+<span class="lineNum">      56 </span>            :         virtual void SpecialUp(int key, int x, int y);
+<span class="lineNum">      57 </span>            :         virtual void Reshape(int w, int h);
+<span class="lineNum">      58 </span>            :         virtual void Idle();
+<span class="lineNum">      59 </span>            :         virtual void Mouse(int button, int state, int x, int y);
+<span class="lineNum">      60 </span>            :         virtual void PassiveMotion(int x, int y);
+<span class="lineNum">      61 </span>            :         virtual void Motion(int x, int y);
+<span class="lineNum">      62 </span>            :         virtual void Display();
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span>            :         // rendering. Can be overrideen by derived classes
+<span class="lineNum">      65 </span>            :         virtual void RenderScene();
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span>            :         // scene updating. Can be overridden by derived classes
+<span class="lineNum">      68 </span>            :         virtual void UpdateScene(float dt);
+<a name="69"><span class="lineNum">      69 </span>            : </a>
+<a name="70"><span class="lineNum">      70 </span>            :         // physics functions. Can be overrideen by derived classes (like BasicDemo)</a>
+<span class="lineNum">      71 </span><span class="lineNoCov">          0 :         virtual void InitializePhysics() {};</span>
+<span class="lineNum">      72 </span><span class="lineCov">          1 :         virtual void ShutdownPhysics() {};</span>
+<span class="lineNum">      73 </span>            : 
+<span class="lineNum">      74 </span>            :         // camera functions
+<span class="lineNum">      75 </span>            :         void UpdateCamera();
+<span class="lineNum">      76 </span>            :         void RotateCamera(float &amp;angle, float value);
+<span class="lineNum">      77 </span>            :         void ZoomCamera(float distance);
+<span class="lineNum">      78 </span>            : 
+<span class="lineNum">      79 </span>            :         // drawing functions
+<span class="lineNum">      80 </span>            :         void DrawBox(const btVector3 &amp;halfSize);
+<span class="lineNum">      81 </span>            :         void DrawSphere(const btScalar &amp;radius);
+<span class="lineNum">      82 </span>            :         void DrawCylinder(const btScalar &amp;radius, const btScalar &amp;halfHeight);
+<span class="lineNum">      83 </span>            :         void DrawConvexHull(const btCollisionShape* shape);
+<span class="lineNum">      84 </span>            :         void DrawShape(btScalar* transform, const btCollisionShape* pShape, const btVector3 &amp;color);
+<span class="lineNum">      85 </span>            : 
+<span class="lineNum">      86 </span>            :         // object functions
+<span class="lineNum">      87 </span>            :         GameObject* CreateGameObject(btCollisionShape* pShape, 
+<span class="lineNum">      88 </span>            :                         const float &amp;mass, 
+<span class="lineNum">      89 </span>            :                         const btVector3 &amp;color = btVector3(1.0f,1.0f,1.0f), 
+<span class="lineNum">      90 </span>            :                         const btVector3 &amp;initialPosition = btVector3(0.0f,0.0f,0.0f), 
+<span class="lineNum">      91 </span>            : /*ADD*/                 short int group = -1,
+<span class="lineNum">      92 </span>            : /*ADD*/                 short int mask = -1,
+<span class="lineNum">      93 </span>            :                         const btQuaternion &amp;initialRotation = btQuaternion(0,0,1,1));
+<span class="lineNum">      94 </span>            : 
+<span class="lineNum">      95 </span>            :         void ShootBox(const btVector3 &amp;direction);
+<span class="lineNum">      96 </span>            :         void DestroyGameObject(btRigidBody* pBody);
+<span class="lineNum">      97 </span>            :         GameObject* FindGameObject(btRigidBody* pBody);
+<span class="lineNum">      98 </span>            : 
+<span class="lineNum">      99 </span>            :         // picking functions
+<span class="lineNum">     100 </span>            :         btVector3 GetPickingRay(int x, int y);
+<span class="lineNum">     101 </span>            :         bool Raycast(const btVector3 &amp;startPosition, const btVector3 &amp;direction, RayResult &amp;output, bool includeStatic = false);
+<span class="lineNum">     102 </span>            :         
+<span class="lineNum">     103 </span>            :         // constraint functions
+<span class="lineNum">     104 </span>            :         void CreatePickingConstraint(int x, int y);
+<span class="lineNum">     105 </span>            :         void RemovePickingConstraint();
+<span class="lineNum">     106 </span>            : 
+<span class="lineNum">     107 </span>            :         // collision event functions
+<span class="lineNum">     108 </span>            :         void CheckForCollisionEvents();
+<span class="lineNum">     109 </span>            :         virtual void CollisionEvent(btRigidBody* pBody0, btRigidBody * pBody1);
+<span class="lineNum">     110 </span>            :         virtual void SeparationEvent(btRigidBody * pBody0, btRigidBody * pBody1);
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span>            : protected:
+<span class="lineNum">     113 </span>            :         // camera control
+<span class="lineNum">     114 </span>            :         btVector3 m_cameraPosition; // the camera's current position
+<span class="lineNum">     115 </span>            :         btVector3 m_cameraTarget;        // the camera's lookAt target
+<span class="lineNum">     116 </span>            :         float m_nearPlane; // minimum distance the camera will render
+<span class="lineNum">     117 </span>            :         float m_farPlane; // farthest distance the camera will render
+<span class="lineNum">     118 </span>            :         btVector3 m_upVector; // keeps the camera rotated correctly
+<span class="lineNum">     119 </span>            :         float m_cameraDistance; // distance from the camera to its target
+<span class="lineNum">     120 </span>            :         float m_cameraPitch; // pitch of the camera 
+<span class="lineNum">     121 </span>            :         float m_cameraYaw; // yaw of the camera
+<span class="lineNum">     122 </span>            : 
+<span class="lineNum">     123 </span>            :         int m_screenWidth;
+<span class="lineNum">     124 </span>            :         int m_screenHeight;
+<span class="lineNum">     125 </span>            : 
+<span class="lineNum">     126 </span>            :         // core Bullet components
+<span class="lineNum">     127 </span>            :         btBroadphaseInterface* m_pBroadphase;
+<span class="lineNum">     128 </span>            :         btCollisionConfiguration* m_pCollisionConfiguration;
+<span class="lineNum">     129 </span>            :         btCollisionDispatcher* m_pDispatcher;
+<span class="lineNum">     130 </span>            :         btConstraintSolver* m_pSolver;
+<span class="lineNum">     131 </span>            :         btDynamicsWorld* m_pWorld;
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span>            :         // a simple clock for counting time
+<span class="lineNum">     134 </span>            :         btClock m_clock;
+<span class="lineNum">     135 </span>            : 
+<span class="lineNum">     136 </span>            :         // an array of our game objects
+<span class="lineNum">     137 </span>            :         GameObjects m_objects;
+<span class="lineNum">     138 </span>            : 
+<span class="lineNum">     139 </span>            :         // debug renderer
+<span class="lineNum">     140 </span>            :         DebugDrawer* m_pDebugDrawer;
+<span class="lineNum">     141 </span>            : 
+<span class="lineNum">     142 </span>            :         // constraint variables
+<span class="lineNum">     143 </span>            :         btRigidBody* m_pPickedBody;                             // the body we picked up
+<span class="lineNum">     144 </span>            :         btTypedConstraint*  m_pPickConstraint;  // the constraint the body is attached to
+<span class="lineNum">     145 </span>            :         btScalar m_oldPickingDist;                              // the distance from the camera to the hit point (so we can move the object up, down, left and right from our view)
+<span class="lineNum">     146 </span>            : 
+<span class="lineNum">     147 </span>            :         // collision event variables
+<span class="lineNum">     148 </span>            :         CollisionPairs m_pairsLastUpdate;
+<span class="lineNum">     149 </span>            : };
+<span class="lineNum">     150 </span>            : #endif
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

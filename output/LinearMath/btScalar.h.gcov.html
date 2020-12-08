@@ -1,0 +1,745 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - LinearMath/btScalar.h</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">LinearMath</a> - btScalar.h<span style="font-size: 80%;"> (source / <a href="btScalar.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">27</td>
+            <td class="headerCovTableEntry">52</td>
+            <td class="headerCovTableEntryLo">51.9 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntryMed">85.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Copyright (c) 2003-2009 Erwin Coumans  http://bullet.googlecode.com
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       5 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       6 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       7 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       8 </span>            : subject to the following restrictions:
+<span class="lineNum">       9 </span>            : 
+<span class="lineNum">      10 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      11 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      12 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      13 </span>            : */
+<span class="lineNum">      14 </span>            : 
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : #ifndef BT_SCALAR_H
+<span class="lineNum">      18 </span>            : #define BT_SCALAR_H
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : #ifdef BT_MANAGED_CODE
+<span class="lineNum">      21 </span>            : //Aligned data types not supported in managed code
+<span class="lineNum">      22 </span>            : #pragma unmanaged
+<span class="lineNum">      23 </span>            : #endif
+<span class="lineNum">      24 </span>            : 
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span>            : #include &lt;math.h&gt;
+<span class="lineNum">      27 </span>            : #include &lt;stdlib.h&gt;//size_t for MSVC 6.0
+<span class="lineNum">      28 </span>            : #include &lt;float.h&gt;
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span>            : /* SVN $Revision$ on $Date$ from http://bullet.googlecode.com*/
+<span class="lineNum">      31 </span>            : #define BT_BULLET_VERSION 281
+<span class="lineNum">      32 </span>            : 
+<span class="lineNum">      33 </span>            : inline int      btGetVersion()
+<span class="lineNum">      34 </span>            : {
+<span class="lineNum">      35 </span>            :         return BT_BULLET_VERSION;
+<span class="lineNum">      36 </span>            : }
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : #if defined(DEBUG) || defined (_DEBUG)
+<span class="lineNum">      39 </span>            : #define BT_DEBUG
+<span class="lineNum">      40 </span>            : #endif
+<span class="lineNum">      41 </span>            : 
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            : #ifdef _WIN32
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            :                 #if defined(__MINGW32__) || defined(__CYGWIN__) || (defined (_MSC_VER) &amp;&amp; _MSC_VER &lt; 1300)
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span>            :                         #define SIMD_FORCE_INLINE inline
+<span class="lineNum">      48 </span>            :                         #define ATTRIBUTE_ALIGNED16(a) a
+<span class="lineNum">      49 </span>            :                         #define ATTRIBUTE_ALIGNED64(a) a
+<span class="lineNum">      50 </span>            :                         #define ATTRIBUTE_ALIGNED128(a) a
+<span class="lineNum">      51 </span>            :                 #else
+<span class="lineNum">      52 </span>            :                         //#define BT_HAS_ALIGNED_ALLOCATOR
+<span class="lineNum">      53 </span>            :                         #pragma warning(disable : 4324) // disable padding warning
+<span class="lineNum">      54 </span>            : //                      #pragma warning(disable:4530) // Disable the exception disable but used in MSCV Stl warning.
+<span class="lineNum">      55 </span>            : //                      #pragma warning(disable:4996) //Turn off warnings about deprecated C routines
+<span class="lineNum">      56 </span>            : //                      #pragma warning(disable:4786) // Disable the &quot;debug name too long&quot; warning
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span>            :                         #define SIMD_FORCE_INLINE __forceinline
+<span class="lineNum">      59 </span>            :                         #define ATTRIBUTE_ALIGNED16(a) __declspec(align(16)) a
+<span class="lineNum">      60 </span>            :                         #define ATTRIBUTE_ALIGNED64(a) __declspec(align(64)) a
+<span class="lineNum">      61 </span>            :                         #define ATTRIBUTE_ALIGNED128(a) __declspec (align(128)) a
+<span class="lineNum">      62 </span>            :                 #ifdef _XBOX
+<span class="lineNum">      63 </span>            :                         #define BT_USE_VMX128
+<span class="lineNum">      64 </span>            : 
+<span class="lineNum">      65 </span>            :                         #include &lt;ppcintrinsics.h&gt;
+<span class="lineNum">      66 </span>            :                         #define BT_HAVE_NATIVE_FSEL
+<span class="lineNum">      67 </span>            :                         #define btFsel(a,b,c) __fsel((a),(b),(c))
+<span class="lineNum">      68 </span>            :                 #else
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span>            : #if (defined (_WIN32) &amp;&amp; (_MSC_VER) &amp;&amp; _MSC_VER &gt;= 1400) &amp;&amp; (!defined (BT_USE_DOUBLE_PRECISION))
+<span class="lineNum">      71 </span>            :                         #define BT_USE_SSE
+<span class="lineNum">      72 </span>            :                         #ifdef BT_USE_SSE
+<span class="lineNum">      73 </span>            :                         //BT_USE_SSE_IN_API is disabled under Windows by default, because 
+<span class="lineNum">      74 </span>            :                         //it makes it harder to integrate Bullet into your application under Windows 
+<span class="lineNum">      75 </span>            :                         //(structured embedding Bullet structs/classes need to be 16-byte aligned)
+<span class="lineNum">      76 </span>            :                         //with relatively little performance gain
+<span class="lineNum">      77 </span>            :                         //If you are not embedded Bullet data in your classes, or make sure that you align those classes on 16-byte boundaries
+<span class="lineNum">      78 </span>            :                         //you can manually enable this line or set it in the build system for a bit of performance gain (a few percent, dependent on usage)
+<span class="lineNum">      79 </span>            :                         //#define BT_USE_SSE_IN_API
+<span class="lineNum">      80 </span>            :                         #endif //BT_USE_SSE
+<span class="lineNum">      81 </span>            :                         #include &lt;emmintrin.h&gt;
+<span class="lineNum">      82 </span>            : #endif
+<span class="lineNum">      83 </span>            : 
+<span class="lineNum">      84 </span>            :                 #endif//_XBOX
+<span class="lineNum">      85 </span>            : 
+<span class="lineNum">      86 </span>            :                 #endif //__MINGW32__
+<span class="lineNum">      87 </span>            : 
+<span class="lineNum">      88 </span>            : #ifdef BT_DEBUG
+<span class="lineNum">      89 </span>            :         #ifdef _MSC_VER
+<span class="lineNum">      90 </span>            :                 #include &lt;stdio.h&gt;
+<span class="lineNum">      91 </span>            :                 #define btAssert(x) { if(!(x)){printf(&quot;Assert &quot;__FILE__ &quot;:%u (&quot;#x&quot;)\n&quot;, __LINE__);__debugbreak(); }}
+<span class="lineNum">      92 </span>            :         #else//_MSC_VER
+<span class="lineNum">      93 </span>            :                 #include &lt;assert.h&gt;
+<span class="lineNum">      94 </span>            :                 #define btAssert assert
+<span class="lineNum">      95 </span>            :         #endif//_MSC_VER
+<span class="lineNum">      96 </span>            : #else
+<span class="lineNum">      97 </span>            :                 #define btAssert(x)
+<span class="lineNum">      98 </span>            : #endif
+<span class="lineNum">      99 </span>            :                 //btFullAssert is optional, slows down a lot
+<span class="lineNum">     100 </span>            :                 #define btFullAssert(x)
+<span class="lineNum">     101 </span>            : 
+<span class="lineNum">     102 </span>            :                 #define btLikely(_c)  _c
+<span class="lineNum">     103 </span>            :                 #define btUnlikely(_c) _c
+<span class="lineNum">     104 </span>            : 
+<span class="lineNum">     105 </span>            : #else
+<span class="lineNum">     106 </span>            :         
+<span class="lineNum">     107 </span>            : #if defined     (__CELLOS_LV2__)
+<span class="lineNum">     108 </span>            :                 #define SIMD_FORCE_INLINE inline __attribute__((always_inline))
+<span class="lineNum">     109 </span>            :                 #define ATTRIBUTE_ALIGNED16(a) a __attribute__ ((aligned (16)))
+<span class="lineNum">     110 </span>            :                 #define ATTRIBUTE_ALIGNED64(a) a __attribute__ ((aligned (64)))
+<span class="lineNum">     111 </span>            :                 #define ATTRIBUTE_ALIGNED128(a) a __attribute__ ((aligned (128)))
+<span class="lineNum">     112 </span>            :                 #ifndef assert
+<span class="lineNum">     113 </span>            :                 #include &lt;assert.h&gt;
+<span class="lineNum">     114 </span>            :                 #endif
+<span class="lineNum">     115 </span>            : #ifdef BT_DEBUG
+<span class="lineNum">     116 </span>            : #ifdef __SPU__
+<span class="lineNum">     117 </span>            : #include &lt;spu_printf.h&gt;
+<span class="lineNum">     118 </span>            : #define printf spu_printf
+<span class="lineNum">     119 </span>            :         #define btAssert(x) {if(!(x)){printf(&quot;Assert &quot;__FILE__ &quot;:%u (&quot;#x&quot;)\n&quot;, __LINE__);spu_hcmpeq(0,0);}}
+<span class="lineNum">     120 </span>            : #else
+<span class="lineNum">     121 </span>            :         #define btAssert assert
+<span class="lineNum">     122 </span>            : #endif
+<span class="lineNum">     123 </span>            :         
+<span class="lineNum">     124 </span>            : #else
+<span class="lineNum">     125 </span>            :                 #define btAssert(x)
+<span class="lineNum">     126 </span>            : #endif
+<span class="lineNum">     127 </span>            :                 //btFullAssert is optional, slows down a lot
+<span class="lineNum">     128 </span>            :                 #define btFullAssert(x)
+<span class="lineNum">     129 </span>            : 
+<span class="lineNum">     130 </span>            :                 #define btLikely(_c)  _c
+<span class="lineNum">     131 </span>            :                 #define btUnlikely(_c) _c
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span>            : #else
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span>            : #ifdef USE_LIBSPE2
+<span class="lineNum">     136 </span>            : 
+<span class="lineNum">     137 </span>            :                 #define SIMD_FORCE_INLINE __inline
+<span class="lineNum">     138 </span>            :                 #define ATTRIBUTE_ALIGNED16(a) a __attribute__ ((aligned (16)))
+<span class="lineNum">     139 </span>            :                 #define ATTRIBUTE_ALIGNED64(a) a __attribute__ ((aligned (64)))
+<span class="lineNum">     140 </span>            :                 #define ATTRIBUTE_ALIGNED128(a) a __attribute__ ((aligned (128)))
+<span class="lineNum">     141 </span>            :                 #ifndef assert
+<span class="lineNum">     142 </span>            :                 #include &lt;assert.h&gt;
+<span class="lineNum">     143 </span>            :                 #endif
+<span class="lineNum">     144 </span>            : #ifdef BT_DEBUG
+<span class="lineNum">     145 </span>            :                 #define btAssert assert
+<span class="lineNum">     146 </span>            : #else
+<span class="lineNum">     147 </span>            :                 #define btAssert(x)
+<span class="lineNum">     148 </span>            : #endif
+<span class="lineNum">     149 </span>            :                 //btFullAssert is optional, slows down a lot
+<span class="lineNum">     150 </span>            :                 #define btFullAssert(x)
+<span class="lineNum">     151 </span>            : 
+<span class="lineNum">     152 </span>            : 
+<span class="lineNum">     153 </span>            :                 #define btLikely(_c)   __builtin_expect((_c), 1)
+<span class="lineNum">     154 </span>            :                 #define btUnlikely(_c) __builtin_expect((_c), 0)
+<span class="lineNum">     155 </span>            :                 
+<span class="lineNum">     156 </span>            : 
+<span class="lineNum">     157 </span>            : #else
+<span class="lineNum">     158 </span>            :         //non-windows systems
+<span class="lineNum">     159 </span>            : 
+<span class="lineNum">     160 </span>            : #if (defined (__APPLE__) &amp;&amp; (!defined (BT_USE_DOUBLE_PRECISION)))
+<span class="lineNum">     161 </span>            :     #if defined (__i386__) || defined (__x86_64__)
+<span class="lineNum">     162 </span>            :         #define BT_USE_SSE
+<span class="lineNum">     163 </span>            :                 //BT_USE_SSE_IN_API is enabled on Mac OSX by default, because memory is automatically aligned on 16-byte boundaries
+<span class="lineNum">     164 </span>            :                 //if apps run into issues, we will disable the next line
+<span class="lineNum">     165 </span>            :                 #define BT_USE_SSE_IN_API
+<span class="lineNum">     166 </span>            :         #ifdef BT_USE_SSE
+<span class="lineNum">     167 </span>            :             // include appropriate SSE level
+<span class="lineNum">     168 </span>            :             #if defined (__SSE4_1__)
+<span class="lineNum">     169 </span>            :                 #include &lt;smmintrin.h&gt;
+<span class="lineNum">     170 </span>            :             #elif defined (__SSSE3__)
+<span class="lineNum">     171 </span>            :                 #include &lt;tmmintrin.h&gt;
+<span class="lineNum">     172 </span>            :             #elif defined (__SSE3__)
+<span class="lineNum">     173 </span>            :                 #include &lt;pmmintrin.h&gt;
+<span class="lineNum">     174 </span>            :             #else
+<span class="lineNum">     175 </span>            :                 #include &lt;emmintrin.h&gt;
+<span class="lineNum">     176 </span>            :             #endif
+<span class="lineNum">     177 </span>            :         #endif //BT_USE_SSE
+<span class="lineNum">     178 </span>            :     #elif defined( __armv7__ )
+<span class="lineNum">     179 </span>            :         #ifdef __clang__
+<span class="lineNum">     180 </span>            :             #define BT_USE_NEON 1
+<span class="lineNum">     181 </span>            : 
+<span class="lineNum">     182 </span>            :             #if defined BT_USE_NEON &amp;&amp; defined (__clang__)
+<span class="lineNum">     183 </span>            :                 #include &lt;arm_neon.h&gt;
+<span class="lineNum">     184 </span>            :             #endif//BT_USE_NEON
+<span class="lineNum">     185 </span>            :        #endif //__clang__
+<span class="lineNum">     186 </span>            :     #endif//__arm__
+<span class="lineNum">     187 </span>            : 
+<span class="lineNum">     188 </span>            :         #define SIMD_FORCE_INLINE inline __attribute__ ((always_inline))
+<span class="lineNum">     189 </span>            : ///@todo: check out alignment methods for other platforms/compilers
+<span class="lineNum">     190 </span>            :         #define ATTRIBUTE_ALIGNED16(a) a __attribute__ ((aligned (16)))
+<span class="lineNum">     191 </span>            :         #define ATTRIBUTE_ALIGNED64(a) a __attribute__ ((aligned (64)))
+<span class="lineNum">     192 </span>            :         #define ATTRIBUTE_ALIGNED128(a) a __attribute__ ((aligned (128)))
+<span class="lineNum">     193 </span>            :         #ifndef assert
+<span class="lineNum">     194 </span>            :         #include &lt;assert.h&gt;
+<span class="lineNum">     195 </span>            :         #endif
+<span class="lineNum">     196 </span>            : 
+<span class="lineNum">     197 </span>            :         #if defined(DEBUG) || defined (_DEBUG)
+<span class="lineNum">     198 </span>            :          #if defined (__i386__) || defined (__x86_64__)
+<span class="lineNum">     199 </span>            :         #include &lt;stdio.h&gt;
+<span class="lineNum">     200 </span>            :          #define btAssert(x)\
+<span class="lineNum">     201 </span>            :         {\
+<span class="lineNum">     202 </span>            :         if(!(x))\
+<span class="lineNum">     203 </span>            :         {\
+<span class="lineNum">     204 </span>            :                 printf(&quot;Assert %s in line %d, file %s\n&quot;,#x, __LINE__, __FILE__);\
+<span class="lineNum">     205 </span>            :                 asm volatile (&quot;int3&quot;);\
+<span class="lineNum">     206 </span>            :         }\
+<span class="lineNum">     207 </span>            :         }
+<span class="lineNum">     208 </span>            :         #else//defined (__i386__) || defined (__x86_64__)
+<span class="lineNum">     209 </span>            :                 #define btAssert assert
+<span class="lineNum">     210 </span>            :         #end//defined (__i386__) || defined (__x86_64__)
+<span class="lineNum">     211 </span>            :         #endif
+<span class="lineNum">     212 </span>            :         #else//defined(DEBUG) || defined (_DEBUG)
+<span class="lineNum">     213 </span>            :                 #define btAssert(x)
+<span class="lineNum">     214 </span>            :         #endif//defined(DEBUG) || defined (_DEBUG)
+<span class="lineNum">     215 </span>            : 
+<span class="lineNum">     216 </span>            :         //btFullAssert is optional, slows down a lot
+<span class="lineNum">     217 </span>            :         #define btFullAssert(x)
+<span class="lineNum">     218 </span>            :         #define btLikely(_c)  _c
+<span class="lineNum">     219 </span>            :         #define btUnlikely(_c) _c
+<span class="lineNum">     220 </span>            : 
+<span class="lineNum">     221 </span>            : #else
+<span class="lineNum">     222 </span>            : 
+<span class="lineNum">     223 </span>            :                 #define SIMD_FORCE_INLINE inline
+<span class="lineNum">     224 </span>            :                 ///@todo: check out alignment methods for other platforms/compilers
+<span class="lineNum">     225 </span>            :                 ///#define ATTRIBUTE_ALIGNED16(a) a __attribute__ ((aligned (16)))
+<span class="lineNum">     226 </span>            :                 ///#define ATTRIBUTE_ALIGNED64(a) a __attribute__ ((aligned (64)))
+<span class="lineNum">     227 </span>            :                 ///#define ATTRIBUTE_ALIGNED128(a) a __attribute__ ((aligned (128)))
+<span class="lineNum">     228 </span>            :                 #define ATTRIBUTE_ALIGNED16(a) a
+<span class="lineNum">     229 </span>            :                 #define ATTRIBUTE_ALIGNED64(a) a
+<span class="lineNum">     230 </span>            :                 #define ATTRIBUTE_ALIGNED128(a) a
+<span class="lineNum">     231 </span>            :                 #ifndef assert
+<span class="lineNum">     232 </span>            :                 #include &lt;assert.h&gt;
+<span class="lineNum">     233 </span>            :                 #endif
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span>            : #if defined(DEBUG) || defined (_DEBUG)
+<span class="lineNum">     236 </span>            :                 #define btAssert assert
+<span class="lineNum">     237 </span>            : #else
+<span class="lineNum">     238 </span>            :                 #define btAssert(x)
+<span class="lineNum">     239 </span>            : #endif
+<span class="lineNum">     240 </span>            : 
+<span class="lineNum">     241 </span>            :                 //btFullAssert is optional, slows down a lot
+<span class="lineNum">     242 </span>            :                 #define btFullAssert(x)
+<span class="lineNum">     243 </span>            :                 #define btLikely(_c)  _c
+<span class="lineNum">     244 </span>            :                 #define btUnlikely(_c) _c
+<span class="lineNum">     245 </span>            : #endif //__APPLE__ 
+<span class="lineNum">     246 </span>            : 
+<span class="lineNum">     247 </span>            : #endif // LIBSPE2
+<span class="lineNum">     248 </span>            : 
+<span class="lineNum">     249 </span>            : #endif  //__CELLOS_LV2__
+<span class="lineNum">     250 </span>            : #endif
+<span class="lineNum">     251 </span>            : 
+<span class="lineNum">     252 </span>            : 
+<span class="lineNum">     253 </span>            : ///The btScalar type abstracts floating point numbers, to easily switch between double and single floating point precision.
+<span class="lineNum">     254 </span>            : #if defined(BT_USE_DOUBLE_PRECISION)
+<span class="lineNum">     255 </span>            : typedef double btScalar;
+<span class="lineNum">     256 </span>            : //this number could be bigger in double precision
+<span class="lineNum">     257 </span>            : #define BT_LARGE_FLOAT 1e30
+<span class="lineNum">     258 </span>            : #else
+<span class="lineNum">     259 </span>            : typedef float btScalar;
+<span class="lineNum">     260 </span>            : //keep BT_LARGE_FLOAT*BT_LARGE_FLOAT &lt; FLT_MAX
+<span class="lineNum">     261 </span>            : #define BT_LARGE_FLOAT 1e18f
+<span class="lineNum">     262 </span>            : #endif
+<span class="lineNum">     263 </span>            : 
+<span class="lineNum">     264 </span>            : #ifdef BT_USE_SSE
+<span class="lineNum">     265 </span>            : typedef __m128 btSimdFloat4;
+<span class="lineNum">     266 </span>            : #endif//BT_USE_SSE
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span>            : #if defined BT_USE_SSE_IN_API &amp;&amp; defined (BT_USE_SSE)
+<span class="lineNum">     269 </span>            : #ifdef _WIN32
+<span class="lineNum">     270 </span>            : 
+<span class="lineNum">     271 </span>            : #ifndef BT_NAN
+<span class="lineNum">     272 </span>            : static int btNanMask = 0x7F800001;
+<span class="lineNum">     273 </span>            : #define BT_NAN (*(float*)&amp;btNanMask)
+<span class="lineNum">     274 </span>            : #endif
+<span class="lineNum">     275 </span>            : 
+<span class="lineNum">     276 </span>            : #ifndef BT_INFINITY
+<span class="lineNum">     277 </span>            : static  int btInfinityMask = 0x7F800000;
+<span class="lineNum">     278 </span>            : #define BT_INFINITY (*(float*)&amp;btInfinityMask)
+<span class="lineNum">     279 </span>            : #endif
+<span class="lineNum">     280 </span>            : 
+<span class="lineNum">     281 </span>            : inline __m128 operator + (const __m128 A, const __m128 B)
+<span class="lineNum">     282 </span>            : {
+<span class="lineNum">     283 </span>            :     return _mm_add_ps(A, B);
+<span class="lineNum">     284 </span>            : }
+<span class="lineNum">     285 </span>            : 
+<span class="lineNum">     286 </span>            : inline __m128 operator - (const __m128 A, const __m128 B)
+<span class="lineNum">     287 </span>            : {
+<span class="lineNum">     288 </span>            :     return _mm_sub_ps(A, B);
+<span class="lineNum">     289 </span>            : }
+<span class="lineNum">     290 </span>            : 
+<span class="lineNum">     291 </span>            : inline __m128 operator * (const __m128 A, const __m128 B)
+<span class="lineNum">     292 </span>            : {
+<span class="lineNum">     293 </span>            :     return _mm_mul_ps(A, B);
+<span class="lineNum">     294 </span>            : }
+<span class="lineNum">     295 </span>            : 
+<span class="lineNum">     296 </span>            : #define btCastfTo128i(a) (_mm_castps_si128(a))
+<span class="lineNum">     297 </span>            : #define btCastfTo128d(a) (_mm_castps_pd(a))
+<span class="lineNum">     298 </span>            : #define btCastiTo128f(a) (_mm_castsi128_ps(a))
+<span class="lineNum">     299 </span>            : #define btCastdTo128f(a) (_mm_castpd_ps(a))
+<span class="lineNum">     300 </span>            : #define btCastdTo128i(a) (_mm_castpd_si128(a))
+<span class="lineNum">     301 </span>            : #define btAssign128(r0,r1,r2,r3) _mm_setr_ps(r0,r1,r2,r3)
+<span class="lineNum">     302 </span>            : 
+<span class="lineNum">     303 </span>            : #else//_WIN32
+<span class="lineNum">     304 </span>            : 
+<span class="lineNum">     305 </span>            : #define btCastfTo128i(a) ((__m128i)(a))
+<span class="lineNum">     306 </span>            : #define btCastfTo128d(a) ((__m128d)(a))
+<span class="lineNum">     307 </span>            : #define btCastiTo128f(a)  ((__m128) (a))
+<span class="lineNum">     308 </span>            : #define btCastdTo128f(a) ((__m128) (a))
+<span class="lineNum">     309 </span>            : #define btCastdTo128i(a) ((__m128i)(a))
+<span class="lineNum">     310 </span>            : #define btAssign128(r0,r1,r2,r3) (__m128){r0,r1,r2,r3}
+<span class="lineNum">     311 </span>            : #define BT_INFINITY INFINITY
+<span class="lineNum">     312 </span>            : #define BT_NAN NAN
+<span class="lineNum">     313 </span>            : #endif//_WIN32
+<span class="lineNum">     314 </span>            : #endif //BT_USE_SSE_IN_API
+<span class="lineNum">     315 </span>            : 
+<span class="lineNum">     316 </span>            : #ifdef BT_USE_NEON
+<span class="lineNum">     317 </span>            : #include &lt;arm_neon.h&gt;
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span>            : typedef float32x4_t btSimdFloat4;
+<span class="lineNum">     320 </span>            : #define BT_INFINITY INFINITY
+<span class="lineNum">     321 </span>            : #define BT_NAN NAN
+<span class="lineNum">     322 </span>            : #define btAssign128(r0,r1,r2,r3) (float32x4_t){r0,r1,r2,r3}
+<span class="lineNum">     323 </span>            : #endif
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span>            : 
+<span class="lineNum">     326 </span>            : 
+<span class="lineNum">     327 </span>            : 
+<span class="lineNum">     328 </span>            : 
+<span class="lineNum">     329 </span>            : #define BT_DECLARE_ALIGNED_ALLOCATOR() \
+<span class="lineNum">     330 </span>            :    SIMD_FORCE_INLINE void* operator new(size_t sizeInBytes)   { return btAlignedAlloc(sizeInBytes,16); }   \
+<span class="lineNum">     331 </span>            :    SIMD_FORCE_INLINE void  operator delete(void* ptr)         { btAlignedFree(ptr); }   \
+<span class="lineNum">     332 </span>            :    SIMD_FORCE_INLINE void* operator new(size_t, void* ptr)   { return ptr; }   \
+<span class="lineNum">     333 </span>            :    SIMD_FORCE_INLINE void  operator delete(void*, void*)      { }   \
+<span class="lineNum">     334 </span>            :    SIMD_FORCE_INLINE void* operator new[](size_t sizeInBytes)   { return btAlignedAlloc(sizeInBytes,16); }   \
+<span class="lineNum">     335 </span>            :    SIMD_FORCE_INLINE void  operator delete[](void* ptr)         { btAlignedFree(ptr); }   \
+<span class="lineNum">     336 </span>            :    SIMD_FORCE_INLINE void* operator new[](size_t, void* ptr)   { return ptr; }   \
+<span class="lineNum">     337 </span>            :    SIMD_FORCE_INLINE void  operator delete[](void*, void*)      { }   \
+<span class="lineNum">     338 </span>            : 
+<span class="lineNum">     339 </span>            : 
+<span class="lineNum">     340 </span>            : 
+<span class="lineNum">     341 </span>            : #if defined(BT_USE_DOUBLE_PRECISION) || defined(BT_FORCE_DOUBLE_FUNCTIONS)
+<span class="lineNum">     342 </span>            :                 
+<span class="lineNum">     343 </span>            : SIMD_FORCE_INLINE btScalar btSqrt(btScalar x) { return sqrt(x); }
+<span class="lineNum">     344 </span>            : SIMD_FORCE_INLINE btScalar btFabs(btScalar x) { return fabs(x); }
+<span class="lineNum">     345 </span>            : SIMD_FORCE_INLINE btScalar btCos(btScalar x) { return cos(x); }
+<span class="lineNum">     346 </span>            : SIMD_FORCE_INLINE btScalar btSin(btScalar x) { return sin(x); }
+<span class="lineNum">     347 </span>            : SIMD_FORCE_INLINE btScalar btTan(btScalar x) { return tan(x); }
+<span class="lineNum">     348 </span>            : SIMD_FORCE_INLINE btScalar btAcos(btScalar x) { if (x&lt;btScalar(-1))  x=btScalar(-1); if (x&gt;btScalar(1))   x=btScalar(1); return acos(x); }
+<span class="lineNum">     349 </span>            : SIMD_FORCE_INLINE btScalar btAsin(btScalar x) { if (x&lt;btScalar(-1))  x=btScalar(-1); if (x&gt;btScalar(1))   x=btScalar(1); return asin(x); }
+<span class="lineNum">     350 </span>            : SIMD_FORCE_INLINE btScalar btAtan(btScalar x) { return atan(x); }
+<span class="lineNum">     351 </span>            : SIMD_FORCE_INLINE btScalar btAtan2(btScalar x, btScalar y) { return atan2(x, y); }
+<span class="lineNum">     352 </span>            : SIMD_FORCE_INLINE btScalar btExp(btScalar x) { return exp(x); }
+<span class="lineNum">     353 </span>            : SIMD_FORCE_INLINE btScalar btLog(btScalar x) { return log(x); }
+<span class="lineNum">     354 </span>            : SIMD_FORCE_INLINE btScalar btPow(btScalar x,btScalar y) { return pow(x,y); }
+<span class="lineNum">     355 </span>            : SIMD_FORCE_INLINE btScalar btFmod(btScalar x,btScalar y) { return fmod(x,y); }
+<span class="lineNum">     356 </span>            : 
+<a name="357"><span class="lineNum">     357 </span>            : #else</a>
+<span class="lineNum">     358 </span>            :                 
+<span class="lineNum">     359 </span><span class="lineCov">  210171803 : SIMD_FORCE_INLINE btScalar btSqrt(btScalar y) </span>
+<span class="lineNum">     360 </span>            : { 
+<span class="lineNum">     361 </span>            : #ifdef USE_APPROXIMATION
+<span class="lineNum">     362 </span>            :     double x, z, tempf;
+<span class="lineNum">     363 </span>            :     unsigned long *tfptr = ((unsigned long *)&amp;tempf) + 1;
+<span class="lineNum">     364 </span>            : 
+<span class="lineNum">     365 </span>            :         tempf = y;
+<span class="lineNum">     366 </span>            :         *tfptr = (0xbfcdd90a - *tfptr)&gt;&gt;1; /* estimate of 1/sqrt(y) */
+<span class="lineNum">     367 </span>            :         x =  tempf;
+<span class="lineNum">     368 </span>            :         z =  y*btScalar(0.5);
+<span class="lineNum">     369 </span>            :         x = (btScalar(1.5)*x)-(x*x)*(x*z);         /* iteration formula     */
+<span class="lineNum">     370 </span>            :         x = (btScalar(1.5)*x)-(x*x)*(x*z);
+<span class="lineNum">     371 </span>            :         x = (btScalar(1.5)*x)-(x*x)*(x*z);
+<span class="lineNum">     372 </span>            :         x = (btScalar(1.5)*x)-(x*x)*(x*z);
+<span class="lineNum">     373 </span>            :         x = (btScalar(1.5)*x)-(x*x)*(x*z);
+<span class="lineNum">     374 </span>            :         return x*y;
+<span class="lineNum">     375 </span>            : #else
+<span class="lineNum">     376 </span><span class="lineCov">  213819201 :         return sqrtf(y); </span>
+<a name="377"><span class="lineNum">     377 </span>            : #endif</a>
+<a name="378"><span class="lineNum">     378 </span>            : }</a>
+<a name="379"><span class="lineNum">     379 </span><span class="lineCov">    6399270 : SIMD_FORCE_INLINE btScalar btFabs(btScalar x) { return fabsf(x); }</span></a>
+<span class="lineNum">     380 </span><span class="lineCov">     762758 : SIMD_FORCE_INLINE btScalar btCos(btScalar x) { return cosf(x); }</span>
+<span class="lineNum">     381 </span><span class="lineCov">     555303 : SIMD_FORCE_INLINE btScalar btSin(btScalar x) { return sinf(x); }</span>
+<span class="lineNum">     382 </span>            : SIMD_FORCE_INLINE btScalar btTan(btScalar x) { return tanf(x); }
+<span class="lineNum">     383 </span>            : SIMD_FORCE_INLINE btScalar btAcos(btScalar x) { 
+<span class="lineNum">     384 </span><span class="lineNoCov">          0 :         if (x&lt;btScalar(-1))  </span>
+<span class="lineNum">     385 </span><span class="lineNoCov">          0 :                 x=btScalar(-1); </span>
+<span class="lineNum">     386 </span><span class="lineNoCov">          0 :         if (x&gt;btScalar(1))   </span>
+<span class="lineNum">     387 </span><span class="lineNoCov">          0 :                 x=btScalar(1);</span>
+<span class="lineNum">     388 </span><span class="lineNoCov">          0 :         return acosf(x); </span>
+<span class="lineNum">     389 </span>            : }
+<span class="lineNum">     390 </span>            : SIMD_FORCE_INLINE btScalar btAsin(btScalar x) { 
+<span class="lineNum">     391 </span><span class="lineCov">         13 :         if (x&lt;btScalar(-1))  </span>
+<span class="lineNum">     392 </span><span class="lineNoCov">          0 :                 x=btScalar(-1); </span>
+<span class="lineNum">     393 </span><span class="lineCov">         13 :         if (x&gt;btScalar(1))   </span>
+<span class="lineNum">     394 </span><span class="lineNoCov">          0 :                 x=btScalar(1);</span>
+<a name="395"><span class="lineNum">     395 </span><span class="lineCov">         13 :         return asinf(x); </span></a>
+<span class="lineNum">     396 </span>            : }
+<span class="lineNum">     397 </span><span class="lineCov">         76 : SIMD_FORCE_INLINE btScalar btAtan(btScalar x) { return atanf(x); }</span>
+<span class="lineNum">     398 </span><span class="lineCov">      25053 : SIMD_FORCE_INLINE btScalar btAtan2(btScalar x, btScalar y) { return atan2f(x, y); }</span>
+<span class="lineNum">     399 </span>            : SIMD_FORCE_INLINE btScalar btExp(btScalar x) { return expf(x); }
+<a name="400"><span class="lineNum">     400 </span>            : SIMD_FORCE_INLINE btScalar btLog(btScalar x) { return logf(x); }</a>
+<span class="lineNum">     401 </span><span class="lineCov">     238006 : SIMD_FORCE_INLINE btScalar btPow(btScalar x,btScalar y) { return powf(x,y); }</span>
+<span class="lineNum">     402 </span><span class="lineCov">         12 : SIMD_FORCE_INLINE btScalar btFmod(btScalar x,btScalar y) { return fmodf(x,y); }</span>
+<span class="lineNum">     403 </span>            :         
+<span class="lineNum">     404 </span>            : #endif
+<span class="lineNum">     405 </span>            : 
+<span class="lineNum">     406 </span>            : #define SIMD_2_PI         btScalar(6.283185307179586232)
+<span class="lineNum">     407 </span>            : #define SIMD_PI           (SIMD_2_PI * btScalar(0.5))
+<span class="lineNum">     408 </span>            : #define SIMD_HALF_PI      (SIMD_2_PI * btScalar(0.25))
+<span class="lineNum">     409 </span>            : #define SIMD_RADS_PER_DEG (SIMD_2_PI / btScalar(360.0))
+<span class="lineNum">     410 </span>            : #define SIMD_DEGS_PER_RAD  (btScalar(360.0) / SIMD_2_PI)
+<span class="lineNum">     411 </span>            : #define SIMDSQRT12 btScalar(0.7071067811865475244008443621048490)
+<span class="lineNum">     412 </span>            : 
+<span class="lineNum">     413 </span>            : #define btRecipSqrt(x) ((btScalar)(btScalar(1.0)/btSqrt(btScalar(x))))          /* reciprocal square root */
+<span class="lineNum">     414 </span>            : 
+<span class="lineNum">     415 </span>            : 
+<span class="lineNum">     416 </span>            : #ifdef BT_USE_DOUBLE_PRECISION
+<span class="lineNum">     417 </span>            : #define SIMD_EPSILON      DBL_EPSILON
+<span class="lineNum">     418 </span>            : #define SIMD_INFINITY     DBL_MAX
+<span class="lineNum">     419 </span>            : #else
+<span class="lineNum">     420 </span>            : #define SIMD_EPSILON      FLT_EPSILON
+<span class="lineNum">     421 </span>            : #define SIMD_INFINITY     FLT_MAX
+<span class="lineNum">     422 </span>            : #endif
+<span class="lineNum">     423 </span>            : 
+<span class="lineNum">     424 </span>            : SIMD_FORCE_INLINE btScalar btAtan2Fast(btScalar y, btScalar x) 
+<span class="lineNum">     425 </span>            : {
+<span class="lineNum">     426 </span><span class="lineNoCov">          0 :         btScalar coeff_1 = SIMD_PI / 4.0f;</span>
+<span class="lineNum">     427 </span><span class="lineNoCov">          0 :         btScalar coeff_2 = 3.0f * coeff_1;</span>
+<span class="lineNum">     428 </span><span class="lineNoCov">          0 :         btScalar abs_y = btFabs(y);</span>
+<span class="lineNum">     429 </span>            :         btScalar angle;
+<span class="lineNum">     430 </span><span class="lineNoCov">          0 :         if (x &gt;= 0.0f) {</span>
+<span class="lineNum">     431 </span><span class="lineNoCov">          0 :                 btScalar r = (x - abs_y) / (x + abs_y);</span>
+<span class="lineNum">     432 </span><span class="lineNoCov">          0 :                 angle = coeff_1 - coeff_1 * r;</span>
+<span class="lineNum">     433 </span>            :         } else {
+<span class="lineNum">     434 </span><span class="lineNoCov">          0 :                 btScalar r = (x + abs_y) / (abs_y - x);</span>
+<span class="lineNum">     435 </span><span class="lineNoCov">          0 :                 angle = coeff_2 - coeff_1 * r;</span>
+<span class="lineNum">     436 </span>            :         }
+<span class="lineNum">     437 </span><span class="lineNoCov">          0 :         return (y &lt; 0.0f) ? -angle : angle;</span>
+<span class="lineNum">     438 </span>            : }
+<span class="lineNum">     439 </span>            : 
+<span class="lineNum">     440 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE bool      btFuzzyZero(btScalar x) { return btFabs(x) &lt; SIMD_EPSILON; }</span>
+<span class="lineNum">     441 </span>            : 
+<span class="lineNum">     442 </span>            : SIMD_FORCE_INLINE bool  btEqual(btScalar a, btScalar eps) {
+<span class="lineNum">     443 </span><span class="lineNoCov">          0 :         return (((a) &lt;= eps) &amp;&amp; !((a) &lt; -eps));</span>
+<span class="lineNum">     444 </span>            : }
+<span class="lineNum">     445 </span>            : SIMD_FORCE_INLINE bool  btGreaterEqual (btScalar a, btScalar eps) {
+<span class="lineNum">     446 </span>            :         return (!((a) &lt;= eps));
+<span class="lineNum">     447 </span>            : }
+<span class="lineNum">     448 </span>            : 
+<span class="lineNum">     449 </span>            : 
+<span class="lineNum">     450 </span>            : SIMD_FORCE_INLINE int       btIsNegative(btScalar x) {
+<span class="lineNum">     451 </span>            :     return x &lt; btScalar(0.0) ? 1 : 0;
+<span class="lineNum">     452 </span>            : }
+<span class="lineNum">     453 </span>            : 
+<span class="lineNum">     454 </span>            : SIMD_FORCE_INLINE btScalar btRadians(btScalar x) { return x * SIMD_RADS_PER_DEG; }
+<span class="lineNum">     455 </span>            : SIMD_FORCE_INLINE btScalar btDegrees(btScalar x) { return x * SIMD_DEGS_PER_RAD; }
+<span class="lineNum">     456 </span>            : 
+<span class="lineNum">     457 </span>            : #define BT_DECLARE_HANDLE(name) typedef struct name##__ { int unused; } *name
+<span class="lineNum">     458 </span>            : 
+<span class="lineNum">     459 </span>            : #ifndef btFsel
+<span class="lineNum">     460 </span>            : SIMD_FORCE_INLINE btScalar btFsel(btScalar a, btScalar b, btScalar c)
+<span class="lineNum">     461 </span>            : {
+<span class="lineNum">     462 </span><span class="lineCov">     486408 :         return a &gt;= 0 ? b : c;</span>
+<span class="lineNum">     463 </span>            : }
+<span class="lineNum">     464 </span>            : #endif
+<span class="lineNum">     465 </span>            : #define btFsels(a,b,c) (btScalar)btFsel(a,b,c)
+<span class="lineNum">     466 </span>            : 
+<span class="lineNum">     467 </span>            : 
+<span class="lineNum">     468 </span>            : SIMD_FORCE_INLINE bool btMachineIsLittleEndian()
+<span class="lineNum">     469 </span>            : {
+<span class="lineNum">     470 </span>            :    long int i = 1;
+<span class="lineNum">     471 </span>            :    const char *p = (const char *) &amp;i;
+<span class="lineNum">     472 </span>            :    if (p[0] == 1)  // Lowest address contains the least significant byte
+<span class="lineNum">     473 </span>            :            return true;
+<span class="lineNum">     474 </span>            :    else
+<span class="lineNum">     475 </span>            :            return false;
+<span class="lineNum">     476 </span>            : }
+<span class="lineNum">     477 </span>            : 
+<span class="lineNum">     478 </span>            : 
+<span class="lineNum">     479 </span>            : 
+<span class="lineNum">     480 </span>            : ///btSelect avoids branches, which makes performance much better for consoles like Playstation 3 and XBox 360
+<span class="lineNum">     481 </span>            : ///Thanks Phil Knight. See also http://www.cellperformance.com/articles/2006/04/more_techniques_for_eliminatin_1.html
+<span class="lineNum">     482 </span>            : SIMD_FORCE_INLINE unsigned btSelect(unsigned condition, unsigned valueIfConditionNonZero, unsigned valueIfConditionZero) 
+<span class="lineNum">     483 </span>            : {
+<span class="lineNum">     484 </span>            :     // Set testNz to 0xFFFFFFFF if condition is nonzero, 0x00000000 if condition is zero
+<span class="lineNum">     485 </span>            :     // Rely on positive value or'ed with its negative having sign bit on
+<span class="lineNum">     486 </span>            :     // and zero value or'ed with its negative (which is still zero) having sign bit off 
+<span class="lineNum">     487 </span>            :     // Use arithmetic shift right, shifting the sign bit through all 32 bits
+<span class="lineNum">     488 </span>            :     unsigned testNz = (unsigned)(((int)condition | -(int)condition) &gt;&gt; 31);
+<span class="lineNum">     489 </span>            :     unsigned testEqz = ~testNz;
+<span class="lineNum">     490 </span>            :     return ((valueIfConditionNonZero &amp; testNz) | (valueIfConditionZero &amp; testEqz)); 
+<span class="lineNum">     491 </span>            : }
+<span class="lineNum">     492 </span>            : SIMD_FORCE_INLINE int btSelect(unsigned condition, int valueIfConditionNonZero, int valueIfConditionZero)
+<span class="lineNum">     493 </span>            : {
+<span class="lineNum">     494 </span><span class="lineNoCov">          0 :     unsigned testNz = (unsigned)(((int)condition | -(int)condition) &gt;&gt; 31);</span>
+<span class="lineNum">     495 </span><span class="lineNoCov">          0 :     unsigned testEqz = ~testNz; </span>
+<span class="lineNum">     496 </span>            :     return static_cast&lt;int&gt;((valueIfConditionNonZero &amp; testNz) | (valueIfConditionZero &amp; testEqz));
+<span class="lineNum">     497 </span>            : }
+<span class="lineNum">     498 </span>            : SIMD_FORCE_INLINE float btSelect(unsigned condition, float valueIfConditionNonZero, float valueIfConditionZero)
+<span class="lineNum">     499 </span>            : {
+<span class="lineNum">     500 </span>            : #ifdef BT_HAVE_NATIVE_FSEL
+<span class="lineNum">     501 </span>            :     return (float)btFsel((btScalar)condition - btScalar(1.0f), valueIfConditionNonZero, valueIfConditionZero);
+<span class="lineNum">     502 </span>            : #else
+<span class="lineNum">     503 </span>            :     return (condition != 0) ? valueIfConditionNonZero : valueIfConditionZero; 
+<span class="lineNum">     504 </span>            : #endif
+<span class="lineNum">     505 </span>            : }
+<span class="lineNum">     506 </span>            : 
+<span class="lineNum">     507 </span>            : template&lt;typename T&gt; SIMD_FORCE_INLINE void btSwap(T&amp; a, T&amp; b)
+<span class="lineNum">     508 </span>            : {
+<span class="lineNum">     509 </span><span class="lineCov">      25685 :         T tmp = a;</span>
+<span class="lineNum">     510 </span><span class="lineCov">      25685 :         a = b;</span>
+<span class="lineNum">     511 </span><span class="lineCov">      25685 :         b = tmp;</span>
+<span class="lineNum">     512 </span>            : }
+<span class="lineNum">     513 </span>            : 
+<span class="lineNum">     514 </span>            : 
+<span class="lineNum">     515 </span>            : //PCK: endian swapping functions
+<span class="lineNum">     516 </span>            : SIMD_FORCE_INLINE unsigned btSwapEndian(unsigned val)
+<span class="lineNum">     517 </span>            : {
+<span class="lineNum">     518 </span><span class="lineNoCov">          0 :         return (((val &amp; 0xff000000) &gt;&gt; 24) | ((val &amp; 0x00ff0000) &gt;&gt; 8) | ((val &amp; 0x0000ff00) &lt;&lt; 8)  | ((val &amp; 0x000000ff) &lt;&lt; 24));</span>
+<span class="lineNum">     519 </span>            : }
+<span class="lineNum">     520 </span>            : 
+<span class="lineNum">     521 </span>            : SIMD_FORCE_INLINE unsigned short btSwapEndian(unsigned short val)
+<span class="lineNum">     522 </span>            : {
+<span class="lineNum">     523 </span><span class="lineNoCov">          0 :         return static_cast&lt;unsigned short&gt;(((val &amp; 0xff00) &gt;&gt; 8) | ((val &amp; 0x00ff) &lt;&lt; 8));</span>
+<span class="lineNum">     524 </span>            : }
+<span class="lineNum">     525 </span>            : 
+<span class="lineNum">     526 </span>            : SIMD_FORCE_INLINE unsigned btSwapEndian(int val)
+<span class="lineNum">     527 </span>            : {
+<span class="lineNum">     528 </span><span class="lineNoCov">          0 :         return btSwapEndian((unsigned)val);</span>
+<span class="lineNum">     529 </span>            : }
+<span class="lineNum">     530 </span>            : 
+<span class="lineNum">     531 </span>            : SIMD_FORCE_INLINE unsigned short btSwapEndian(short val)
+<span class="lineNum">     532 </span>            : {
+<span class="lineNum">     533 </span>            :         return btSwapEndian((unsigned short) val);
+<span class="lineNum">     534 </span>            : }
+<span class="lineNum">     535 </span>            : 
+<span class="lineNum">     536 </span>            : ///btSwapFloat uses using char pointers to swap the endianness
+<span class="lineNum">     537 </span>            : ////btSwapFloat/btSwapDouble will NOT return a float, because the machine might 'correct' invalid floating point values
+<span class="lineNum">     538 </span>            : ///Not all values of sign/exponent/mantissa are valid floating point numbers according to IEEE 754. 
+<span class="lineNum">     539 </span>            : ///When a floating point unit is faced with an invalid value, it may actually change the value, or worse, throw an exception. 
+<span class="lineNum">     540 </span>            : ///In most systems, running user mode code, you wouldn't get an exception, but instead the hardware/os/runtime will 'fix' the number for you. 
+<span class="lineNum">     541 </span>            : ///so instead of returning a float/double, we return integer/long long integer
+<span class="lineNum">     542 </span>            : SIMD_FORCE_INLINE unsigned int  btSwapEndianFloat(float d)
+<span class="lineNum">     543 </span>            : {
+<span class="lineNum">     544 </span>            :     unsigned int a = 0;
+<span class="lineNum">     545 </span>            :     unsigned char *dst = (unsigned char *)&amp;a;
+<span class="lineNum">     546 </span>            :     unsigned char *src = (unsigned char *)&amp;d;
+<span class="lineNum">     547 </span>            : 
+<span class="lineNum">     548 </span>            :     dst[0] = src[3];
+<span class="lineNum">     549 </span>            :     dst[1] = src[2];
+<span class="lineNum">     550 </span>            :     dst[2] = src[1];
+<span class="lineNum">     551 </span>            :     dst[3] = src[0];
+<span class="lineNum">     552 </span>            :     return a;
+<span class="lineNum">     553 </span>            : }
+<span class="lineNum">     554 </span>            : 
+<span class="lineNum">     555 </span>            : // unswap using char pointers
+<span class="lineNum">     556 </span>            : SIMD_FORCE_INLINE float btUnswapEndianFloat(unsigned int a) 
+<span class="lineNum">     557 </span>            : {
+<span class="lineNum">     558 </span>            :     float d = 0.0f;
+<span class="lineNum">     559 </span>            :     unsigned char *src = (unsigned char *)&amp;a;
+<span class="lineNum">     560 </span>            :     unsigned char *dst = (unsigned char *)&amp;d;
+<span class="lineNum">     561 </span>            : 
+<span class="lineNum">     562 </span>            :     dst[0] = src[3];
+<span class="lineNum">     563 </span>            :     dst[1] = src[2];
+<span class="lineNum">     564 </span>            :     dst[2] = src[1];
+<span class="lineNum">     565 </span>            :     dst[3] = src[0];
+<span class="lineNum">     566 </span>            : 
+<span class="lineNum">     567 </span>            :     return d;
+<span class="lineNum">     568 </span>            : }
+<span class="lineNum">     569 </span>            : 
+<span class="lineNum">     570 </span>            : 
+<span class="lineNum">     571 </span>            : // swap using char pointers
+<span class="lineNum">     572 </span>            : SIMD_FORCE_INLINE void  btSwapEndianDouble(double d, unsigned char* dst)
+<span class="lineNum">     573 </span>            : {
+<span class="lineNum">     574 </span>            :     unsigned char *src = (unsigned char *)&amp;d;
+<span class="lineNum">     575 </span>            : 
+<span class="lineNum">     576 </span>            :     dst[0] = src[7];
+<span class="lineNum">     577 </span>            :     dst[1] = src[6];
+<span class="lineNum">     578 </span>            :     dst[2] = src[5];
+<span class="lineNum">     579 </span>            :     dst[3] = src[4];
+<span class="lineNum">     580 </span>            :     dst[4] = src[3];
+<span class="lineNum">     581 </span>            :     dst[5] = src[2];
+<span class="lineNum">     582 </span>            :     dst[6] = src[1];
+<span class="lineNum">     583 </span>            :     dst[7] = src[0];
+<span class="lineNum">     584 </span>            : 
+<span class="lineNum">     585 </span>            : }
+<span class="lineNum">     586 </span>            : 
+<span class="lineNum">     587 </span>            : // unswap using char pointers
+<span class="lineNum">     588 </span>            : SIMD_FORCE_INLINE double btUnswapEndianDouble(const unsigned char *src) 
+<span class="lineNum">     589 </span>            : {
+<span class="lineNum">     590 </span>            :     double d = 0.0;
+<span class="lineNum">     591 </span>            :     unsigned char *dst = (unsigned char *)&amp;d;
+<span class="lineNum">     592 </span>            : 
+<span class="lineNum">     593 </span>            :     dst[0] = src[7];
+<span class="lineNum">     594 </span>            :     dst[1] = src[6];
+<span class="lineNum">     595 </span>            :     dst[2] = src[5];
+<span class="lineNum">     596 </span>            :     dst[3] = src[4];
+<span class="lineNum">     597 </span>            :     dst[4] = src[3];
+<span class="lineNum">     598 </span>            :     dst[5] = src[2];
+<span class="lineNum">     599 </span>            :     dst[6] = src[1];
+<span class="lineNum">     600 </span>            :     dst[7] = src[0];
+<span class="lineNum">     601 </span>            : 
+<span class="lineNum">     602 </span>            :         return d;
+<span class="lineNum">     603 </span>            : }
+<a name="604"><span class="lineNum">     604 </span>            : </a>
+<span class="lineNum">     605 </span>            : // returns normalized value in range [-SIMD_PI, SIMD_PI]
+<span class="lineNum">     606 </span><span class="lineCov">         12 : SIMD_FORCE_INLINE btScalar btNormalizeAngle(btScalar angleInRadians) </span>
+<span class="lineNum">     607 </span>            : {
+<span class="lineNum">     608 </span><span class="lineCov">         12 :         angleInRadians = btFmod(angleInRadians, SIMD_2_PI);</span>
+<span class="lineNum">     609 </span><span class="lineCov">         12 :         if(angleInRadians &lt; -SIMD_PI)</span>
+<span class="lineNum">     610 </span>            :         {
+<span class="lineNum">     611 </span><span class="lineNoCov">          0 :                 return angleInRadians + SIMD_2_PI;</span>
+<span class="lineNum">     612 </span>            :         }
+<span class="lineNum">     613 </span><span class="lineCov">         12 :         else if(angleInRadians &gt; SIMD_PI)</span>
+<span class="lineNum">     614 </span>            :         {
+<span class="lineNum">     615 </span><span class="lineNoCov">          0 :                 return angleInRadians - SIMD_2_PI;</span>
+<span class="lineNum">     616 </span>            :         }
+<span class="lineNum">     617 </span>            :         else
+<span class="lineNum">     618 </span>            :         {
+<span class="lineNum">     619 </span><span class="lineCov">         12 :                 return angleInRadians;</span>
+<span class="lineNum">     620 </span>            :         }
+<span class="lineNum">     621 </span>            : }
+<span class="lineNum">     622 </span>            : 
+<span class="lineNum">     623 </span>            : ///rudimentary class to provide type info
+<span class="lineNum">     624 </span>            : struct btTypedObject
+<span class="lineNum">     625 </span>            : {
+<span class="lineNum">     626 </span>            :         btTypedObject(int objectType)
+<span class="lineNum">     627 </span><span class="lineCov">       1189 :                 :m_objectType(objectType)</span>
+<span class="lineNum">     628 </span>            :         {
+<span class="lineNum">     629 </span>            :         }
+<span class="lineNum">     630 </span>            :         int     m_objectType;
+<span class="lineNum">     631 </span>            :         inline int getObjectType() const
+<span class="lineNum">     632 </span>            :         {
+<span class="lineNum">     633 </span>            :                 return m_objectType;
+<span class="lineNum">     634 </span>            :         }
+<span class="lineNum">     635 </span>            : };
+<span class="lineNum">     636 </span>            : 
+<span class="lineNum">     637 </span>            : 
+<span class="lineNum">     638 </span>            :   
+<span class="lineNum">     639 </span>            : ///align a pointer to the provided alignment, upwards
+<span class="lineNum">     640 </span>            : template &lt;typename T&gt;T* btAlignPointer(T* unalignedPtr, size_t alignment)
+<span class="lineNum">     641 </span>            : {
+<span class="lineNum">     642 </span>            :                 
+<span class="lineNum">     643 </span>            :         struct btConvertPointerSizeT
+<span class="lineNum">     644 </span>            :         {
+<span class="lineNum">     645 </span>            :                 union 
+<span class="lineNum">     646 </span>            :                 {
+<span class="lineNum">     647 </span>            :                                 T* ptr;
+<span class="lineNum">     648 </span>            :                                 size_t integer;
+<span class="lineNum">     649 </span>            :                 };
+<span class="lineNum">     650 </span>            :         };
+<span class="lineNum">     651 </span>            :     btConvertPointerSizeT converter;
+<span class="lineNum">     652 </span>            :     
+<span class="lineNum">     653 </span>            :     
+<span class="lineNum">     654 </span><span class="lineCov">        951 :         const size_t bit_mask = ~(alignment - 1);</span>
+<span class="lineNum">     655 </span><span class="lineCov">        951 :     converter.ptr = unalignedPtr;</span>
+<span class="lineNum">     656 </span><span class="lineCov">        951 :         converter.integer += alignment-1;</span>
+<span class="lineNum">     657 </span><span class="lineCov">        951 :         converter.integer &amp;= bit_mask;</span>
+<span class="lineNum">     658 </span><span class="lineCov">        951 :         return converter.ptr;</span>
+<span class="lineNum">     659 </span>            : }
+<span class="lineNum">     660 </span>            : 
+<span class="lineNum">     661 </span>            : #endif //BT_SCALAR_H
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

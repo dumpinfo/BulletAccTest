@@ -1,0 +1,964 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - /mnt/k/Bullet3Acc/BulletMinimal/BulletExample/Chapter8/BulletOpenGLApplication.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../../index.html">top level</a> - <a href="index.html">mnt/k/Bullet3Acc/BulletMinimal/BulletExample/Chapter8</a> - BulletOpenGLApplication.cpp<span style="font-size: 80%;"> (source / <a href="BulletOpenGLApplication.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">311</td>
+            <td class="headerCovTableEntry">393</td>
+            <td class="headerCovTableEntryMed">79.1 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">29</td>
+            <td class="headerCovTableEntry">34</td>
+            <td class="headerCovTableEntryMed">85.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : #include &quot;BulletOpenGLApplication.h&quot;</a>
+<span class="lineNum">       2 </span>            : 
+<span class="lineNum">       3 </span>            : // Some constants for 3D math and the camera speed
+<span class="lineNum">       4 </span>            : #define RADIANS_PER_DEGREE 0.01745329f
+<a name="5"><span class="lineNum">       5 </span>            : #define CAMERA_STEP_SIZE 5.0f</a>
+<span class="lineNum">       6 </span>            : 
+<span class="lineNum">       7 </span><span class="lineCov">          1 : BulletOpenGLApplication::BulletOpenGLApplication() </span>
+<span class="lineNum">       8 </span>            : :
+<span class="lineNum">       9 </span>            : m_cameraPosition(10.0f, 5.0f, 0.0f),
+<span class="lineNum">      10 </span>            : m_cameraTarget(0.0f, 0.0f, 0.0f),
+<span class="lineNum">      11 </span>            : m_cameraDistance(15.0f),
+<span class="lineNum">      12 </span>            : m_cameraPitch(20.0f),
+<span class="lineNum">      13 </span>            : m_cameraYaw(0.0f),
+<span class="lineNum">      14 </span>            : m_upVector(0.0f, 1.0f, 0.0f),
+<span class="lineNum">      15 </span>            : m_nearPlane(1.0f),
+<span class="lineNum">      16 </span>            : m_farPlane(1000.0f),
+<span class="lineNum">      17 </span>            : m_pBroadphase(0),
+<span class="lineNum">      18 </span>            : m_pCollisionConfiguration(0),
+<span class="lineNum">      19 </span>            : m_pDispatcher(0),
+<span class="lineNum">      20 </span>            : m_pSolver(0),
+<span class="lineNum">      21 </span>            : m_pWorld(0),
+<span class="lineNum">      22 </span>            : m_pPickedBody(0),
+<span class="lineNum">      23 </span><span class="lineCov">          1 : m_pPickConstraint(0)</span>
+<span class="lineNum">      24 </span>            : {
+<a name="25"><span class="lineNum">      25 </span><span class="lineCov">          1 : }</span></a>
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span><span class="lineCov">          2 : BulletOpenGLApplication::~BulletOpenGLApplication() {</span>
+<span class="lineNum">      28 </span>            :         // shutdown the physics system
+<span class="lineNum">      29 </span><span class="lineCov">          1 :         ShutdownPhysics();</span>
+<a name="30"><span class="lineNum">      30 </span><span class="lineCov">          1 : }</span></a>
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span><span class="lineCov">          1 : void BulletOpenGLApplication::Initialize() {</span>
+<span class="lineNum">      33 </span>            :         // this function is called inside glutmain() after
+<span class="lineNum">      34 </span>            :         // creating the window, but before handing control
+<span class="lineNum">      35 </span>            :         // to FreeGLUT
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            :         // create some floats for our ambient, diffuse, specular and position
+<span class="lineNum">      38 </span><span class="lineCov">          1 :         GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f }; // dark grey</span>
+<span class="lineNum">      39 </span><span class="lineCov">          1 :         GLfloat diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // white</span>
+<span class="lineNum">      40 </span><span class="lineCov">          1 :         GLfloat specular[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // white</span>
+<span class="lineNum">      41 </span><span class="lineCov">          1 :         GLfloat position[] = { 5.0f, 10.0f, 1.0f, 0.0f };</span>
+<span class="lineNum">      42 </span>            :         
+<span class="lineNum">      43 </span>            :         // set the ambient, diffuse, specular and position for LIGHT0
+<span class="lineNum">      44 </span><span class="lineCov">          1 :         glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);</span>
+<span class="lineNum">      45 </span><span class="lineCov">          1 :         glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);</span>
+<span class="lineNum">      46 </span><span class="lineCov">          1 :         glLightfv(GL_LIGHT0, GL_SPECULAR, specular);</span>
+<span class="lineNum">      47 </span><span class="lineCov">          1 :         glLightfv(GL_LIGHT0, GL_POSITION, position);</span>
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span><span class="lineCov">          1 :         glEnable(GL_LIGHTING); // enables lighting</span>
+<span class="lineNum">      50 </span><span class="lineCov">          1 :         glEnable(GL_LIGHT0); // enables the 0th light</span>
+<span class="lineNum">      51 </span><span class="lineCov">          1 :         glEnable(GL_COLOR_MATERIAL); // colors materials when lighting is enabled</span>
+<span class="lineNum">      52 </span>            :                 
+<span class="lineNum">      53 </span>            :         // enable specular lighting via materials
+<span class="lineNum">      54 </span><span class="lineCov">          1 :         glMaterialfv(GL_FRONT, GL_SPECULAR, specular);</span>
+<span class="lineNum">      55 </span><span class="lineCov">          1 :         glMateriali(GL_FRONT, GL_SHININESS, 15);</span>
+<span class="lineNum">      56 </span>            :         
+<span class="lineNum">      57 </span>            :         // enable smooth shading
+<span class="lineNum">      58 </span><span class="lineCov">          1 :         glShadeModel(GL_SMOOTH);</span>
+<span class="lineNum">      59 </span>            :         
+<span class="lineNum">      60 </span>            :         // enable depth testing to be 'less than'
+<span class="lineNum">      61 </span><span class="lineCov">          1 :         glEnable(GL_DEPTH_TEST);</span>
+<span class="lineNum">      62 </span><span class="lineCov">          1 :         glDepthFunc(GL_LESS);</span>
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span>            :         // set the backbuffer clearing color to a lightish blue
+<span class="lineNum">      65 </span><span class="lineCov">          1 :         glClearColor(0.6, 0.65, 0.85, 0);</span>
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span>            :         // initialize the physics system
+<span class="lineNum">      68 </span><span class="lineCov">          1 :         InitializePhysics();</span>
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span>            :         // create the debug drawer
+<span class="lineNum">      71 </span><span class="lineCov">          1 :         m_pDebugDrawer = new DebugDrawer();</span>
+<span class="lineNum">      72 </span>            :         // set the initial debug level to 0
+<span class="lineNum">      73 </span><span class="lineCov">          1 :         m_pDebugDrawer-&gt;setDebugMode(0);</span>
+<span class="lineNum">      74 </span>            :         // add the debug drawer to the world
+<a name="75"><span class="lineNum">      75 </span><span class="lineCov">          1 :         m_pWorld-&gt;setDebugDrawer(m_pDebugDrawer);</span></a>
+<span class="lineNum">      76 </span><span class="lineCov">          1 : }</span>
+<span class="lineNum">      77 </span><span class="lineCov">         49 : void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {</span>
+<span class="lineNum">      78 </span>            :         // This function is called by FreeGLUT whenever
+<span class="lineNum">      79 </span>            :         // generic keys are pressed down.
+<span class="lineNum">      80 </span><span class="lineCov">         49 :         switch(key) {</span>
+<span class="lineNum">      81 </span>            :                 // 'z' zooms in
+<span class="lineNum">      82 </span><span class="lineNoCov">          0 :         case 'z': ZoomCamera(+CAMERA_STEP_SIZE); break;</span>
+<span class="lineNum">      83 </span>            :                 // 'x' zoom out
+<span class="lineNum">      84 </span><span class="lineCov">          1 :         case 'x': ZoomCamera(-CAMERA_STEP_SIZE); break;</span>
+<span class="lineNum">      85 </span><span class="lineNoCov">          0 :         case 'w':</span>
+<span class="lineNum">      86 </span>            :                 // toggle wireframe debug drawing
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :                 m_pDebugDrawer-&gt;ToggleDebugFlag(btIDebugDraw::DBG_DrawWireframe);</span>
+<span class="lineNum">      88 </span><span class="lineNoCov">          0 :                 break;</span>
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span><span class="lineNoCov">          0 :         case 'b':</span>
+<span class="lineNum">      91 </span>            :                 // toggle AABB debug drawing
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :                 m_pDebugDrawer-&gt;ToggleDebugFlag(btIDebugDraw::DBG_DrawAabb);</span>
+<span class="lineNum">      93 </span><span class="lineNoCov">          0 :                 break;</span>
+<span class="lineNum">      94 </span><span class="lineNoCov">          0 :         case 'd':</span>
+<span class="lineNum">      95 </span>            :                 {
+<span class="lineNum">      96 </span>            :                         // create a temp object to store the raycast result
+<span class="lineNum">      97 </span><span class="lineNoCov">          0 :                         RayResult result;</span>
+<span class="lineNum">      98 </span>            :                         // perform the raycast
+<span class="lineNum">      99 </span><span class="lineNoCov">          0 :                         if (!Raycast(m_cameraPosition, GetPickingRay(x, y), result))</span>
+<span class="lineNum">     100 </span><span class="lineNoCov">          0 :                                 return; // return if the test failed</span>
+<span class="lineNum">     101 </span>            :                         // destroy the corresponding game object
+<span class="lineNum">     102 </span><span class="lineNoCov">          0 :                         DestroyGameObject(result.pBody);</span>
+<span class="lineNum">     103 </span><span class="lineNoCov">          0 :                         break;</span>
+<span class="lineNum">     104 </span>            :                 }
+<span class="lineNum">     105 </span>            :         }
+<a name="106"><span class="lineNum">     106 </span>            : }</a>
+<span class="lineNum">     107 </span>            : 
+<a name="108"><span class="lineNum">     108 </span><span class="lineCov">         49 : void BulletOpenGLApplication::KeyboardUp(unsigned char key, int x, int y) {}</span></a>
+<span class="lineNum">     109 </span>            : 
+<span class="lineNum">     110 </span><span class="lineCov">        102 : void BulletOpenGLApplication::Special(int key, int x, int y) {</span>
+<span class="lineNum">     111 </span>            :         // This function is called by FreeGLUT whenever special keys
+<span class="lineNum">     112 </span>            :         // are pressed down, like the arrow keys, or Insert, Delete etc.
+<span class="lineNum">     113 </span><span class="lineCov">        102 :         switch(key) {</span>
+<span class="lineNum">     114 </span>            :                 // the arrow keys rotate the camera up/down/left/right
+<span class="lineNum">     115 </span><span class="lineCov">         37 :         case GLUT_KEY_LEFT: </span>
+<span class="lineNum">     116 </span><span class="lineCov">         37 :                 RotateCamera(m_cameraYaw, +CAMERA_STEP_SIZE); break;</span>
+<span class="lineNum">     117 </span><span class="lineCov">          4 :         case GLUT_KEY_RIGHT:</span>
+<span class="lineNum">     118 </span><span class="lineCov">          4 :                 RotateCamera(m_cameraYaw, -CAMERA_STEP_SIZE); break;</span>
+<span class="lineNum">     119 </span><span class="lineCov">         30 :         case GLUT_KEY_UP:       </span>
+<span class="lineNum">     120 </span><span class="lineCov">         30 :                 RotateCamera(m_cameraPitch, +CAMERA_STEP_SIZE); break;</span>
+<span class="lineNum">     121 </span><span class="lineCov">         30 :         case GLUT_KEY_DOWN:     </span>
+<span class="lineNum">     122 </span><span class="lineCov">         30 :                 RotateCamera(m_cameraPitch, -CAMERA_STEP_SIZE); break;</span>
+<span class="lineNum">     123 </span>            :         }
+<a name="124"><span class="lineNum">     124 </span><span class="lineCov">        102 : }</span></a>
+<span class="lineNum">     125 </span>            : 
+<a name="126"><span class="lineNum">     126 </span><span class="lineCov">        102 : void BulletOpenGLApplication::SpecialUp(int key, int x, int y) {}</span></a>
+<span class="lineNum">     127 </span>            : 
+<span class="lineNum">     128 </span><span class="lineCov">          2 : void BulletOpenGLApplication::Reshape(int w, int h) {</span>
+<span class="lineNum">     129 </span>            :         // this function is called once during application intialization
+<span class="lineNum">     130 </span>            :         // and again every time we resize the window
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            :         // grab the screen width/height
+<span class="lineNum">     133 </span><span class="lineCov">          2 :         m_screenWidth = w;</span>
+<span class="lineNum">     134 </span><span class="lineCov">          2 :         m_screenHeight = h;</span>
+<span class="lineNum">     135 </span>            :         // set the viewport
+<span class="lineNum">     136 </span><span class="lineCov">          2 :         glViewport(0, 0, w, h);</span>
+<span class="lineNum">     137 </span>            :         // update the camera
+<span class="lineNum">     138 </span><span class="lineCov">          2 :         UpdateCamera();</span>
+<a name="139"><span class="lineNum">     139 </span><span class="lineCov">          2 : }</span></a>
+<span class="lineNum">     140 </span>            : 
+<span class="lineNum">     141 </span><span class="lineCov">       6106 : void BulletOpenGLApplication::Idle() {</span>
+<span class="lineNum">     142 </span>            :         // this function is called frequently, whenever FreeGlut
+<span class="lineNum">     143 </span>            :         // isn't busy processing its own events. It should be used
+<span class="lineNum">     144 </span>            :         // to perform any updating and rendering tasks
+<span class="lineNum">     145 </span>            : 
+<span class="lineNum">     146 </span>            :         // clear the backbuffer
+<span class="lineNum">     147 </span><span class="lineCov">       6106 :         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); </span>
+<span class="lineNum">     148 </span>            : 
+<span class="lineNum">     149 </span>            :         // get the time since the last iteration
+<span class="lineNum">     150 </span><span class="lineCov">       6106 :         float dt = m_clock.getTimeMilliseconds();</span>
+<span class="lineNum">     151 </span>            :         // reset the clock to 0
+<span class="lineNum">     152 </span><span class="lineCov">       6106 :         m_clock.reset();</span>
+<span class="lineNum">     153 </span>            :         // update the scene (convert ms to s)
+<span class="lineNum">     154 </span><span class="lineCov">       6106 :         UpdateScene(dt / 1000.0f);</span>
+<span class="lineNum">     155 </span>            : 
+<span class="lineNum">     156 </span>            :         // update the camera
+<span class="lineNum">     157 </span><span class="lineCov">       6106 :         UpdateCamera();</span>
+<span class="lineNum">     158 </span>            : 
+<span class="lineNum">     159 </span>            :         // render the scene
+<span class="lineNum">     160 </span><span class="lineCov">       6106 :         RenderScene();</span>
+<span class="lineNum">     161 </span>            : 
+<span class="lineNum">     162 </span>            :         // swap the front and back buffers
+<span class="lineNum">     163 </span><span class="lineCov">       6106 :         glutSwapBuffers();</span>
+<a name="164"><span class="lineNum">     164 </span><span class="lineCov">       6106 : }</span></a>
+<span class="lineNum">     165 </span>            : 
+<span class="lineNum">     166 </span><span class="lineCov">        106 : void BulletOpenGLApplication::Mouse(int button, int state, int x, int y) {</span>
+<span class="lineNum">     167 </span><span class="lineCov">        106 :         switch(button) {</span>
+<span class="lineNum">     168 </span><span class="lineCov">          6 :         case 0:  // left mouse button</span>
+<span class="lineNum">     169 </span>            :                 {
+<span class="lineNum">     170 </span><span class="lineCov">          6 :                         if (state == 0) { // button down</span>
+<span class="lineNum">     171 </span>            :                                 // create the picking constraint when we click the LMB
+<span class="lineNum">     172 </span><span class="lineCov">          3 :                                 CreatePickingConstraint(x, y);</span>
+<span class="lineNum">     173 </span>            :                         } else { // button up
+<span class="lineNum">     174 </span>            :                                 // remove the picking constraint when we release the LMB
+<span class="lineNum">     175 </span><span class="lineCov">          3 :                                 RemovePickingConstraint();</span>
+<span class="lineNum">     176 </span>            :                         }
+<span class="lineNum">     177 </span><span class="lineCov">          6 :                         break;</span>
+<span class="lineNum">     178 </span>            :                 }
+<span class="lineNum">     179 </span><span class="lineCov">        100 :         case 2: // right mouse button</span>
+<span class="lineNum">     180 </span>            :                 {
+<span class="lineNum">     181 </span><span class="lineCov">        100 :                         if (state == 0) { // pressed down</span>
+<span class="lineNum">     182 </span>            :                                 // shoot a box
+<span class="lineNum">     183 </span><span class="lineCov">         50 :                                 ShootBox(GetPickingRay(x, y));</span>
+<span class="lineNum">     184 </span>            :                         }
+<span class="lineNum">     185 </span>            :                 
+<span class="lineNum">     186 </span><span class="lineCov">        100 :                 break;</span>
+<span class="lineNum">     187 </span>            :                 }
+<span class="lineNum">     188 </span>            :         }
+<a name="189"><span class="lineNum">     189 </span><span class="lineCov">        106 : }</span></a>
+<span class="lineNum">     190 </span>            : 
+<a name="191"><span class="lineNum">     191 </span><span class="lineNoCov">          0 : void BulletOpenGLApplication::PassiveMotion(int x, int y) {}</span></a>
+<span class="lineNum">     192 </span>            : 
+<span class="lineNum">     193 </span><span class="lineCov">       1403 : void BulletOpenGLApplication::Motion(int x, int y) {</span>
+<span class="lineNum">     194 </span>            :         // did we pick a body with the LMB?
+<span class="lineNum">     195 </span><span class="lineCov">       1403 :         if (m_pPickedBody) {</span>
+<span class="lineNum">     196 </span><span class="lineCov">         23 :                 btGeneric6DofConstraint* pickCon = static_cast&lt;btGeneric6DofConstraint*&gt;(m_pPickConstraint);</span>
+<span class="lineNum">     197 </span><span class="lineCov">         23 :                 if (!pickCon)</span>
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :                         return;</span>
+<span class="lineNum">     199 </span>            : 
+<span class="lineNum">     200 </span>            :                 // use another picking ray to get the target direction
+<span class="lineNum">     201 </span><span class="lineCov">         23 :                 btVector3 dir = GetPickingRay(x,y) - m_cameraPosition;</span>
+<span class="lineNum">     202 </span><span class="lineCov">         23 :                 dir.normalize();</span>
+<span class="lineNum">     203 </span>            : 
+<span class="lineNum">     204 </span>            :                 // use the same distance as when we originally picked the object
+<span class="lineNum">     205 </span><span class="lineCov">         23 :                 dir *= m_oldPickingDist;</span>
+<span class="lineNum">     206 </span><span class="lineCov">         23 :                 btVector3 newPivot = m_cameraPosition + dir;</span>
+<span class="lineNum">     207 </span>            : 
+<span class="lineNum">     208 </span>            :                 // set the position of the constraint
+<span class="lineNum">     209 </span><span class="lineCov">         23 :                 pickCon-&gt;getFrameOffsetA().setOrigin(newPivot);</span>
+<a name="210"><span class="lineNum">     210 </span>            :         }</a>
+<span class="lineNum">     211 </span>            : }
+<a name="212"><span class="lineNum">     212 </span><span class="lineCov">          2 : void BulletOpenGLApplication::Display() {}</span></a>
+<span class="lineNum">     213 </span>            : 
+<span class="lineNum">     214 </span><span class="lineCov">       6210 : void BulletOpenGLApplication::UpdateCamera() {</span>
+<span class="lineNum">     215 </span>            :         // exit in erroneous situations
+<span class="lineNum">     216 </span><span class="lineCov">       6210 :         if (m_screenWidth == 0 &amp;&amp; m_screenHeight == 0)</span>
+<span class="lineNum">     217 </span><span class="lineNoCov">          0 :                 return;</span>
+<span class="lineNum">     218 </span>            :         
+<span class="lineNum">     219 </span>            :         // select the projection matrix
+<span class="lineNum">     220 </span><span class="lineCov">       6210 :         glMatrixMode(GL_PROJECTION);</span>
+<span class="lineNum">     221 </span>            :         // set it to the matrix-equivalent of 1
+<span class="lineNum">     222 </span><span class="lineCov">       6210 :         glLoadIdentity();</span>
+<span class="lineNum">     223 </span>            :         // determine the aspect ratio of the screen
+<span class="lineNum">     224 </span><span class="lineCov">       6210 :         float aspectRatio = m_screenWidth / (float)m_screenHeight;</span>
+<span class="lineNum">     225 </span>            :         // create a viewing frustum based on the aspect ratio and the
+<span class="lineNum">     226 </span>            :         // boundaries of the camera
+<span class="lineNum">     227 </span><span class="lineCov">       6210 :         glFrustum (-aspectRatio * m_nearPlane, aspectRatio * m_nearPlane, -m_nearPlane, m_nearPlane, m_nearPlane, m_farPlane);</span>
+<span class="lineNum">     228 </span>            :         // the projection matrix is now set
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span>            :         // select the view matrix
+<span class="lineNum">     231 </span><span class="lineCov">       6210 :         glMatrixMode(GL_MODELVIEW);</span>
+<span class="lineNum">     232 </span>            :         // set it to '1'
+<span class="lineNum">     233 </span><span class="lineCov">       6210 :         glLoadIdentity();</span>
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span>            :         // our values represent the angles in degrees, but 3D 
+<span class="lineNum">     236 </span>            :         // math typically demands angular values are in radians.
+<span class="lineNum">     237 </span><span class="lineCov">       6210 :         float pitch = m_cameraPitch * RADIANS_PER_DEGREE;</span>
+<span class="lineNum">     238 </span><span class="lineCov">       6210 :         float yaw = m_cameraYaw * RADIANS_PER_DEGREE;</span>
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span>            :         // create a quaternion defining the angular rotation 
+<span class="lineNum">     241 </span>            :         // around the up vector
+<span class="lineNum">     242 </span><span class="lineCov">       6210 :         btQuaternion rotation(m_upVector, yaw);</span>
+<span class="lineNum">     243 </span>            : 
+<span class="lineNum">     244 </span>            :         // set the camera's position to 0,0,0, then move the 'z' 
+<span class="lineNum">     245 </span>            :         // position to the current value of m_cameraDistance.
+<span class="lineNum">     246 </span><span class="lineCov">       6210 :         btVector3 cameraPosition(0,0,0);</span>
+<span class="lineNum">     247 </span><span class="lineCov">       6210 :         cameraPosition[2] = -m_cameraDistance;</span>
+<span class="lineNum">     248 </span>            : 
+<span class="lineNum">     249 </span>            :         // create a Bullet Vector3 to represent the camera 
+<span class="lineNum">     250 </span>            :         // position and scale it up if its value is too small.
+<span class="lineNum">     251 </span><span class="lineCov">       6210 :         btVector3 forward(cameraPosition[0], cameraPosition[1], cameraPosition[2]);</span>
+<span class="lineNum">     252 </span><span class="lineCov">       6210 :         if (forward.length2() &lt; SIMD_EPSILON) {</span>
+<span class="lineNum">     253 </span><span class="lineNoCov">          0 :                 forward.setValue(1.f,0.f,0.f);</span>
+<span class="lineNum">     254 </span>            :         }
+<span class="lineNum">     255 </span>            : 
+<span class="lineNum">     256 </span>            :         // figure out the 'right' vector by using the cross 
+<span class="lineNum">     257 </span>            :         // product on the 'forward' and 'up' vectors
+<span class="lineNum">     258 </span><span class="lineCov">       6210 :         btVector3 right = m_upVector.cross(forward);</span>
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span>            :         // create a quaternion that represents the camera's roll
+<span class="lineNum">     261 </span><span class="lineCov">       6210 :         btQuaternion roll(right, - pitch);</span>
+<span class="lineNum">     262 </span>            : 
+<span class="lineNum">     263 </span>            :         // turn the rotation (around the Y-axis) and roll (around 
+<span class="lineNum">     264 </span>            :         // the forward axis) into transformation matrices and 
+<span class="lineNum">     265 </span>            :         // apply them to the camera position. This gives us the 
+<span class="lineNum">     266 </span>            :         // final position
+<span class="lineNum">     267 </span><span class="lineCov">       6210 :         cameraPosition = btMatrix3x3(rotation) * btMatrix3x3(roll) * cameraPosition;</span>
+<span class="lineNum">     268 </span>            : 
+<span class="lineNum">     269 </span>            :         // save our new position in the member variable, and 
+<span class="lineNum">     270 </span>            :         // shift it relative to the target position (so that we 
+<span class="lineNum">     271 </span>            :         // orbit it)
+<span class="lineNum">     272 </span><span class="lineCov">       6210 :         m_cameraPosition[0] = cameraPosition.getX();</span>
+<span class="lineNum">     273 </span><span class="lineCov">       6210 :         m_cameraPosition[1] = cameraPosition.getY();</span>
+<span class="lineNum">     274 </span><span class="lineCov">       6210 :         m_cameraPosition[2] = cameraPosition.getZ();</span>
+<span class="lineNum">     275 </span><span class="lineCov">       6210 :         m_cameraPosition += m_cameraTarget;</span>
+<span class="lineNum">     276 </span>            : 
+<span class="lineNum">     277 </span>            :         // create a view matrix based on the camera's position and where it's
+<span class="lineNum">     278 </span>            :         // looking
+<span class="lineNum">     279 </span><span class="lineCov">       6210 :         gluLookAt(m_cameraPosition[0], m_cameraPosition[1], m_cameraPosition[2], m_cameraTarget[0], m_cameraTarget[1], m_cameraTarget[2], m_upVector.getX(), m_upVector.getY(), m_upVector.getZ());</span>
+<span class="lineNum">     280 </span>            :         // the view matrix is now set
+<a name="281"><span class="lineNum">     281 </span>            : }</a>
+<span class="lineNum">     282 </span>            : 
+<span class="lineNum">     283 </span><span class="lineCov">     314690 : void BulletOpenGLApplication::DrawBox(const btVector3 &amp;halfSize) {</span>
+<span class="lineNum">     284 </span>            :         
+<span class="lineNum">     285 </span><span class="lineCov">     314690 :         float halfWidth = halfSize.x();</span>
+<span class="lineNum">     286 </span><span class="lineCov">     314690 :         float halfHeight = halfSize.y();</span>
+<span class="lineNum">     287 </span><span class="lineCov">     314690 :         float halfDepth = halfSize.z();</span>
+<span class="lineNum">     288 </span>            : 
+<span class="lineNum">     289 </span>            :         // create the vertex positions
+<span class="lineNum">     290 </span>            :         btVector3 vertices[8]={ 
+<span class="lineNum">     291 </span>            :         btVector3(halfWidth,halfHeight,halfDepth),
+<span class="lineNum">     292 </span><span class="lineCov">     629380 :         btVector3(-halfWidth,halfHeight,halfDepth),</span>
+<span class="lineNum">     293 </span><span class="lineCov">     629380 :         btVector3(halfWidth,-halfHeight,halfDepth),     </span>
+<span class="lineNum">     294 </span><span class="lineCov">     629380 :         btVector3(-halfWidth,-halfHeight,halfDepth),    </span>
+<span class="lineNum">     295 </span><span class="lineCov">     629380 :         btVector3(halfWidth,halfHeight,-halfDepth),</span>
+<span class="lineNum">     296 </span><span class="lineCov">     629380 :         btVector3(-halfWidth,halfHeight,-halfDepth),    </span>
+<span class="lineNum">     297 </span><span class="lineCov">     629380 :         btVector3(halfWidth,-halfHeight,-halfDepth),    </span>
+<span class="lineNum">     298 </span><span class="lineCov">    4090970 :         btVector3(-halfWidth,-halfHeight,-halfDepth)};</span>
+<span class="lineNum">     299 </span>            : 
+<span class="lineNum">     300 </span>            :         // create the indexes for each triangle, using the 
+<span class="lineNum">     301 </span>            :         // vertices above. Make it static so we don't waste 
+<span class="lineNum">     302 </span>            :         // processing time recreating it over and over again
+<span class="lineNum">     303 </span>            :         static int indices[36] = {
+<span class="lineNum">     304 </span>            :                 0,1,2,
+<span class="lineNum">     305 </span>            :                 3,2,1,
+<span class="lineNum">     306 </span>            :                 4,0,6,
+<span class="lineNum">     307 </span>            :                 6,0,2,
+<span class="lineNum">     308 </span>            :                 5,1,4,
+<span class="lineNum">     309 </span>            :                 4,1,0,
+<span class="lineNum">     310 </span>            :                 7,3,1,
+<span class="lineNum">     311 </span>            :                 7,1,5,
+<span class="lineNum">     312 </span>            :                 5,4,7,
+<span class="lineNum">     313 </span>            :                 7,4,6,
+<span class="lineNum">     314 </span>            :                 7,2,3,
+<span class="lineNum">     315 </span>            :                 7,6,2};
+<span class="lineNum">     316 </span>            : 
+<span class="lineNum">     317 </span>            :         // start processing vertices as triangles
+<span class="lineNum">     318 </span><span class="lineCov">     314690 :         glBegin (GL_TRIANGLES);</span>
+<span class="lineNum">     319 </span>            : 
+<span class="lineNum">     320 </span>            :         // increment the loop by 3 each time since we create a 
+<span class="lineNum">     321 </span>            :         // triangle with 3 vertices at a time.
+<span class="lineNum">     322 </span>            : 
+<span class="lineNum">     323 </span><span class="lineCov">    4090970 :         for (int i = 0; i &lt; 36; i += 3) {</span>
+<span class="lineNum">     324 </span>            :                 // get the three vertices for the triangle based
+<span class="lineNum">     325 </span>            :                 // on the index values set above
+<span class="lineNum">     326 </span>            :                 // use const references so we don't copy the object
+<span class="lineNum">     327 </span>            :                 // (a good rule of thumb is to never allocate/deallocate
+<span class="lineNum">     328 </span>            :                 // memory during *every* render/update call. This should 
+<span class="lineNum">     329 </span>            :                 // only happen sporadically)
+<span class="lineNum">     330 </span><span class="lineCov">    3776280 :                 const btVector3 &amp;vert1 = vertices[indices[i]];</span>
+<span class="lineNum">     331 </span><span class="lineCov">    3776280 :                 const btVector3 &amp;vert2 = vertices[indices[i+1]];</span>
+<span class="lineNum">     332 </span><span class="lineCov">    3776280 :                 const btVector3 &amp;vert3 = vertices[indices[i+2]];</span>
+<span class="lineNum">     333 </span>            : 
+<span class="lineNum">     334 </span>            :                 // create a normal that is perpendicular to the 
+<span class="lineNum">     335 </span>            :                 // face (use the cross product)
+<span class="lineNum">     336 </span><span class="lineCov">    3776280 :                 btVector3 normal = (vert3-vert1).cross(vert2-vert1);</span>
+<span class="lineNum">     337 </span><span class="lineCov">    3776280 :                 normal.normalize ();</span>
+<span class="lineNum">     338 </span>            : 
+<span class="lineNum">     339 </span>            :                 // set the normal for the subsequent vertices
+<span class="lineNum">     340 </span><span class="lineCov">    3776280 :                 glNormal3f(normal.getX(),normal.getY(),normal.getZ());</span>
+<span class="lineNum">     341 </span>            : 
+<span class="lineNum">     342 </span>            :                 // create the vertices
+<span class="lineNum">     343 </span><span class="lineCov">    3776280 :                 glVertex3f (vert1.x(), vert1.y(), vert1.z());</span>
+<span class="lineNum">     344 </span><span class="lineCov">    3776280 :                 glVertex3f (vert2.x(), vert2.y(), vert2.z());</span>
+<span class="lineNum">     345 </span><span class="lineCov">    3776280 :                 glVertex3f (vert3.x(), vert3.y(), vert3.z());</span>
+<span class="lineNum">     346 </span>            :         }
+<span class="lineNum">     347 </span>            : 
+<span class="lineNum">     348 </span>            :         // stop processing vertices
+<span class="lineNum">     349 </span><span class="lineCov">     314690 :         glEnd();</span>
+<a name="350"><span class="lineNum">     350 </span><span class="lineCov">     314690 : }</span></a>
+<span class="lineNum">     351 </span>            : 
+<span class="lineNum">     352 </span><span class="lineCov">        101 : void BulletOpenGLApplication::RotateCamera(float &amp;angle, float value) {</span>
+<span class="lineNum">     353 </span>            :         // change the value (it is passed by reference, so we
+<span class="lineNum">     354 </span>            :         // can edit it here)
+<span class="lineNum">     355 </span><span class="lineCov">        101 :         angle -= value; </span>
+<span class="lineNum">     356 </span>            :         // keep the value within bounds
+<span class="lineNum">     357 </span><span class="lineCov">        101 :         if (angle &lt; 0) angle += 360; </span>
+<span class="lineNum">     358 </span><span class="lineCov">        101 :         if (angle &gt;= 360) angle -= 360;</span>
+<span class="lineNum">     359 </span>            :         // update the camera since we changed the angular value
+<span class="lineNum">     360 </span><span class="lineCov">        101 :         UpdateCamera(); </span>
+<a name="361"><span class="lineNum">     361 </span><span class="lineCov">        101 : }</span></a>
+<span class="lineNum">     362 </span>            : 
+<span class="lineNum">     363 </span><span class="lineCov">          1 : void BulletOpenGLApplication::ZoomCamera(float distance) {</span>
+<span class="lineNum">     364 </span>            :         // change the distance value
+<span class="lineNum">     365 </span><span class="lineCov">          1 :         m_cameraDistance -= distance;</span>
+<span class="lineNum">     366 </span>            :         // prevent it from zooming in too far
+<span class="lineNum">     367 </span><span class="lineCov">          1 :         if (m_cameraDistance &lt; 0.1f) m_cameraDistance = 0.1f;</span>
+<span class="lineNum">     368 </span>            :         // update the camera since we changed the zoom distance
+<span class="lineNum">     369 </span><span class="lineCov">          1 :         UpdateCamera();</span>
+<a name="370"><span class="lineNum">     370 </span><span class="lineCov">          1 : }</span></a>
+<span class="lineNum">     371 </span>            : 
+<span class="lineNum">     372 </span><span class="lineCov">       6106 : void BulletOpenGLApplication::RenderScene() {</span>
+<span class="lineNum">     373 </span>            :         // create an array of 16 floats (representing a 4x4 matrix)
+<span class="lineNum">     374 </span>            :         btScalar transform[16];
+<span class="lineNum">     375 </span>            : 
+<span class="lineNum">     376 </span>            :         // iterate through all of the objects in our world
+<span class="lineNum">     377 </span><span class="lineCov">     473446 :         for(GameObjects::iterator i = m_objects.begin(); i != m_objects.end(); ++i) {</span>
+<span class="lineNum">     378 </span>            :                 // get the object from the iterator
+<span class="lineNum">     379 </span><span class="lineCov">     467340 :                 GameObject* pObj = *i;</span>
+<span class="lineNum">     380 </span>            : 
+<span class="lineNum">     381 </span>            :                 // read the transform
+<span class="lineNum">     382 </span><span class="lineCov">     467340 :                 pObj-&gt;GetTransform(transform);</span>
+<span class="lineNum">     383 </span>            : 
+<span class="lineNum">     384 </span>            :                 // get data from the object and draw it
+<span class="lineNum">     385 </span><span class="lineCov">     467340 :                 DrawShape(transform, pObj-&gt;GetShape(), pObj-&gt;GetColor());</span>
+<span class="lineNum">     386 </span>            :         }
+<span class="lineNum">     387 </span>            : 
+<span class="lineNum">     388 </span>            :         // after rendering all game objects, perform debug rendering
+<span class="lineNum">     389 </span>            :         // Bullet will figure out what needs to be drawn then call to
+<span class="lineNum">     390 </span>            :         // our DebugDrawer class to do the rendering for us
+<span class="lineNum">     391 </span><span class="lineCov">       6106 :         m_pWorld-&gt;debugDrawWorld();</span>
+<a name="392"><span class="lineNum">     392 </span><span class="lineCov">       6106 : }</span></a>
+<span class="lineNum">     393 </span>            : 
+<span class="lineNum">     394 </span><span class="lineCov">       6106 : void BulletOpenGLApplication::UpdateScene(float dt) {</span>
+<span class="lineNum">     395 </span>            :         // check if the world object exists
+<span class="lineNum">     396 </span><span class="lineCov">       6106 :         if (m_pWorld) {</span>
+<span class="lineNum">     397 </span>            :                 // step the simulation through time. This is called
+<span class="lineNum">     398 </span>            :                 // every update and the amount of elasped time was 
+<span class="lineNum">     399 </span>            :                 // determined back in ::Idle() by our clock object.
+<span class="lineNum">     400 </span><span class="lineCov">       6106 :                 m_pWorld-&gt;stepSimulation(dt);</span>
+<span class="lineNum">     401 </span>            : 
+<span class="lineNum">     402 </span>            :                 // check for any new collisions/separations
+<span class="lineNum">     403 </span><span class="lineCov">       6106 :                 CheckForCollisionEvents();</span>
+<span class="lineNum">     404 </span>            :         }
+<a name="405"><span class="lineNum">     405 </span><span class="lineCov">       6106 : }</span></a>
+<span class="lineNum">     406 </span>            : 
+<span class="lineNum">     407 </span><span class="lineCov">     467340 : void BulletOpenGLApplication::DrawShape(btScalar* transform, const btCollisionShape* pShape, const btVector3 &amp;color) {</span>
+<span class="lineNum">     408 </span>            :         // set the color
+<span class="lineNum">     409 </span><span class="lineCov">     467340 :         glColor3f(color.x(), color.y(), color.z());</span>
+<span class="lineNum">     410 </span>            : 
+<span class="lineNum">     411 </span>            :         // push the matrix stack
+<span class="lineNum">     412 </span><span class="lineCov">     467340 :         glPushMatrix();</span>
+<span class="lineNum">     413 </span><span class="lineCov">     467340 :         glMultMatrixf(transform);</span>
+<span class="lineNum">     414 </span>            : 
+<span class="lineNum">     415 </span>            :         // make a different draw call based on the object type
+<span class="lineNum">     416 </span><span class="lineCov">     467340 :         switch(pShape-&gt;getShapeType()) {</span>
+<span class="lineNum">     417 </span>            :                 // an internal enum used by Bullet for boxes
+<span class="lineNum">     418 </span><span class="lineCov">     314690 :         case BOX_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     419 </span>            :                 {
+<span class="lineNum">     420 </span>            :                         // assume the shape is a box, and typecast it
+<span class="lineNum">     421 </span><span class="lineCov">     314690 :                         const btBoxShape* box = static_cast&lt;const btBoxShape*&gt;(pShape);</span>
+<span class="lineNum">     422 </span>            :                         // get the 'halfSize' of the box
+<span class="lineNum">     423 </span><span class="lineCov">     314690 :                         btVector3 halfSize = box-&gt;getHalfExtentsWithMargin();</span>
+<span class="lineNum">     424 </span>            :                         // draw the box
+<span class="lineNum">     425 </span><span class="lineCov">     314690 :                         DrawBox(halfSize);</span>
+<span class="lineNum">     426 </span><span class="lineCov">     314690 :                         break;</span>
+<span class="lineNum">     427 </span>            :                 }
+<span class="lineNum">     428 </span>            : 
+<span class="lineNum">     429 </span><span class="lineCov">     152650 :         case SPHERE_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     430 </span>            :                 {
+<span class="lineNum">     431 </span>            :                         // assume the shape is a sphere and typecast it
+<span class="lineNum">     432 </span><span class="lineCov">     152650 :                         const btSphereShape* sphere = static_cast&lt;const btSphereShape*&gt;(pShape);</span>
+<span class="lineNum">     433 </span>            :                         // get the sphere's size from the shape
+<span class="lineNum">     434 </span><span class="lineCov">     152650 :                         float radius = sphere-&gt;getMargin();</span>
+<span class="lineNum">     435 </span>            :                         // draw the sphere
+<span class="lineNum">     436 </span><span class="lineCov">     152650 :                         DrawSphere(radius);</span>
+<span class="lineNum">     437 </span><span class="lineCov">     152650 :                         break;</span>
+<span class="lineNum">     438 </span>            :                 }
+<span class="lineNum">     439 </span>            : 
+<span class="lineNum">     440 </span><span class="lineNoCov">          0 :         case CYLINDER_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     441 </span>            :                 {
+<span class="lineNum">     442 </span>            :                         // assume the object is a cylinder
+<span class="lineNum">     443 </span><span class="lineNoCov">          0 :                         const btCylinderShape* pCylinder = static_cast&lt;const btCylinderShape*&gt;(pShape);</span>
+<span class="lineNum">     444 </span>            :                         // get the relevant data
+<span class="lineNum">     445 </span><span class="lineNoCov">          0 :                         float radius = pCylinder-&gt;getRadius();</span>
+<span class="lineNum">     446 </span><span class="lineNoCov">          0 :                         float halfHeight = pCylinder-&gt;getHalfExtentsWithMargin()[1];</span>
+<span class="lineNum">     447 </span>            :                         // draw the cylinder
+<span class="lineNum">     448 </span><span class="lineNoCov">          0 :                         DrawCylinder(radius,halfHeight);</span>
+<span class="lineNum">     449 </span>            : 
+<span class="lineNum">     450 </span><span class="lineNoCov">          0 :                         break;</span>
+<span class="lineNum">     451 </span>            :                 }
+<span class="lineNum">     452 </span>            : 
+<span class="lineNum">     453 </span><span class="lineNoCov">          0 :         case CONVEX_HULL_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     454 </span>            :                 {
+<span class="lineNum">     455 </span>            :                         // draw the convex hull shape...whatever it is
+<span class="lineNum">     456 </span><span class="lineNoCov">          0 :                         DrawConvexHull(pShape);</span>
+<span class="lineNum">     457 </span><span class="lineNoCov">          0 :                         break;</span>
+<span class="lineNum">     458 </span>            :                 }
+<span class="lineNum">     459 </span>            : 
+<span class="lineNum">     460 </span><span class="lineNoCov">          0 :         case COMPOUND_SHAPE_PROXYTYPE:</span>
+<span class="lineNum">     461 </span>            :                 {
+<span class="lineNum">     462 </span>            :                         // get the shape
+<span class="lineNum">     463 </span><span class="lineNoCov">          0 :                         const btCompoundShape* pCompound = static_cast&lt;const btCompoundShape*&gt;(pShape);</span>
+<span class="lineNum">     464 </span>            :                         // iterate through the children
+<span class="lineNum">     465 </span><span class="lineNoCov">          0 :                         for (int i = 0; i &lt; pCompound-&gt;getNumChildShapes(); ++i) {</span>
+<span class="lineNum">     466 </span>            :                                 // get the transform of the sub-shape
+<span class="lineNum">     467 </span><span class="lineNoCov">          0 :                                 btTransform thisTransform = pCompound-&gt;getChildTransform(i);</span>
+<span class="lineNum">     468 </span>            :                                 btScalar thisMatrix[16];
+<span class="lineNum">     469 </span><span class="lineNoCov">          0 :                                 thisTransform.getOpenGLMatrix(thisMatrix);</span>
+<span class="lineNum">     470 </span>            :                                 // call drawshape recursively for each child. The matrix
+<span class="lineNum">     471 </span>            :                                 // stack takes care of positioning/orienting the object for us
+<span class="lineNum">     472 </span><span class="lineNoCov">          0 :                                 DrawShape(thisMatrix, pCompound-&gt;getChildShape(i), color);</span>
+<span class="lineNum">     473 </span>            :                         }
+<span class="lineNum">     474 </span><span class="lineNoCov">          0 :                         break;</span>
+<span class="lineNum">     475 </span>            :                 }
+<span class="lineNum">     476 </span>            : 
+<span class="lineNum">     477 </span><span class="lineNoCov">          0 :         default:</span>
+<span class="lineNum">     478 </span>            :                 // unsupported type
+<span class="lineNum">     479 </span><span class="lineNoCov">          0 :                 break;</span>
+<span class="lineNum">     480 </span>            :         }
+<span class="lineNum">     481 </span>            : 
+<span class="lineNum">     482 </span>            :         // pop the stack
+<span class="lineNum">     483 </span><span class="lineCov">     467340 :         glPopMatrix();</span>
+<span class="lineNum">     484 </span><span class="lineCov">     467340 : }</span>
+<a name="485"><span class="lineNum">     485 </span>            : </a>
+<span class="lineNum">     486 </span>            : /*REM*          GameObject* BulletOpenGLApplication::CreateGameObject(btCollisionShape* pShape, const float &amp;mass, const btVector3 &amp;color, const btVector3 &amp;initialPosition, const btQuaternion &amp;initialRotation) { **/
+<span class="lineNum">     487 </span><span class="lineCov">        101 : /*ADD*/         GameObject* BulletOpenGLApplication::CreateGameObject(btCollisionShape* pShape, const float &amp;mass, const btVector3 &amp;color, const btVector3 &amp;initialPosition, short group, short mask, const btQuaternion &amp;initialRotation) {</span>
+<span class="lineNum">     488 </span>            :         // create a new game object
+<span class="lineNum">     489 </span><span class="lineCov">        101 :         GameObject* pObject = new GameObject(pShape, mass, color, initialPosition, initialRotation);</span>
+<span class="lineNum">     490 </span>            : 
+<span class="lineNum">     491 </span>            :         // push it to the back of the list
+<span class="lineNum">     492 </span><span class="lineCov">        101 :         m_objects.push_back(pObject);</span>
+<span class="lineNum">     493 </span>            : 
+<span class="lineNum">     494 </span>            :         // check if the world object is valid
+<span class="lineNum">     495 </span><span class="lineCov">        101 :         if (m_pWorld) {</span>
+<span class="lineNum">     496 </span>            :                 // add the object's rigid body to the world
+<span class="lineNum">     497 </span>            : /*REM*          m_pWorld-&gt;addRigidBody(pObject-&gt;GetRigidBody()); **/
+<span class="lineNum">     498 </span><span class="lineCov">        101 : /*ADD*/         m_pWorld-&gt;addRigidBody(pObject-&gt;GetRigidBody(), group, mask);</span>
+<span class="lineNum">     499 </span>            :         }
+<span class="lineNum">     500 </span><span class="lineCov">        101 :         return pObject;</span>
+<a name="501"><span class="lineNum">     501 </span>            : }</a>
+<span class="lineNum">     502 </span>            : 
+<span class="lineNum">     503 </span><span class="lineCov">         76 : btVector3 BulletOpenGLApplication::GetPickingRay(int x, int y) {</span>
+<span class="lineNum">     504 </span>            :         // calculate the field-of-view
+<span class="lineNum">     505 </span><span class="lineCov">         76 :         float tanFov = 1.0f / m_nearPlane;</span>
+<span class="lineNum">     506 </span><span class="lineCov">         76 :         float fov = btScalar(2.0) * btAtan(tanFov);</span>
+<span class="lineNum">     507 </span>            :         
+<span class="lineNum">     508 </span>            :         // get a ray pointing forward from the 
+<span class="lineNum">     509 </span>            :         // camera and extend it to the far plane
+<span class="lineNum">     510 </span><span class="lineCov">         76 :         btVector3 rayFrom = m_cameraPosition;</span>
+<span class="lineNum">     511 </span><span class="lineCov">         76 :         btVector3 rayForward = (m_cameraTarget - m_cameraPosition);</span>
+<span class="lineNum">     512 </span><span class="lineCov">         76 :         rayForward.normalize();</span>
+<span class="lineNum">     513 </span><span class="lineCov">         76 :         rayForward*= m_farPlane;</span>
+<span class="lineNum">     514 </span>            :         
+<span class="lineNum">     515 </span>            :         // find the horizontal and vertical vectors 
+<span class="lineNum">     516 </span>            :         // relative to the current camera view
+<span class="lineNum">     517 </span><span class="lineCov">         76 :         btVector3 ver = m_upVector;</span>
+<span class="lineNum">     518 </span><span class="lineCov">         76 :         btVector3 hor = rayForward.cross(ver);</span>
+<span class="lineNum">     519 </span><span class="lineCov">         76 :         hor.normalize();</span>
+<span class="lineNum">     520 </span><span class="lineCov">         76 :         ver = hor.cross(rayForward);</span>
+<span class="lineNum">     521 </span><span class="lineCov">         76 :         ver.normalize();</span>
+<span class="lineNum">     522 </span><span class="lineCov">         76 :         hor *= 2.f * m_farPlane * tanFov;</span>
+<span class="lineNum">     523 </span><span class="lineCov">         76 :         ver *= 2.f * m_farPlane * tanFov;</span>
+<span class="lineNum">     524 </span>            :         
+<span class="lineNum">     525 </span>            :         // calculate the aspect ratio
+<span class="lineNum">     526 </span><span class="lineCov">         76 :         btScalar aspect = m_screenWidth / (btScalar)m_screenHeight;</span>
+<span class="lineNum">     527 </span>            :         
+<span class="lineNum">     528 </span>            :         // adjust the forward-ray based on
+<span class="lineNum">     529 </span>            :         // the X/Y coordinates that were clicked
+<span class="lineNum">     530 </span><span class="lineCov">         76 :         hor*=aspect;</span>
+<span class="lineNum">     531 </span><span class="lineCov">         76 :         btVector3 rayToCenter = rayFrom + rayForward;</span>
+<span class="lineNum">     532 </span><span class="lineCov">         76 :         btVector3 dHor = hor * 1.f/float(m_screenWidth);</span>
+<span class="lineNum">     533 </span><span class="lineCov">         76 :         btVector3 dVert = ver * 1.f/float(m_screenHeight);</span>
+<span class="lineNum">     534 </span><span class="lineCov">         76 :         btVector3 rayTo = rayToCenter - 0.5f * hor + 0.5f * ver;</span>
+<span class="lineNum">     535 </span><span class="lineCov">         76 :         rayTo += btScalar(x) * dHor;</span>
+<span class="lineNum">     536 </span><span class="lineCov">         76 :         rayTo -= btScalar(y) * dVert;</span>
+<span class="lineNum">     537 </span>            :         
+<span class="lineNum">     538 </span>            :         // return the final result
+<span class="lineNum">     539 </span><span class="lineCov">         76 :         return rayTo;</span>
+<a name="540"><span class="lineNum">     540 </span>            : }</a>
+<span class="lineNum">     541 </span>            :         
+<span class="lineNum">     542 </span><span class="lineCov">         50 : void BulletOpenGLApplication::ShootBox(const btVector3 &amp;direction) {</span>
+<span class="lineNum">     543 </span>            :         // create a new box object
+<span class="lineNum">     544 </span><span class="lineCov">         50 :         GameObject* pObject = CreateGameObject(new btBoxShape(btVector3(1, 1, 1)), 1, btVector3(0.4f, 0.f, 0.4f), m_cameraPosition);</span>
+<span class="lineNum">     545 </span>            :                 
+<span class="lineNum">     546 </span>            :         // calculate the velocity
+<span class="lineNum">     547 </span><span class="lineCov">         50 :         btVector3 velocity = direction; </span>
+<span class="lineNum">     548 </span><span class="lineCov">         50 :         velocity.normalize();</span>
+<span class="lineNum">     549 </span><span class="lineCov">         50 :         velocity *= 25.0f;</span>
+<span class="lineNum">     550 </span>            :                 
+<span class="lineNum">     551 </span>            :         // set the linear velocity of the box
+<span class="lineNum">     552 </span><span class="lineCov">         50 :         pObject-&gt;GetRigidBody()-&gt;setLinearVelocity(velocity);</span>
+<a name="553"><span class="lineNum">     553 </span><span class="lineCov">         50 : }</span></a>
+<span class="lineNum">     554 </span>            :         
+<span class="lineNum">     555 </span><span class="lineCov">          3 : bool BulletOpenGLApplication::Raycast(const btVector3 &amp;startPosition, const btVector3 &amp;direction, RayResult &amp;output, bool includeStatic) {</span>
+<span class="lineNum">     556 </span><span class="lineCov">          3 :         if (!m_pWorld) </span>
+<span class="lineNum">     557 </span><span class="lineNoCov">          0 :                 return false;</span>
+<span class="lineNum">     558 </span>            :                 
+<span class="lineNum">     559 </span>            :         // get the picking ray from where we clicked
+<span class="lineNum">     560 </span><span class="lineCov">          3 :         btVector3 rayTo = direction;</span>
+<span class="lineNum">     561 </span><span class="lineCov">          3 :         btVector3 rayFrom = m_cameraPosition;</span>
+<span class="lineNum">     562 </span>            :                 
+<span class="lineNum">     563 </span>            :         // create our raycast callback object
+<span class="lineNum">     564 </span><span class="lineCov">          6 :         btCollisionWorld::ClosestRayResultCallback rayCallback(rayFrom,rayTo);</span>
+<span class="lineNum">     565 </span>            :                 
+<span class="lineNum">     566 </span>            :         // perform the raycast
+<span class="lineNum">     567 </span><span class="lineCov">          3 :         m_pWorld-&gt;rayTest(rayFrom,rayTo,rayCallback);</span>
+<span class="lineNum">     568 </span>            :                 
+<span class="lineNum">     569 </span>            :         // did we hit something?
+<span class="lineNum">     570 </span><span class="lineCov">          3 :         if (rayCallback.hasHit())</span>
+<span class="lineNum">     571 </span>            :         {
+<span class="lineNum">     572 </span>            :                 // if so, get the rigid body we hit
+<span class="lineNum">     573 </span><span class="lineCov">          2 :                 btRigidBody* pBody = (btRigidBody*)btRigidBody::upcast(rayCallback.m_collisionObject);</span>
+<span class="lineNum">     574 </span><span class="lineCov">          2 :                 if (!pBody)</span>
+<span class="lineNum">     575 </span><span class="lineNoCov">          0 :                         return false;</span>
+<span class="lineNum">     576 </span>            :                 
+<span class="lineNum">     577 </span>            :                 // prevent us from picking objects 
+<span class="lineNum">     578 </span>            :                 // like the ground plane
+<span class="lineNum">     579 </span><span class="lineCov">          2 :                 if (!includeStatic) // skip this check if we want it to hit static objects</span>
+<span class="lineNum">     580 </span><span class="lineCov">          2 :                         if (pBody-&gt;isStaticObject() || pBody-&gt;isKinematicObject()) </span>
+<span class="lineNum">     581 </span><span class="lineNoCov">          0 :                                 return false;</span>
+<span class="lineNum">     582 </span>            :             
+<span class="lineNum">     583 </span>            :                 // set the result data
+<span class="lineNum">     584 </span><span class="lineCov">          2 :                 output.pBody = pBody;</span>
+<span class="lineNum">     585 </span><span class="lineCov">          2 :                 output.hitPoint = rayCallback.m_hitPointWorld;</span>
+<span class="lineNum">     586 </span><span class="lineCov">          2 :                 return true;</span>
+<span class="lineNum">     587 </span>            :         }
+<span class="lineNum">     588 </span>            :         
+<span class="lineNum">     589 </span>            :         // we didn't hit anything
+<span class="lineNum">     590 </span><span class="lineCov">          1 :         return false;</span>
+<a name="591"><span class="lineNum">     591 </span>            : }</a>
+<span class="lineNum">     592 </span>            :         
+<span class="lineNum">     593 </span><span class="lineNoCov">          0 : void BulletOpenGLApplication::DestroyGameObject(btRigidBody* pBody) {</span>
+<span class="lineNum">     594 </span>            :         // we need to search through the objects in order to 
+<span class="lineNum">     595 </span>            :         // find the corresponding iterator (can only erase from 
+<span class="lineNum">     596 </span>            :         // an std::vector by passing an iterator)
+<span class="lineNum">     597 </span><span class="lineNoCov">          0 :         for (GameObjects::iterator iter = m_objects.begin(); iter != m_objects.end(); ++iter) {</span>
+<span class="lineNum">     598 </span><span class="lineNoCov">          0 :                 if ((*iter)-&gt;GetRigidBody() == pBody) {</span>
+<span class="lineNum">     599 </span><span class="lineNoCov">          0 :                         GameObject* pObject = *iter;</span>
+<span class="lineNum">     600 </span>            :                         // remove the rigid body from the world
+<span class="lineNum">     601 </span><span class="lineNoCov">          0 :                         m_pWorld-&gt;removeRigidBody(pObject-&gt;GetRigidBody());</span>
+<span class="lineNum">     602 </span>            :                         // erase the object from the list
+<span class="lineNum">     603 </span><span class="lineNoCov">          0 :                         m_objects.erase(iter);</span>
+<span class="lineNum">     604 </span>            :                         // delete the object from memory
+<span class="lineNum">     605 </span><span class="lineNoCov">          0 :                         delete pObject;</span>
+<span class="lineNum">     606 </span>            :                         // done
+<span class="lineNum">     607 </span><span class="lineNoCov">          0 :                         return;</span>
+<span class="lineNum">     608 </span>            :                 }
+<span class="lineNum">     609 </span>            :         }
+<a name="610"><span class="lineNum">     610 </span>            : }</a>
+<span class="lineNum">     611 </span>            : 
+<span class="lineNum">     612 </span><span class="lineCov">          3 : void BulletOpenGLApplication::CreatePickingConstraint(int x, int y) {</span>
+<span class="lineNum">     613 </span><span class="lineCov">          3 :         if (!m_pWorld) </span>
+<span class="lineNum">     614 </span><span class="lineCov">          1 :                 return;</span>
+<span class="lineNum">     615 </span>            : 
+<span class="lineNum">     616 </span>            :         // perform a raycast and return if it fails
+<span class="lineNum">     617 </span><span class="lineCov">          3 :         RayResult output;</span>
+<span class="lineNum">     618 </span><span class="lineCov">          3 :         if (!Raycast(m_cameraPosition, GetPickingRay(x, y), output))</span>
+<span class="lineNum">     619 </span><span class="lineCov">          1 :                 return;</span>
+<span class="lineNum">     620 </span>            : 
+<span class="lineNum">     621 </span>            :         // store the body for future reference
+<span class="lineNum">     622 </span><span class="lineCov">          2 :         m_pPickedBody = output.pBody;</span>
+<span class="lineNum">     623 </span>            : 
+<span class="lineNum">     624 </span>            :         // prevent the picked object from falling asleep
+<span class="lineNum">     625 </span><span class="lineCov">          2 :         m_pPickedBody-&gt;setActivationState(DISABLE_DEACTIVATION);</span>
+<span class="lineNum">     626 </span>            : 
+<span class="lineNum">     627 </span>            :         // get the hit position relative to the body we hit 
+<span class="lineNum">     628 </span><span class="lineCov">          2 :         btVector3 localPivot = m_pPickedBody-&gt;getCenterOfMassTransform().inverse() * output.hitPoint;</span>
+<span class="lineNum">     629 </span>            : 
+<span class="lineNum">     630 </span>            :         // create a transform for the pivot point
+<span class="lineNum">     631 </span><span class="lineCov">          2 :         btTransform pivot;</span>
+<span class="lineNum">     632 </span><span class="lineCov">          2 :         pivot.setIdentity();</span>
+<span class="lineNum">     633 </span><span class="lineCov">          2 :         pivot.setOrigin(localPivot);</span>
+<span class="lineNum">     634 </span>            : 
+<span class="lineNum">     635 </span>            :         // create our constraint object
+<span class="lineNum">     636 </span><span class="lineCov">          2 :         btGeneric6DofConstraint* dof6 = new btGeneric6DofConstraint(*m_pPickedBody, pivot, true);</span>
+<span class="lineNum">     637 </span><span class="lineCov">          2 :         bool bLimitAngularMotion = true;</span>
+<span class="lineNum">     638 </span><span class="lineCov">          2 :         if (bLimitAngularMotion) {</span>
+<span class="lineNum">     639 </span><span class="lineCov">          2 :                 dof6-&gt;setAngularLowerLimit(btVector3(0,0,0));</span>
+<span class="lineNum">     640 </span><span class="lineCov">          2 :                 dof6-&gt;setAngularUpperLimit(btVector3(0,0,0));</span>
+<span class="lineNum">     641 </span>            :         }
+<span class="lineNum">     642 </span>            : 
+<span class="lineNum">     643 </span>            :         // add the constraint to the world
+<span class="lineNum">     644 </span><span class="lineCov">          2 :         m_pWorld-&gt;addConstraint(dof6,true);</span>
+<span class="lineNum">     645 </span>            : 
+<span class="lineNum">     646 </span>            :         // store a pointer to our constraint
+<span class="lineNum">     647 </span><span class="lineCov">          2 :         m_pPickConstraint = dof6;</span>
+<span class="lineNum">     648 </span>            : 
+<span class="lineNum">     649 </span>            :         // define the 'strength' of our constraint (each axis)
+<span class="lineNum">     650 </span><span class="lineCov">          2 :         float cfm = 0.5f;</span>
+<span class="lineNum">     651 </span><span class="lineCov">          2 :         dof6-&gt;setParam(BT_CONSTRAINT_STOP_CFM,cfm,0);</span>
+<span class="lineNum">     652 </span><span class="lineCov">          2 :         dof6-&gt;setParam(BT_CONSTRAINT_STOP_CFM,cfm,1);</span>
+<span class="lineNum">     653 </span><span class="lineCov">          2 :         dof6-&gt;setParam(BT_CONSTRAINT_STOP_CFM,cfm,2);</span>
+<span class="lineNum">     654 </span><span class="lineCov">          2 :         dof6-&gt;setParam(BT_CONSTRAINT_STOP_CFM,cfm,3);</span>
+<span class="lineNum">     655 </span><span class="lineCov">          2 :         dof6-&gt;setParam(BT_CONSTRAINT_STOP_CFM,cfm,4);</span>
+<span class="lineNum">     656 </span><span class="lineCov">          2 :         dof6-&gt;setParam(BT_CONSTRAINT_STOP_CFM,cfm,5);</span>
+<span class="lineNum">     657 </span>            : 
+<span class="lineNum">     658 </span>            :         // define the 'error reduction' of our constraint (each axis)
+<span class="lineNum">     659 </span><span class="lineCov">          2 :         float erp = 0.5f;</span>
+<span class="lineNum">     660 </span><span class="lineCov">          2 :         dof6-&gt;setParam(BT_CONSTRAINT_STOP_ERP,erp,0);</span>
+<span class="lineNum">     661 </span><span class="lineCov">          2 :         dof6-&gt;setParam(BT_CONSTRAINT_STOP_ERP,erp,1);</span>
+<span class="lineNum">     662 </span><span class="lineCov">          2 :         dof6-&gt;setParam(BT_CONSTRAINT_STOP_ERP,erp,2);</span>
+<span class="lineNum">     663 </span><span class="lineCov">          2 :         dof6-&gt;setParam(BT_CONSTRAINT_STOP_ERP,erp,3);</span>
+<span class="lineNum">     664 </span><span class="lineCov">          2 :         dof6-&gt;setParam(BT_CONSTRAINT_STOP_ERP,erp,4);</span>
+<span class="lineNum">     665 </span><span class="lineCov">          2 :         dof6-&gt;setParam(BT_CONSTRAINT_STOP_ERP,erp,5);</span>
+<span class="lineNum">     666 </span>            : 
+<span class="lineNum">     667 </span>            :         // save this data for future reference
+<span class="lineNum">     668 </span><span class="lineCov">          2 :         m_oldPickingDist  = (output.hitPoint - m_cameraPosition).length();</span>
+<a name="669"><span class="lineNum">     669 </span>            : }</a>
+<span class="lineNum">     670 </span>            : 
+<span class="lineNum">     671 </span><span class="lineCov">          3 : void BulletOpenGLApplication::RemovePickingConstraint() {</span>
+<span class="lineNum">     672 </span>            :         // exit in erroneous situations
+<span class="lineNum">     673 </span><span class="lineCov">          3 :         if (!m_pPickConstraint || !m_pWorld) </span>
+<span class="lineNum">     674 </span><span class="lineCov">          1 :                 return;</span>
+<span class="lineNum">     675 </span>            : 
+<span class="lineNum">     676 </span>            :         // remove the constraint from the world
+<span class="lineNum">     677 </span><span class="lineCov">          2 :         m_pWorld-&gt;removeConstraint(m_pPickConstraint);</span>
+<span class="lineNum">     678 </span>            : 
+<span class="lineNum">     679 </span>            :         // delete the constraint object
+<span class="lineNum">     680 </span><span class="lineCov">          2 :         delete m_pPickConstraint;</span>
+<span class="lineNum">     681 </span>            : 
+<span class="lineNum">     682 </span>            :         // reactivate the body
+<span class="lineNum">     683 </span><span class="lineCov">          2 :         m_pPickedBody-&gt;forceActivationState(ACTIVE_TAG);</span>
+<span class="lineNum">     684 </span><span class="lineCov">          2 :         m_pPickedBody-&gt;setDeactivationTime( 0.f );</span>
+<span class="lineNum">     685 </span>            : 
+<span class="lineNum">     686 </span>            :         // clear the pointers
+<span class="lineNum">     687 </span><span class="lineCov">          2 :         m_pPickConstraint = 0;</span>
+<span class="lineNum">     688 </span><span class="lineCov">          2 :         m_pPickedBody = 0;</span>
+<a name="689"><span class="lineNum">     689 </span>            : }</a>
+<span class="lineNum">     690 </span>            : 
+<span class="lineNum">     691 </span><span class="lineCov">       6106 : void BulletOpenGLApplication::CheckForCollisionEvents() {</span>
+<span class="lineNum">     692 </span>            :         // keep a list of the collision pairs we
+<span class="lineNum">     693 </span>            :         // found during the current update
+<span class="lineNum">     694 </span><span class="lineCov">      12212 :         CollisionPairs pairsThisUpdate;</span>
+<span class="lineNum">     695 </span>            : 
+<span class="lineNum">     696 </span>            :         // iterate through all of the manifolds in the dispatcher
+<span class="lineNum">     697 </span><span class="lineCov">     884835 :         for (int i = 0; i &lt; m_pDispatcher-&gt;getNumManifolds(); ++i) {</span>
+<span class="lineNum">     698 </span>            :                 
+<span class="lineNum">     699 </span>            :                 // get the manifold
+<span class="lineNum">     700 </span><span class="lineCov">     878729 :                 btPersistentManifold* pManifold = m_pDispatcher-&gt;getManifoldByIndexInternal(i);</span>
+<span class="lineNum">     701 </span>            :                 
+<span class="lineNum">     702 </span>            :                 // ignore manifolds that have 
+<span class="lineNum">     703 </span>            :                 // no contact points.
+<span class="lineNum">     704 </span><span class="lineCov">     878729 :                 if (pManifold-&gt;getNumContacts() &gt; 0) {</span>
+<span class="lineNum">     705 </span>            :                         // get the two rigid bodies involved in the collision
+<span class="lineNum">     706 </span><span class="lineCov">     577957 :                         const btRigidBody* pBody0 = static_cast&lt;const btRigidBody*&gt;(pManifold-&gt;getBody0());</span>
+<span class="lineNum">     707 </span><span class="lineCov">     577957 :                         const btRigidBody* pBody1 = static_cast&lt;const btRigidBody*&gt;(pManifold-&gt;getBody1());</span>
+<span class="lineNum">     708 </span>            :     
+<span class="lineNum">     709 </span>            :                         // always create the pair in a predictable order
+<span class="lineNum">     710 </span>            :                         // (use the pointer value..)
+<span class="lineNum">     711 </span><span class="lineCov">     577957 :                         bool const swapped = pBody0 &gt; pBody1;</span>
+<span class="lineNum">     712 </span><span class="lineCov">     577957 :                         const btRigidBody* pSortedBodyA = swapped ? pBody1 : pBody0;</span>
+<span class="lineNum">     713 </span><span class="lineCov">     577957 :                         const btRigidBody* pSortedBodyB = swapped ? pBody0 : pBody1;</span>
+<span class="lineNum">     714 </span>            :                         
+<span class="lineNum">     715 </span>            :                         // create the pair
+<span class="lineNum">     716 </span><span class="lineCov">     577957 :                         CollisionPair thisPair = std::make_pair(pSortedBodyA, pSortedBodyB);</span>
+<span class="lineNum">     717 </span>            :                         
+<span class="lineNum">     718 </span>            :                         // insert the pair into the current list
+<span class="lineNum">     719 </span><span class="lineCov">     577957 :                         pairsThisUpdate.insert(thisPair);</span>
+<span class="lineNum">     720 </span>            : 
+<span class="lineNum">     721 </span>            :                         // if this pair doesn't exist in the list
+<span class="lineNum">     722 </span>            :                         // from the previous update, it is a new
+<span class="lineNum">     723 </span>            :                         // pair and we must send a collision event
+<span class="lineNum">     724 </span><span class="lineCov">     577957 :                         if (m_pairsLastUpdate.find(thisPair) == m_pairsLastUpdate.end()) {</span>
+<span class="lineNum">     725 </span><span class="lineCov">       1688 :                                 CollisionEvent((btRigidBody*)pBody0, (btRigidBody*)pBody1);</span>
+<span class="lineNum">     726 </span>            :                         }
+<span class="lineNum">     727 </span>            :                 }
+<span class="lineNum">     728 </span>            :         }
+<span class="lineNum">     729 </span>            :         
+<span class="lineNum">     730 </span>            :         // create another list for pairs that
+<span class="lineNum">     731 </span>            :         // were removed this update
+<span class="lineNum">     732 </span><span class="lineCov">      12212 :         CollisionPairs removedPairs;</span>
+<span class="lineNum">     733 </span>            :         
+<span class="lineNum">     734 </span>            :         // this handy function gets the difference beween
+<span class="lineNum">     735 </span>            :         // two sets. It takes the difference between
+<span class="lineNum">     736 </span>            :         // collision pairs from the last update, and this 
+<span class="lineNum">     737 </span>            :         // update and pushes them into the removed pairs list
+<span class="lineNum">     738 </span><span class="lineCov">       6106 :         std::set_difference( m_pairsLastUpdate.begin(), m_pairsLastUpdate.end(),</span>
+<span class="lineNum">     739 </span>            :         pairsThisUpdate.begin(), pairsThisUpdate.end(),
+<span class="lineNum">     740 </span><span class="lineCov">       6106 :         std::inserter(removedPairs, removedPairs.begin()));</span>
+<span class="lineNum">     741 </span>            :         
+<span class="lineNum">     742 </span>            :         // iterate through all of the removed pairs
+<span class="lineNum">     743 </span>            :         // sending separation events for them
+<span class="lineNum">     744 </span><span class="lineCov">       7691 :         for (CollisionPairs::const_iterator iter = removedPairs.begin(); iter != removedPairs.end(); ++iter) {</span>
+<span class="lineNum">     745 </span><span class="lineCov">       1585 :                 SeparationEvent((btRigidBody*)iter-&gt;first, (btRigidBody*)iter-&gt;second);</span>
+<span class="lineNum">     746 </span>            :         }
+<span class="lineNum">     747 </span>            :         
+<span class="lineNum">     748 </span>            :         // in the next iteration we'll want to
+<span class="lineNum">     749 </span>            :         // compare against the pairs we found
+<span class="lineNum">     750 </span>            :         // in this iteration
+<span class="lineNum">     751 </span><span class="lineCov">       6106 :         m_pairsLastUpdate = pairsThisUpdate;</span>
+<a name="752"><span class="lineNum">     752 </span><span class="lineCov">       6106 : }</span></a>
+<span class="lineNum">     753 </span>            : 
+<span class="lineNum">     754 </span><span class="lineCov">       1688 : void BulletOpenGLApplication::CollisionEvent(btRigidBody * pBody0, btRigidBody * pBody1) {</span>
+<span class="lineNum">     755 </span>            : 
+<a name="756"><span class="lineNum">     756 </span><span class="lineCov">       1688 : }</span></a>
+<span class="lineNum">     757 </span>            : 
+<span class="lineNum">     758 </span><span class="lineCov">       1585 : void BulletOpenGLApplication::SeparationEvent(btRigidBody * pBody0, btRigidBody * pBody1) {</span>
+<span class="lineNum">     759 </span>            : 
+<a name="760"><span class="lineNum">     760 </span><span class="lineCov">       1585 : }</span></a>
+<span class="lineNum">     761 </span>            : 
+<span class="lineNum">     762 </span><span class="lineNoCov">          0 : GameObject* BulletOpenGLApplication::FindGameObject(btRigidBody* pBody) {</span>
+<span class="lineNum">     763 </span>            :         // search through our list of gameobjects finding
+<span class="lineNum">     764 </span>            :         // the one with a rigid body that matches the given one
+<span class="lineNum">     765 </span><span class="lineNoCov">          0 :         for (GameObjects::iterator iter = m_objects.begin(); iter != m_objects.end(); ++iter) {</span>
+<span class="lineNum">     766 </span><span class="lineNoCov">          0 :                 if ((*iter)-&gt;GetRigidBody() == pBody) {</span>
+<span class="lineNum">     767 </span>            :                         // found the body, so return the corresponding game object
+<span class="lineNum">     768 </span><span class="lineNoCov">          0 :                         return *iter;</span>
+<span class="lineNum">     769 </span>            :                 }
+<span class="lineNum">     770 </span>            :         }
+<span class="lineNum">     771 </span><span class="lineNoCov">          0 :         return 0;</span>
+<a name="772"><span class="lineNum">     772 </span>            : }</a>
+<span class="lineNum">     773 </span>            : 
+<span class="lineNum">     774 </span><span class="lineCov">     152650 : void BulletOpenGLApplication::DrawSphere(const btScalar &amp;radius) {</span>
+<span class="lineNum">     775 </span>            :         // some constant values for more many segments to build the sphere from
+<span class="lineNum">     776 </span>            :         static int lateralSegments = 25;
+<span class="lineNum">     777 </span>            :         static int longitudinalSegments = 25;
+<span class="lineNum">     778 </span>            : 
+<span class="lineNum">     779 </span>            :         // iterate laterally
+<span class="lineNum">     780 </span><span class="lineCov">    4121550 :         for(int i = 0; i &lt;= lateralSegments; i++) {</span>
+<span class="lineNum">     781 </span>            :                 // do a little math to find the angles of this segment
+<span class="lineNum">     782 </span><span class="lineCov">    3968900 :                 btScalar lat0 = SIMD_PI * (-btScalar(0.5) + (btScalar) (i - 1) / lateralSegments);</span>
+<span class="lineNum">     783 </span><span class="lineCov">    3968900 :                 btScalar z0  = radius*sin(lat0);</span>
+<span class="lineNum">     784 </span><span class="lineCov">    3968900 :                 btScalar zr0 =  radius*cos(lat0);</span>
+<span class="lineNum">     785 </span>            : 
+<span class="lineNum">     786 </span><span class="lineCov">    3968900 :                 btScalar lat1 = SIMD_PI * (-btScalar(0.5) + (btScalar) i / lateralSegments);</span>
+<span class="lineNum">     787 </span><span class="lineCov">    3968900 :                 btScalar z1 = radius*sin(lat1);</span>
+<span class="lineNum">     788 </span><span class="lineCov">    3968900 :                 btScalar zr1 = radius*cos(lat1);</span>
+<span class="lineNum">     789 </span>            : 
+<span class="lineNum">     790 </span>            :                 // start rendering strips of quads (polygons with 4 poins)
+<span class="lineNum">     791 </span><span class="lineCov">    3968900 :                 glBegin(GL_QUAD_STRIP);</span>
+<span class="lineNum">     792 </span>            :                 // iterate longitudinally
+<span class="lineNum">     793 </span><span class="lineCov">  107160300 :                 for(int j = 0; j &lt;= longitudinalSegments; j++) {</span>
+<span class="lineNum">     794 </span>            :                         // determine the points of the quad from the lateral angles
+<span class="lineNum">     795 </span><span class="lineCov">  103191400 :                         btScalar lng = 2 * SIMD_PI * (btScalar) (j - 1) / longitudinalSegments;</span>
+<span class="lineNum">     796 </span><span class="lineCov">  103191400 :                         btScalar x = cos(lng);</span>
+<span class="lineNum">     797 </span><span class="lineCov">  103191400 :                         btScalar y = sin(lng);</span>
+<span class="lineNum">     798 </span>            :                         // draw the normals and vertices for each point in the quad
+<span class="lineNum">     799 </span>            :                         // since it is a STRIP of quads, we only need to add two points
+<span class="lineNum">     800 </span>            :                         // each time to create a whole new quad
+<span class="lineNum">     801 </span>            :                         
+<span class="lineNum">     802 </span>            :                         // calculate the normal
+<span class="lineNum">     803 </span><span class="lineCov">  103191400 :                         btVector3 normal = btVector3(x*zr0, y*zr0, z0);</span>
+<span class="lineNum">     804 </span><span class="lineCov">  103191400 :                         normal.normalize();</span>
+<span class="lineNum">     805 </span><span class="lineCov">  103191400 :                         glNormal3f(normal.x(), normal.y(), normal.z());</span>
+<span class="lineNum">     806 </span>            :                         // create the first vertex
+<span class="lineNum">     807 </span><span class="lineCov">  103191400 :                         glVertex3f(x * zr0, y * zr0, z0);</span>
+<span class="lineNum">     808 </span>            :                         
+<span class="lineNum">     809 </span>            :                         // calculate the next normal
+<span class="lineNum">     810 </span><span class="lineCov">  103191400 :                         normal = btVector3(x*zr1, y*zr1, z1);</span>
+<span class="lineNum">     811 </span><span class="lineCov">  103191400 :                         normal.normalize();</span>
+<span class="lineNum">     812 </span><span class="lineCov">  103191400 :                         glNormal3f(normal.x(), normal.y(), normal.z());</span>
+<span class="lineNum">     813 </span>            :                         // create the second vertex
+<span class="lineNum">     814 </span><span class="lineCov">  103191400 :                         glVertex3f(x * zr1, y * zr1, z1);</span>
+<span class="lineNum">     815 </span>            :                         
+<span class="lineNum">     816 </span>            :                         // and repeat...
+<span class="lineNum">     817 </span>            :                 }
+<span class="lineNum">     818 </span><span class="lineCov">    3968900 :                 glEnd();</span>
+<span class="lineNum">     819 </span>            :         }
+<a name="820"><span class="lineNum">     820 </span><span class="lineCov">     152650 : }</span></a>
+<span class="lineNum">     821 </span>            : 
+<span class="lineNum">     822 </span><span class="lineNoCov">          0 : void BulletOpenGLApplication::DrawCylinder(const btScalar &amp;radius, const btScalar &amp;halfHeight) {</span>
+<span class="lineNum">     823 </span>            :         static int slices = 15;
+<span class="lineNum">     824 </span>            :         static int stacks = 10;
+<span class="lineNum">     825 </span>            :         // tweak the starting position of the
+<span class="lineNum">     826 </span>            :         // cylinder to match the physics object
+<span class="lineNum">     827 </span><span class="lineNoCov">          0 :         glRotatef(-90.0, 1.0, 0.0, 0.0);</span>
+<span class="lineNum">     828 </span><span class="lineNoCov">          0 :         glTranslatef(0.0, 0.0, -halfHeight);</span>
+<span class="lineNum">     829 </span>            :         // create a quadric object to render with
+<span class="lineNum">     830 </span><span class="lineNoCov">          0 :         GLUquadricObj *quadObj = gluNewQuadric();</span>
+<span class="lineNum">     831 </span>            :         // set the draw style of the quadric
+<span class="lineNum">     832 </span><span class="lineNoCov">          0 :         gluQuadricDrawStyle(quadObj, (GLenum)GLU_FILL);</span>
+<span class="lineNum">     833 </span><span class="lineNoCov">          0 :         gluQuadricNormals(quadObj, (GLenum)GLU_SMOOTH);</span>
+<span class="lineNum">     834 </span>            :         // create a disk to cap the cylinder
+<span class="lineNum">     835 </span><span class="lineNoCov">          0 :         gluDisk(quadObj, 0, radius, slices, stacks);</span>
+<span class="lineNum">     836 </span>            :         // create the main hull of the cylinder (no caps)
+<span class="lineNum">     837 </span><span class="lineNoCov">          0 :         gluCylinder(quadObj, radius, radius, 2.f*halfHeight, slices, stacks);</span>
+<span class="lineNum">     838 </span>            :         // shift the position and rotation again
+<span class="lineNum">     839 </span><span class="lineNoCov">          0 :         glTranslatef(0.0f, 0.0f, 2.f*halfHeight);</span>
+<span class="lineNum">     840 </span><span class="lineNoCov">          0 :         glRotatef(-180.0f, 0.0f, 1.0f, 0.0f);</span>
+<span class="lineNum">     841 </span>            :         // draw the cap on the other end of the cylinder
+<span class="lineNum">     842 </span><span class="lineNoCov">          0 :         gluDisk(quadObj, 0, radius, slices, stacks);</span>
+<span class="lineNum">     843 </span>            :         // don't need the quadric anymore, so remove it
+<span class="lineNum">     844 </span>            :         // to save memory
+<span class="lineNum">     845 </span><span class="lineNoCov">          0 :         gluDeleteQuadric(quadObj);</span>
+<a name="846"><span class="lineNum">     846 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     847 </span>            : 
+<span class="lineNum">     848 </span><span class="lineNoCov">          0 : void BulletOpenGLApplication::DrawConvexHull(const btCollisionShape* shape) {</span>
+<span class="lineNum">     849 </span>            :         // get the polyhedral data from the convex hull
+<span class="lineNum">     850 </span><span class="lineNoCov">          0 :         const btConvexPolyhedron* pPoly = shape-&gt;isPolyhedral() ? ((btPolyhedralConvexShape*) shape)-&gt;getConvexPolyhedron() : 0;</span>
+<span class="lineNum">     851 </span><span class="lineNoCov">          0 :         if (!pPoly) return;</span>
+<span class="lineNum">     852 </span>            : 
+<span class="lineNum">     853 </span>            :         // begin drawing triangles
+<span class="lineNum">     854 </span><span class="lineNoCov">          0 :         glBegin (GL_TRIANGLES);</span>
+<span class="lineNum">     855 </span>            : 
+<span class="lineNum">     856 </span>            :         // iterate through all faces
+<span class="lineNum">     857 </span><span class="lineNoCov">          0 :         for (int i = 0; i &lt; pPoly-&gt;m_faces.size(); i++) {</span>
+<span class="lineNum">     858 </span>            :                 // get the indices for the face
+<span class="lineNum">     859 </span><span class="lineNoCov">          0 :                 int numVerts = pPoly-&gt;m_faces[i].m_indices.size();</span>
+<span class="lineNum">     860 </span><span class="lineNoCov">          0 :                 if (numVerts&gt;2)      {</span>
+<span class="lineNum">     861 </span>            :                         // iterate through all index triplets
+<span class="lineNum">     862 </span><span class="lineNoCov">          0 :                         for (int v = 0; v &lt;pPoly-&gt;m_faces[i].m_indices.size()-2;v++) {</span>
+<span class="lineNum">     863 </span>            :                                 // grab the three vertices
+<span class="lineNum">     864 </span><span class="lineNoCov">          0 :                                 btVector3 v1 = pPoly-&gt;m_vertices[pPoly-&gt;m_faces[i].m_indices[0]];</span>
+<span class="lineNum">     865 </span><span class="lineNoCov">          0 :                                 btVector3 v2 = pPoly-&gt;m_vertices[pPoly-&gt;m_faces[i].m_indices[v+1]];</span>
+<span class="lineNum">     866 </span><span class="lineNoCov">          0 :                                 btVector3 v3 = pPoly-&gt;m_vertices[pPoly-&gt;m_faces[i].m_indices[v+2]];</span>
+<span class="lineNum">     867 </span>            :                                 // calculate the normal
+<span class="lineNum">     868 </span><span class="lineNoCov">          0 :                                 btVector3 normal = (v3-v1).cross(v2-v1);</span>
+<span class="lineNum">     869 </span><span class="lineNoCov">          0 :                                 normal.normalize ();</span>
+<span class="lineNum">     870 </span>            :                                 // draw the triangle
+<span class="lineNum">     871 </span><span class="lineNoCov">          0 :                                 glNormal3f(normal.getX(),normal.getY(),normal.getZ());</span>
+<span class="lineNum">     872 </span><span class="lineNoCov">          0 :                                 glVertex3f (v1.x(), v1.y(), v1.z());</span>
+<span class="lineNum">     873 </span><span class="lineNoCov">          0 :                                 glVertex3f (v2.x(), v2.y(), v2.z());</span>
+<span class="lineNum">     874 </span><span class="lineNoCov">          0 :                                 glVertex3f (v3.x(), v3.y(), v3.z());</span>
+<span class="lineNum">     875 </span>            :                         }
+<span class="lineNum">     876 </span>            :                 }
+<span class="lineNum">     877 </span>            :         }
+<span class="lineNum">     878 </span>            :         // done drawing
+<span class="lineNum">     879 </span><span class="lineNoCov">          0 :         glEnd ();</span>
+<span class="lineNum">     880 </span>            : }
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/CollisionShapes/btConvexPolyhedron.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/CollisionShapes</a> - btConvexPolyhedron.cpp<span style="font-size: 80%;"> (source / <a href="btConvexPolyhedron.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">121</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2011 Advanced Micro Devices, Inc.  http://bulletphysics.org
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : ///This file was written by Erwin Coumans
+<span class="lineNum">      18 </span>            : ///Separating axis rest based on work from Pierre Terdiman, see
+<span class="lineNum">      19 </span>            : ///And contact clipping based on work from Simon Hobbs
+<span class="lineNum">      20 </span>            : 
+<span class="lineNum">      21 </span>            : #include &quot;btConvexPolyhedron.h&quot;
+<span class="lineNum">      22 </span>            : #include &quot;LinearMath/btHashMap.h&quot;
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span><span class="lineNoCov">          0 : btConvexPolyhedron::btConvexPolyhedron()</span>
+<span class="lineNum">      25 </span>            : {
+<a name="26"><span class="lineNum">      26 </span>            : </a>
+<span class="lineNum">      27 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      28 </span><span class="lineNoCov">          0 : btConvexPolyhedron::~btConvexPolyhedron()</span>
+<span class="lineNum">      29 </span>            : {
+<span class="lineNum">      30 </span>            : 
+<span class="lineNum">      31 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">      32 </span>            : 
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            : inline bool IsAlmostZero(const btVector3&amp; v)
+<span class="lineNum">      35 </span>            : {
+<span class="lineNum">      36 </span><span class="lineNoCov">          0 :         if(fabsf(v.x())&gt;1e-6 || fabsf(v.y())&gt;1e-6 || fabsf(v.z())&gt;1e-6)        return false;</span>
+<span class="lineNum">      37 </span>            :         return true;
+<span class="lineNum">      38 </span>            : }
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : struct btInternalVertexPair
+<span class="lineNum">      41 </span>            : {
+<span class="lineNum">      42 </span>            :         btInternalVertexPair(short int v0,short int v1)
+<span class="lineNum">      43 </span><span class="lineNoCov">          0 :                 :m_v0(v0),</span>
+<span class="lineNum">      44 </span><span class="lineNoCov">          0 :                 m_v1(v1)</span>
+<span class="lineNum">      45 </span>            :         {
+<span class="lineNum">      46 </span><span class="lineNoCov">          0 :                 if (m_v1&gt;m_v0)</span>
+<span class="lineNum">      47 </span><span class="lineNoCov">          0 :                         btSwap(m_v0,m_v1);</span>
+<span class="lineNum">      48 </span>            :         }
+<span class="lineNum">      49 </span>            :         short int m_v0;
+<span class="lineNum">      50 </span>            :         short int m_v1;
+<span class="lineNum">      51 </span>            :         int getHash() const
+<span class="lineNum">      52 </span>            :         {
+<span class="lineNum">      53 </span><span class="lineNoCov">          0 :                 return m_v0+(m_v1&lt;&lt;16);</span>
+<span class="lineNum">      54 </span>            :         }
+<span class="lineNum">      55 </span>            :         bool equals(const btInternalVertexPair&amp; other) const
+<span class="lineNum">      56 </span>            :         {
+<span class="lineNum">      57 </span><span class="lineNoCov">          0 :                 return m_v0==other.m_v0 &amp;&amp; m_v1==other.m_v1;</span>
+<span class="lineNum">      58 </span>            :         }
+<span class="lineNum">      59 </span>            : };
+<span class="lineNum">      60 </span>            : 
+<span class="lineNum">      61 </span>            : struct btInternalEdge
+<span class="lineNum">      62 </span>            : {
+<span class="lineNum">      63 </span>            :         btInternalEdge()
+<span class="lineNum">      64 </span><span class="lineNoCov">          0 :                 :m_face0(-1),</span>
+<span class="lineNum">      65 </span><span class="lineNoCov">          0 :                 m_face1(-1)</span>
+<span class="lineNum">      66 </span>            :         {
+<span class="lineNum">      67 </span>            :         }
+<span class="lineNum">      68 </span>            :         short int m_face0;
+<span class="lineNum">      69 </span>            :         short int m_face1;
+<span class="lineNum">      70 </span>            : };
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            : //
+<span class="lineNum">      73 </span>            : 
+<span class="lineNum">      74 </span>            : #ifdef TEST_INTERNAL_OBJECTS
+<span class="lineNum">      75 </span><span class="lineNoCov">          0 : bool btConvexPolyhedron::testContainment() const</span>
+<span class="lineNum">      76 </span>            : {
+<span class="lineNum">      77 </span><span class="lineNoCov">          0 :         for(int p=0;p&lt;8;p++)</span>
+<span class="lineNum">      78 </span>            :         {
+<span class="lineNum">      79 </span><span class="lineNoCov">          0 :                 btVector3 LocalPt;</span>
+<span class="lineNum">      80 </span><span class="lineNoCov">          0 :                 if(p==0)                LocalPt = m_localCenter + btVector3(m_extents[0], m_extents[1], m_extents[2]);</span>
+<span class="lineNum">      81 </span><span class="lineNoCov">          0 :                 else if(p==1)   LocalPt = m_localCenter + btVector3(m_extents[0], m_extents[1], -m_extents[2]);</span>
+<span class="lineNum">      82 </span><span class="lineNoCov">          0 :                 else if(p==2)   LocalPt = m_localCenter + btVector3(m_extents[0], -m_extents[1], m_extents[2]);</span>
+<span class="lineNum">      83 </span><span class="lineNoCov">          0 :                 else if(p==3)   LocalPt = m_localCenter + btVector3(m_extents[0], -m_extents[1], -m_extents[2]);</span>
+<span class="lineNum">      84 </span><span class="lineNoCov">          0 :                 else if(p==4)   LocalPt = m_localCenter + btVector3(-m_extents[0], m_extents[1], m_extents[2]);</span>
+<span class="lineNum">      85 </span><span class="lineNoCov">          0 :                 else if(p==5)   LocalPt = m_localCenter + btVector3(-m_extents[0], m_extents[1], -m_extents[2]);</span>
+<span class="lineNum">      86 </span><span class="lineNoCov">          0 :                 else if(p==6)   LocalPt = m_localCenter + btVector3(-m_extents[0], -m_extents[1], m_extents[2]);</span>
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :                 else if(p==7)   LocalPt = m_localCenter + btVector3(-m_extents[0], -m_extents[1], -m_extents[2]);</span>
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span><span class="lineNoCov">          0 :                 for(int i=0;i&lt;m_faces.size();i++)</span>
+<span class="lineNum">      90 </span>            :                 {
+<span class="lineNum">      91 </span><span class="lineNoCov">          0 :                         const btVector3 Normal(m_faces[i].m_plane[0], m_faces[i].m_plane[1], m_faces[i].m_plane[2]);</span>
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :                         const btScalar d = LocalPt.dot(Normal) + m_faces[i].m_plane[3];</span>
+<span class="lineNum">      93 </span><span class="lineNoCov">          0 :                         if(d&gt;0.0f)</span>
+<span class="lineNum">      94 </span>            :                                 return false;
+<span class="lineNum">      95 </span>            :                 }
+<span class="lineNum">      96 </span>            :         }
+<span class="lineNum">      97 </span>            :         return true;
+<span class="lineNum">      98 </span>            : }
+<span class="lineNum">      99 </span>            : #endif
+<span class="lineNum">     100 </span>            : 
+<span class="lineNum">     101 </span><span class="lineNoCov">          0 : void    btConvexPolyhedron::initialize()</span>
+<span class="lineNum">     102 </span>            : {
+<span class="lineNum">     103 </span>            : 
+<span class="lineNum">     104 </span><span class="lineNoCov">          0 :         btHashMap&lt;btInternalVertexPair,btInternalEdge&gt; edges;</span>
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 :         btScalar TotalArea = 0.0f;</span>
+<span class="lineNum">     107 </span>            :         
+<span class="lineNum">     108 </span><span class="lineNoCov">          0 :         m_localCenter.setValue(0, 0, 0);</span>
+<span class="lineNum">     109 </span><span class="lineNoCov">          0 :         for(int i=0;i&lt;m_faces.size();i++)</span>
+<span class="lineNum">     110 </span>            :         {
+<span class="lineNum">     111 </span><span class="lineNoCov">          0 :                 int numVertices = m_faces[i].m_indices.size();</span>
+<span class="lineNum">     112 </span><span class="lineNoCov">          0 :                 int NbTris = numVertices;</span>
+<span class="lineNum">     113 </span><span class="lineNoCov">          0 :                 for(int j=0;j&lt;NbTris;j++)</span>
+<span class="lineNum">     114 </span>            :                 {
+<span class="lineNum">     115 </span><span class="lineNoCov">          0 :                         int k = (j+1)%numVertices;</span>
+<span class="lineNum">     116 </span><span class="lineNoCov">          0 :                         btInternalVertexPair vp(m_faces[i].m_indices[j],m_faces[i].m_indices[k]);</span>
+<span class="lineNum">     117 </span><span class="lineNoCov">          0 :                         btInternalEdge* edptr = edges.find(vp);</span>
+<span class="lineNum">     118 </span><span class="lineNoCov">          0 :                         btVector3 edge = m_vertices[vp.m_v1]-m_vertices[vp.m_v0];</span>
+<span class="lineNum">     119 </span><span class="lineNoCov">          0 :                         edge.normalize();</span>
+<span class="lineNum">     120 </span>            : 
+<span class="lineNum">     121 </span><span class="lineNoCov">          0 :                         bool found = false;</span>
+<span class="lineNum">     122 </span>            : 
+<span class="lineNum">     123 </span><span class="lineNoCov">          0 :                         for (int p=0;p&lt;m_uniqueEdges.size();p++)</span>
+<span class="lineNum">     124 </span>            :                         {
+<span class="lineNum">     125 </span>            :                                 
+<span class="lineNum">     126 </span><span class="lineNoCov">          0 :                                 if (IsAlmostZero(m_uniqueEdges[p]-edge) || </span>
+<span class="lineNum">     127 </span><span class="lineNoCov">          0 :                                         IsAlmostZero(m_uniqueEdges[p]+edge))</span>
+<span class="lineNum">     128 </span>            :                                 {
+<span class="lineNum">     129 </span>            :                                         found = true;
+<span class="lineNum">     130 </span>            :                                         break;
+<span class="lineNum">     131 </span>            :                                 }
+<span class="lineNum">     132 </span>            :                         }
+<span class="lineNum">     133 </span>            : 
+<span class="lineNum">     134 </span><span class="lineNoCov">          0 :                         if (!found)</span>
+<span class="lineNum">     135 </span>            :                         {
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 :                                 m_uniqueEdges.push_back(edge);</span>
+<span class="lineNum">     137 </span>            :                         }
+<span class="lineNum">     138 </span>            : 
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :                         if (edptr)</span>
+<span class="lineNum">     140 </span>            :                         {
+<span class="lineNum">     141 </span>            :                                 btAssert(edptr-&gt;m_face0&gt;=0);
+<span class="lineNum">     142 </span>            :                                 btAssert(edptr-&gt;m_face1&lt;0);
+<span class="lineNum">     143 </span><span class="lineNoCov">          0 :                                 edptr-&gt;m_face1 = i;</span>
+<span class="lineNum">     144 </span>            :                         } else
+<span class="lineNum">     145 </span>            :                         {
+<span class="lineNum">     146 </span><span class="lineNoCov">          0 :                                 btInternalEdge ed;</span>
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :                                 ed.m_face0 = i;</span>
+<span class="lineNum">     148 </span><span class="lineNoCov">          0 :                                 edges.insert(vp,ed);</span>
+<span class="lineNum">     149 </span>            :                         }
+<span class="lineNum">     150 </span>            :                 }
+<span class="lineNum">     151 </span>            :         }
+<span class="lineNum">     152 </span>            : 
+<span class="lineNum">     153 </span>            : #ifdef USE_CONNECTED_FACES
+<span class="lineNum">     154 </span>            :         for(int i=0;i&lt;m_faces.size();i++)
+<span class="lineNum">     155 </span>            :         {
+<span class="lineNum">     156 </span>            :                 int numVertices = m_faces[i].m_indices.size();
+<span class="lineNum">     157 </span>            :                 m_faces[i].m_connectedFaces.resize(numVertices);
+<span class="lineNum">     158 </span>            : 
+<span class="lineNum">     159 </span>            :                 for(int j=0;j&lt;numVertices;j++)
+<span class="lineNum">     160 </span>            :                 {
+<span class="lineNum">     161 </span>            :                         int k = (j+1)%numVertices;
+<span class="lineNum">     162 </span>            :                         btInternalVertexPair vp(m_faces[i].m_indices[j],m_faces[i].m_indices[k]);
+<span class="lineNum">     163 </span>            :                         btInternalEdge* edptr = edges.find(vp);
+<span class="lineNum">     164 </span>            :                         btAssert(edptr);
+<span class="lineNum">     165 </span>            :                         btAssert(edptr-&gt;m_face0&gt;=0);
+<span class="lineNum">     166 </span>            :                         btAssert(edptr-&gt;m_face1&gt;=0);
+<span class="lineNum">     167 </span>            : 
+<span class="lineNum">     168 </span>            :                         int connectedFace = (edptr-&gt;m_face0==i)?edptr-&gt;m_face1:edptr-&gt;m_face0;
+<span class="lineNum">     169 </span>            :                         m_faces[i].m_connectedFaces[j] = connectedFace;
+<span class="lineNum">     170 </span>            :                 }
+<span class="lineNum">     171 </span>            :         }
+<span class="lineNum">     172 </span>            : #endif//USE_CONNECTED_FACES
+<span class="lineNum">     173 </span>            : 
+<span class="lineNum">     174 </span><span class="lineNoCov">          0 :         for(int i=0;i&lt;m_faces.size();i++)</span>
+<span class="lineNum">     175 </span>            :         {
+<span class="lineNum">     176 </span><span class="lineNoCov">          0 :                 int numVertices = m_faces[i].m_indices.size();</span>
+<span class="lineNum">     177 </span><span class="lineNoCov">          0 :                 int NbTris = numVertices-2;</span>
+<span class="lineNum">     178 </span>            :                 
+<span class="lineNum">     179 </span><span class="lineNoCov">          0 :                 const btVector3&amp; p0 = m_vertices[m_faces[i].m_indices[0]];</span>
+<span class="lineNum">     180 </span><span class="lineNoCov">          0 :                 for(int j=1;j&lt;=NbTris;j++)</span>
+<span class="lineNum">     181 </span>            :                 {
+<span class="lineNum">     182 </span><span class="lineNoCov">          0 :                         int k = (j+1)%numVertices;</span>
+<span class="lineNum">     183 </span><span class="lineNoCov">          0 :                         const btVector3&amp; p1 = m_vertices[m_faces[i].m_indices[j]];</span>
+<span class="lineNum">     184 </span><span class="lineNoCov">          0 :                         const btVector3&amp; p2 = m_vertices[m_faces[i].m_indices[k]];</span>
+<span class="lineNum">     185 </span><span class="lineNoCov">          0 :                         btScalar Area = ((p0 - p1).cross(p0 - p2)).length() * 0.5f;</span>
+<span class="lineNum">     186 </span><span class="lineNoCov">          0 :                         btVector3 Center = (p0+p1+p2)/3.0f;</span>
+<span class="lineNum">     187 </span><span class="lineNoCov">          0 :                         m_localCenter += Area * Center;</span>
+<span class="lineNum">     188 </span><span class="lineNoCov">          0 :                         TotalArea += Area;</span>
+<span class="lineNum">     189 </span>            :                 }
+<span class="lineNum">     190 </span>            :         }
+<span class="lineNum">     191 </span><span class="lineNoCov">          0 :         m_localCenter /= TotalArea;</span>
+<span class="lineNum">     192 </span>            : 
+<span class="lineNum">     193 </span>            : 
+<span class="lineNum">     194 </span>            : 
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span>            : #ifdef TEST_INTERNAL_OBJECTS
+<span class="lineNum">     197 </span>            :         if(1)
+<span class="lineNum">     198 </span>            :         {
+<span class="lineNum">     199 </span><span class="lineNoCov">          0 :                 m_radius = FLT_MAX;</span>
+<span class="lineNum">     200 </span><span class="lineNoCov">          0 :                 for(int i=0;i&lt;m_faces.size();i++)</span>
+<span class="lineNum">     201 </span>            :                 {
+<span class="lineNum">     202 </span><span class="lineNoCov">          0 :                         const btVector3 Normal(m_faces[i].m_plane[0], m_faces[i].m_plane[1], m_faces[i].m_plane[2]);</span>
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :                         const btScalar dist = btFabs(m_localCenter.dot(Normal) + m_faces[i].m_plane[3]);</span>
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :                         if(dist&lt;m_radius)</span>
+<span class="lineNum">     205 </span><span class="lineNoCov">          0 :                                 m_radius = dist;</span>
+<span class="lineNum">     206 </span>            :                 }
+<span class="lineNum">     207 </span>            : 
+<span class="lineNum">     208 </span>            :         
+<span class="lineNum">     209 </span>            :                 btScalar MinX = FLT_MAX;
+<span class="lineNum">     210 </span>            :                 btScalar MinY = FLT_MAX;
+<span class="lineNum">     211 </span>            :                 btScalar MinZ = FLT_MAX;
+<span class="lineNum">     212 </span>            :                 btScalar MaxX = -FLT_MAX;
+<span class="lineNum">     213 </span>            :                 btScalar MaxY = -FLT_MAX;
+<span class="lineNum">     214 </span>            :                 btScalar MaxZ = -FLT_MAX;
+<span class="lineNum">     215 </span><span class="lineNoCov">          0 :                 for(int i=0; i&lt;m_vertices.size(); i++)</span>
+<span class="lineNum">     216 </span>            :                 {
+<span class="lineNum">     217 </span><span class="lineNoCov">          0 :                         const btVector3&amp; pt = m_vertices[i];</span>
+<span class="lineNum">     218 </span><span class="lineNoCov">          0 :                         if(pt.x()&lt;MinX)      MinX = pt.x();</span>
+<span class="lineNum">     219 </span><span class="lineNoCov">          0 :                         if(pt.x()&gt;MaxX)      MaxX = pt.x();</span>
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :                         if(pt.y()&lt;MinY)      MinY = pt.y();</span>
+<span class="lineNum">     221 </span><span class="lineNoCov">          0 :                         if(pt.y()&gt;MaxY)      MaxY = pt.y();</span>
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :                         if(pt.z()&lt;MinZ)      MinZ = pt.z();</span>
+<span class="lineNum">     223 </span><span class="lineNoCov">          0 :                         if(pt.z()&gt;MaxZ)      MaxZ = pt.z();</span>
+<span class="lineNum">     224 </span>            :                 }
+<span class="lineNum">     225 </span><span class="lineNoCov">          0 :                 mC.setValue(MaxX+MinX, MaxY+MinY, MaxZ+MinZ);</span>
+<span class="lineNum">     226 </span><span class="lineNoCov">          0 :                 mE.setValue(MaxX-MinX, MaxY-MinY, MaxZ-MinZ);</span>
+<span class="lineNum">     227 </span>            : 
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span>            : //              const btScalar r = m_radius / sqrtf(2.0f);
+<span class="lineNum">     231 </span><span class="lineNoCov">          0 :                 const btScalar r = m_radius / sqrtf(3.0f);</span>
+<span class="lineNum">     232 </span><span class="lineNoCov">          0 :                 const int LargestExtent = mE.maxAxis();</span>
+<span class="lineNum">     233 </span><span class="lineNoCov">          0 :                 const btScalar Step = (mE[LargestExtent]*0.5f - r)/1024.0f;</span>
+<span class="lineNum">     234 </span><span class="lineNoCov">          0 :                 m_extents[0] = m_extents[1] = m_extents[2] = r;</span>
+<span class="lineNum">     235 </span><span class="lineNoCov">          0 :                 m_extents[LargestExtent] = mE[LargestExtent]*0.5f;</span>
+<span class="lineNum">     236 </span><span class="lineNoCov">          0 :                 bool FoundBox = false;</span>
+<span class="lineNum">     237 </span><span class="lineNoCov">          0 :                 for(int j=0;j&lt;1024;j++)</span>
+<span class="lineNum">     238 </span>            :                 {
+<span class="lineNum">     239 </span><span class="lineNoCov">          0 :                         if(testContainment())</span>
+<span class="lineNum">     240 </span>            :                         {
+<span class="lineNum">     241 </span>            :                                 FoundBox = true;
+<span class="lineNum">     242 </span>            :                                 break;
+<span class="lineNum">     243 </span>            :                         }
+<span class="lineNum">     244 </span>            : 
+<span class="lineNum">     245 </span><span class="lineNoCov">          0 :                         m_extents[LargestExtent] -= Step;</span>
+<span class="lineNum">     246 </span>            :                 }
+<span class="lineNum">     247 </span><span class="lineNoCov">          0 :                 if(!FoundBox)</span>
+<span class="lineNum">     248 </span>            :                 {
+<span class="lineNum">     249 </span><span class="lineNoCov">          0 :                         m_extents[0] = m_extents[1] = m_extents[2] = r;</span>
+<span class="lineNum">     250 </span>            :                 }
+<span class="lineNum">     251 </span>            :                 else
+<span class="lineNum">     252 </span>            :                 {
+<span class="lineNum">     253 </span>            :                         // Refine the box
+<span class="lineNum">     254 </span><span class="lineNoCov">          0 :                         const btScalar Step = (m_radius - r)/1024.0f;</span>
+<span class="lineNum">     255 </span><span class="lineNoCov">          0 :                         const int e0 = (1&lt;&lt;LargestExtent) &amp; 3;</span>
+<span class="lineNum">     256 </span><span class="lineNoCov">          0 :                         const int e1 = (1&lt;&lt;e0) &amp; 3;</span>
+<span class="lineNum">     257 </span>            : 
+<span class="lineNum">     258 </span><span class="lineNoCov">          0 :                         for(int j=0;j&lt;1024;j++)</span>
+<span class="lineNum">     259 </span>            :                         {
+<span class="lineNum">     260 </span><span class="lineNoCov">          0 :                                 const btScalar Saved0 = m_extents[e0];</span>
+<span class="lineNum">     261 </span><span class="lineNoCov">          0 :                                 const btScalar Saved1 = m_extents[e1];</span>
+<span class="lineNum">     262 </span><span class="lineNoCov">          0 :                                 m_extents[e0] += Step;</span>
+<span class="lineNum">     263 </span><span class="lineNoCov">          0 :                                 m_extents[e1] += Step;</span>
+<span class="lineNum">     264 </span>            : 
+<span class="lineNum">     265 </span><span class="lineNoCov">          0 :                                 if(!testContainment())</span>
+<span class="lineNum">     266 </span>            :                                 {
+<span class="lineNum">     267 </span><span class="lineNoCov">          0 :                                         m_extents[e0] = Saved0;</span>
+<span class="lineNum">     268 </span><span class="lineNoCov">          0 :                                         m_extents[e1] = Saved1;</span>
+<span class="lineNum">     269 </span><span class="lineNoCov">          0 :                                         break;</span>
+<span class="lineNum">     270 </span>            :                                 }
+<span class="lineNum">     271 </span>            :                         }
+<span class="lineNum">     272 </span>            :                 }
+<span class="lineNum">     273 </span>            :         }
+<span class="lineNum">     274 </span>            : #endif
+<span class="lineNum">     275 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     276 </span>            : 
+<span class="lineNum">     277 </span><span class="lineNoCov">          0 : void btConvexPolyhedron::project(const btTransform&amp; trans, const btVector3&amp; dir, btScalar&amp; minProj, btScalar&amp; maxProj, btVector3&amp; witnesPtMin,btVector3&amp; witnesPtMax) const</span>
+<span class="lineNum">     278 </span>            : {
+<span class="lineNum">     279 </span><span class="lineNoCov">          0 :         minProj = FLT_MAX;</span>
+<span class="lineNum">     280 </span><span class="lineNoCov">          0 :         maxProj = -FLT_MAX;</span>
+<span class="lineNum">     281 </span><span class="lineNoCov">          0 :         int numVerts = m_vertices.size();</span>
+<span class="lineNum">     282 </span><span class="lineNoCov">          0 :         for(int i=0;i&lt;numVerts;i++)</span>
+<span class="lineNum">     283 </span>            :         {
+<span class="lineNum">     284 </span><span class="lineNoCov">          0 :                 btVector3 pt = trans * m_vertices[i];</span>
+<span class="lineNum">     285 </span><span class="lineNoCov">          0 :                 btScalar dp = pt.dot(dir);</span>
+<span class="lineNum">     286 </span><span class="lineNoCov">          0 :                 if(dp &lt; minProj)</span>
+<span class="lineNum">     287 </span>            :                 {
+<span class="lineNum">     288 </span><span class="lineNoCov">          0 :                         minProj = dp;</span>
+<span class="lineNum">     289 </span><span class="lineNoCov">          0 :                         witnesPtMin = pt;</span>
+<span class="lineNum">     290 </span>            :                 }
+<span class="lineNum">     291 </span><span class="lineNoCov">          0 :                 if(dp &gt; maxProj)</span>
+<span class="lineNum">     292 </span>            :                 {
+<span class="lineNum">     293 </span><span class="lineNoCov">          0 :                         maxProj = dp;</span>
+<span class="lineNum">     294 </span><span class="lineNoCov">          0 :                         witnesPtMax = pt;</span>
+<span class="lineNum">     295 </span>            :                 }
+<span class="lineNum">     296 </span>            :         }
+<span class="lineNum">     297 </span><span class="lineNoCov">          0 :         if(minProj&gt;maxProj)</span>
+<span class="lineNum">     298 </span>            :         {
+<span class="lineNum">     299 </span><span class="lineNoCov">          0 :                 btSwap(minProj,maxProj);</span>
+<span class="lineNum">     300 </span>            :                 btSwap(witnesPtMin,witnesPtMax);
+<span class="lineNum">     301 </span>            :         }
+<span class="lineNum">     302 </span><span class="lineNoCov">          0 : }</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

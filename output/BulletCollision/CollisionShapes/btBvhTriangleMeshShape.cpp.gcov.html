@@ -1,0 +1,550 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletCollision/CollisionShapes/btBvhTriangleMeshShape.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletCollision/CollisionShapes</a> - btBvhTriangleMeshShape.cpp<span style="font-size: 80%;"> (source / <a href="btBvhTriangleMeshShape.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">164</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">24</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2009 Erwin Coumans  http://bulletphysics.org
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : //#define DISABLE_BVH
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span>            : #include &quot;BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h&quot;
+<span class="lineNum">      19 </span>            : #include &quot;BulletCollision/CollisionShapes/btOptimizedBvh.h&quot;
+<span class="lineNum">      20 </span>            : #include &quot;LinearMath/btSerializer.h&quot;
+<span class="lineNum">      21 </span>            : 
+<a name="22"><span class="lineNum">      22 </span>            : ///Bvh Concave triangle mesh is a static-triangle mesh shape with Bounding Volume Hierarchy optimization.</a>
+<span class="lineNum">      23 </span>            : ///Uses an interface to access the triangles to allow for sharing graphics/physics triangles.
+<span class="lineNum">      24 </span><span class="lineNoCov">          0 : btBvhTriangleMeshShape::btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface, bool useQuantizedAabbCompression, bool buildBvh)</span>
+<span class="lineNum">      25 </span>            : :btTriangleMeshShape(meshInterface),
+<span class="lineNum">      26 </span>            : m_bvh(0),
+<span class="lineNum">      27 </span>            : m_triangleInfoMap(0),
+<span class="lineNum">      28 </span>            : m_useQuantizedAabbCompression(useQuantizedAabbCompression),
+<span class="lineNum">      29 </span><span class="lineNoCov">          0 : m_ownsBvh(false)</span>
+<span class="lineNum">      30 </span>            : {
+<span class="lineNum">      31 </span><span class="lineNoCov">          0 :         m_shapeType = TRIANGLE_MESH_SHAPE_PROXYTYPE;</span>
+<span class="lineNum">      32 </span>            :         //construct bvh from meshInterface
+<span class="lineNum">      33 </span>            : #ifndef DISABLE_BVH
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span><span class="lineNoCov">          0 :         if (buildBvh)</span>
+<span class="lineNum">      36 </span>            :         {
+<span class="lineNum">      37 </span><span class="lineNoCov">          0 :                 buildOptimizedBvh();</span>
+<span class="lineNum">      38 </span>            :         }
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : #endif //DISABLE_BVH
+<span class="lineNum">      41 </span>            : 
+<a name="42"><span class="lineNum">      42 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      43 </span>            : 
+<span class="lineNum">      44 </span><span class="lineNoCov">          0 : btBvhTriangleMeshShape::btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface, bool useQuantizedAabbCompression,const btVector3&amp; bvhAabbMin,const btVector3&amp; bvhAabbMax,bool buildBvh)</span>
+<span class="lineNum">      45 </span>            : :btTriangleMeshShape(meshInterface),
+<span class="lineNum">      46 </span>            : m_bvh(0),
+<span class="lineNum">      47 </span>            : m_triangleInfoMap(0),
+<span class="lineNum">      48 </span>            : m_useQuantizedAabbCompression(useQuantizedAabbCompression),
+<span class="lineNum">      49 </span><span class="lineNoCov">          0 : m_ownsBvh(false)</span>
+<span class="lineNum">      50 </span>            : {
+<span class="lineNum">      51 </span><span class="lineNoCov">          0 :         m_shapeType = TRIANGLE_MESH_SHAPE_PROXYTYPE;</span>
+<span class="lineNum">      52 </span>            :         //construct bvh from meshInterface
+<span class="lineNum">      53 </span>            : #ifndef DISABLE_BVH
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span><span class="lineNoCov">          0 :         if (buildBvh)</span>
+<span class="lineNum">      56 </span>            :         {
+<span class="lineNum">      57 </span><span class="lineNoCov">          0 :                 void* mem = btAlignedAlloc(sizeof(btOptimizedBvh),16);</span>
+<span class="lineNum">      58 </span><span class="lineNoCov">          0 :                 m_bvh = new (mem) btOptimizedBvh();</span>
+<span class="lineNum">      59 </span>            :                 
+<span class="lineNum">      60 </span><span class="lineNoCov">          0 :                 m_bvh-&gt;build(meshInterface,m_useQuantizedAabbCompression,bvhAabbMin,bvhAabbMax);</span>
+<span class="lineNum">      61 </span><span class="lineNoCov">          0 :                 m_ownsBvh = true;</span>
+<span class="lineNum">      62 </span>            :         }
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span>            : #endif //DISABLE_BVH
+<span class="lineNum">      65 </span>            : 
+<a name="66"><span class="lineNum">      66 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      67 </span>            : 
+<span class="lineNum">      68 </span><span class="lineNoCov">          0 : void    btBvhTriangleMeshShape::partialRefitTree(const btVector3&amp; aabbMin,const btVector3&amp; aabbMax)</span>
+<span class="lineNum">      69 </span>            : {
+<span class="lineNum">      70 </span><span class="lineNoCov">          0 :         m_bvh-&gt;refitPartial( m_meshInterface,aabbMin,aabbMax );</span>
+<span class="lineNum">      71 </span>            :         
+<span class="lineNum">      72 </span><span class="lineNoCov">          0 :         m_localAabbMin.setMin(aabbMin);</span>
+<span class="lineNum">      73 </span><span class="lineNoCov">          0 :         m_localAabbMax.setMax(aabbMax);</span>
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 : }</span>
+<a name="75"><span class="lineNum">      75 </span>            : </a>
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span><span class="lineNoCov">          0 : void    btBvhTriangleMeshShape::refitTree(const btVector3&amp; aabbMin,const btVector3&amp; aabbMax)</span>
+<span class="lineNum">      78 </span>            : {
+<span class="lineNum">      79 </span><span class="lineNoCov">          0 :         m_bvh-&gt;refit( m_meshInterface, aabbMin,aabbMax );</span>
+<span class="lineNum">      80 </span>            :         
+<span class="lineNum">      81 </span><span class="lineNoCov">          0 :         recalcLocalAabb();</span>
+<a name="82"><span class="lineNum">      82 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      83 </span>            : 
+<span class="lineNum">      84 </span><span class="lineNoCov">          0 : btBvhTriangleMeshShape::~btBvhTriangleMeshShape()</span>
+<span class="lineNum">      85 </span>            : {
+<span class="lineNum">      86 </span><span class="lineNoCov">          0 :         if (m_ownsBvh)</span>
+<span class="lineNum">      87 </span>            :         {
+<span class="lineNum">      88 </span><span class="lineNoCov">          0 :                 m_bvh-&gt;~btOptimizedBvh();</span>
+<span class="lineNum">      89 </span><span class="lineNoCov">          0 :                 btAlignedFree(m_bvh);</span>
+<span class="lineNum">      90 </span>            :         }
+<a name="91"><span class="lineNum">      91 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      92 </span>            : 
+<a name="93"><span class="lineNum">      93 </span><span class="lineNoCov">          0 : void    btBvhTriangleMeshShape::performRaycast (btTriangleCallback* callback, const btVector3&amp; raySource, const btVector3&amp; rayTarget)</span></a>
+<span class="lineNum">      94 </span>            : {
+<span class="lineNum">      95 </span><span class="lineNoCov">          0 :         struct  MyNodeOverlapCallback : public btNodeOverlapCallback</span>
+<span class="lineNum">      96 </span>            :         {
+<span class="lineNum">      97 </span>            :                 btStridingMeshInterface*        m_meshInterface;
+<span class="lineNum">      98 </span>            :                 btTriangleCallback* m_callback;
+<span class="lineNum">      99 </span>            : 
+<span class="lineNum">     100 </span>            :                 MyNodeOverlapCallback(btTriangleCallback* callback,btStridingMeshInterface* meshInterface)
+<span class="lineNum">     101 </span><span class="lineNoCov">          0 :                         :m_meshInterface(meshInterface),</span>
+<span class="lineNum">     102 </span><span class="lineNoCov">          0 :                         m_callback(callback)</span>
+<span class="lineNum">     103 </span>            :                 {
+<a name="104"><span class="lineNum">     104 </span>            :                 }</a>
+<span class="lineNum">     105 </span>            :                                 
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 :                 virtual void processNode(int nodeSubPart, int nodeTriangleIndex)</span>
+<span class="lineNum">     107 </span>            :                 {
+<span class="lineNum">     108 </span>            :                         btVector3 m_triangle[3];
+<span class="lineNum">     109 </span>            :                         const unsigned char *vertexbase;
+<span class="lineNum">     110 </span>            :                         int numverts;
+<span class="lineNum">     111 </span>            :                         PHY_ScalarType type;
+<span class="lineNum">     112 </span>            :                         int stride;
+<span class="lineNum">     113 </span>            :                         const unsigned char *indexbase;
+<span class="lineNum">     114 </span>            :                         int indexstride;
+<span class="lineNum">     115 </span>            :                         int numfaces;
+<span class="lineNum">     116 </span>            :                         PHY_ScalarType indicestype;
+<span class="lineNum">     117 </span>            : 
+<span class="lineNum">     118 </span><span class="lineNoCov">          0 :                         m_meshInterface-&gt;getLockedReadOnlyVertexIndexBase(</span>
+<span class="lineNum">     119 </span>            :                                 &amp;vertexbase,
+<span class="lineNum">     120 </span>            :                                 numverts,
+<span class="lineNum">     121 </span>            :                                 type,
+<span class="lineNum">     122 </span>            :                                 stride,
+<span class="lineNum">     123 </span>            :                                 &amp;indexbase,
+<span class="lineNum">     124 </span>            :                                 indexstride,
+<span class="lineNum">     125 </span>            :                                 numfaces,
+<span class="lineNum">     126 </span>            :                                 indicestype,
+<span class="lineNum">     127 </span><span class="lineNoCov">          0 :                                 nodeSubPart);</span>
+<span class="lineNum">     128 </span>            : 
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :                         unsigned int* gfxbase = (unsigned int*)(indexbase+nodeTriangleIndex*indexstride);</span>
+<span class="lineNum">     130 </span>            :                         btAssert(indicestype==PHY_INTEGER||indicestype==PHY_SHORT);
+<span class="lineNum">     131 </span>            :         
+<span class="lineNum">     132 </span><span class="lineNoCov">          0 :                         const btVector3&amp; meshScaling = m_meshInterface-&gt;getScaling();</span>
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :                         for (int j=2;j&gt;=0;j--)</span>
+<span class="lineNum">     134 </span>            :                         {
+<span class="lineNum">     135 </span><span class="lineNoCov">          0 :                                 int graphicsindex = indicestype==PHY_SHORT?((unsigned short*)gfxbase)[j]:gfxbase[j];</span>
+<span class="lineNum">     136 </span>            :                                 
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 :                                 if (type == PHY_FLOAT)</span>
+<span class="lineNum">     138 </span>            :                                 {
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :                                         float* graphicsbase = (float*)(vertexbase+graphicsindex*stride);</span>
+<span class="lineNum">     140 </span>            :                                         
+<span class="lineNum">     141 </span><span class="lineNoCov">          0 :                                         m_triangle[j] = btVector3(graphicsbase[0]*meshScaling.getX(),graphicsbase[1]*meshScaling.getY(),graphicsbase[2]*meshScaling.getZ());            </span>
+<span class="lineNum">     142 </span>            :                                 }
+<span class="lineNum">     143 </span>            :                                 else
+<span class="lineNum">     144 </span>            :                                 {
+<span class="lineNum">     145 </span><span class="lineNoCov">          0 :                                         double* graphicsbase = (double*)(vertexbase+graphicsindex*stride);</span>
+<span class="lineNum">     146 </span>            :                                         
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :                                         m_triangle[j] = btVector3(btScalar(graphicsbase[0])*meshScaling.getX(),btScalar(graphicsbase[1])*meshScaling.getY(),btScalar(graphicsbase[2])*meshScaling.getZ());              </span>
+<span class="lineNum">     148 </span>            :                                 }
+<span class="lineNum">     149 </span>            :                         }
+<span class="lineNum">     150 </span>            : 
+<span class="lineNum">     151 </span>            :                         /* Perform ray vs. triangle collision here */
+<span class="lineNum">     152 </span><span class="lineNoCov">          0 :                         m_callback-&gt;processTriangle(m_triangle,nodeSubPart,nodeTriangleIndex);</span>
+<span class="lineNum">     153 </span><span class="lineNoCov">          0 :                         m_meshInterface-&gt;unLockReadOnlyVertexBase(nodeSubPart);</span>
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :                 }</span>
+<span class="lineNum">     155 </span>            :         };
+<span class="lineNum">     156 </span>            : 
+<span class="lineNum">     157 </span><span class="lineNoCov">          0 :         MyNodeOverlapCallback   myNodeCallback(callback,m_meshInterface);</span>
+<span class="lineNum">     158 </span>            : 
+<span class="lineNum">     159 </span><span class="lineNoCov">          0 :         m_bvh-&gt;reportRayOverlappingNodex(&amp;myNodeCallback,raySource,rayTarget);</span>
+<a name="160"><span class="lineNum">     160 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     161 </span>            : 
+<a name="162"><span class="lineNum">     162 </span><span class="lineNoCov">          0 : void    btBvhTriangleMeshShape::performConvexcast (btTriangleCallback* callback, const btVector3&amp; raySource, const btVector3&amp; rayTarget, const btVector3&amp; aabbMin, const btVector3&amp; aabbMax)</span></a>
+<span class="lineNum">     163 </span>            : {
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :         struct  MyNodeOverlapCallback : public btNodeOverlapCallback</span>
+<span class="lineNum">     165 </span>            :         {
+<span class="lineNum">     166 </span>            :                 btStridingMeshInterface*        m_meshInterface;
+<span class="lineNum">     167 </span>            :                 btTriangleCallback* m_callback;
+<span class="lineNum">     168 </span>            : 
+<span class="lineNum">     169 </span>            :                 MyNodeOverlapCallback(btTriangleCallback* callback,btStridingMeshInterface* meshInterface)
+<span class="lineNum">     170 </span><span class="lineNoCov">          0 :                         :m_meshInterface(meshInterface),</span>
+<span class="lineNum">     171 </span><span class="lineNoCov">          0 :                         m_callback(callback)</span>
+<span class="lineNum">     172 </span>            :                 {
+<a name="173"><span class="lineNum">     173 </span>            :                 }</a>
+<span class="lineNum">     174 </span>            :                                 
+<span class="lineNum">     175 </span><span class="lineNoCov">          0 :                 virtual void processNode(int nodeSubPart, int nodeTriangleIndex)</span>
+<span class="lineNum">     176 </span>            :                 {
+<span class="lineNum">     177 </span>            :                         btVector3 m_triangle[3];
+<span class="lineNum">     178 </span>            :                         const unsigned char *vertexbase;
+<span class="lineNum">     179 </span>            :                         int numverts;
+<span class="lineNum">     180 </span>            :                         PHY_ScalarType type;
+<span class="lineNum">     181 </span>            :                         int stride;
+<span class="lineNum">     182 </span>            :                         const unsigned char *indexbase;
+<span class="lineNum">     183 </span>            :                         int indexstride;
+<span class="lineNum">     184 </span>            :                         int numfaces;
+<span class="lineNum">     185 </span>            :                         PHY_ScalarType indicestype;
+<span class="lineNum">     186 </span>            : 
+<span class="lineNum">     187 </span><span class="lineNoCov">          0 :                         m_meshInterface-&gt;getLockedReadOnlyVertexIndexBase(</span>
+<span class="lineNum">     188 </span>            :                                 &amp;vertexbase,
+<span class="lineNum">     189 </span>            :                                 numverts,
+<span class="lineNum">     190 </span>            :                                 type,
+<span class="lineNum">     191 </span>            :                                 stride,
+<span class="lineNum">     192 </span>            :                                 &amp;indexbase,
+<span class="lineNum">     193 </span>            :                                 indexstride,
+<span class="lineNum">     194 </span>            :                                 numfaces,
+<span class="lineNum">     195 </span>            :                                 indicestype,
+<span class="lineNum">     196 </span><span class="lineNoCov">          0 :                                 nodeSubPart);</span>
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :                         unsigned int* gfxbase = (unsigned int*)(indexbase+nodeTriangleIndex*indexstride);</span>
+<span class="lineNum">     199 </span>            :                         btAssert(indicestype==PHY_INTEGER||indicestype==PHY_SHORT);
+<span class="lineNum">     200 </span>            :         
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 :                         const btVector3&amp; meshScaling = m_meshInterface-&gt;getScaling();</span>
+<span class="lineNum">     202 </span><span class="lineNoCov">          0 :                         for (int j=2;j&gt;=0;j--)</span>
+<span class="lineNum">     203 </span>            :                         {
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :                                 int graphicsindex = indicestype==PHY_SHORT?((unsigned short*)gfxbase)[j]:gfxbase[j];</span>
+<span class="lineNum">     205 </span>            : 
+<span class="lineNum">     206 </span><span class="lineNoCov">          0 :                                 if (type == PHY_FLOAT)</span>
+<span class="lineNum">     207 </span>            :                                 {
+<span class="lineNum">     208 </span><span class="lineNoCov">          0 :                                         float* graphicsbase = (float*)(vertexbase+graphicsindex*stride);</span>
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 :                                         m_triangle[j] = btVector3(graphicsbase[0]*meshScaling.getX(),graphicsbase[1]*meshScaling.getY(),graphicsbase[2]*meshScaling.getZ());            </span>
+<span class="lineNum">     211 </span>            :                                 }
+<span class="lineNum">     212 </span>            :                                 else
+<span class="lineNum">     213 </span>            :                                 {
+<span class="lineNum">     214 </span><span class="lineNoCov">          0 :                                         double* graphicsbase = (double*)(vertexbase+graphicsindex*stride);</span>
+<span class="lineNum">     215 </span>            :                                         
+<span class="lineNum">     216 </span><span class="lineNoCov">          0 :                                         m_triangle[j] = btVector3(btScalar(graphicsbase[0])*meshScaling.getX(),btScalar(graphicsbase[1])*meshScaling.getY(),btScalar(graphicsbase[2])*meshScaling.getZ());              </span>
+<span class="lineNum">     217 </span>            :                                 }
+<span class="lineNum">     218 </span>            :                         }
+<span class="lineNum">     219 </span>            : 
+<span class="lineNum">     220 </span>            :                         /* Perform ray vs. triangle collision here */
+<span class="lineNum">     221 </span><span class="lineNoCov">          0 :                         m_callback-&gt;processTriangle(m_triangle,nodeSubPart,nodeTriangleIndex);</span>
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :                         m_meshInterface-&gt;unLockReadOnlyVertexBase(nodeSubPart);</span>
+<span class="lineNum">     223 </span><span class="lineNoCov">          0 :                 }</span>
+<span class="lineNum">     224 </span>            :         };
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span><span class="lineNoCov">          0 :         MyNodeOverlapCallback   myNodeCallback(callback,m_meshInterface);</span>
+<span class="lineNum">     227 </span>            : 
+<span class="lineNum">     228 </span><span class="lineNoCov">          0 :         m_bvh-&gt;reportBoxCastOverlappingNodex (&amp;myNodeCallback, raySource, rayTarget, aabbMin, aabbMax);</span>
+<span class="lineNum">     229 </span><span class="lineNoCov">          0 : }</span>
+<a name="230"><span class="lineNum">     230 </span>            : </a>
+<span class="lineNum">     231 </span>            : //perform bvh tree traversal and report overlapping triangles to 'callback'
+<span class="lineNum">     232 </span><span class="lineNoCov">          0 : void    btBvhTriangleMeshShape::processAllTriangles(btTriangleCallback* callback,const btVector3&amp; aabbMin,const btVector3&amp; aabbMax) const</span>
+<span class="lineNum">     233 </span>            : {
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span>            : #ifdef DISABLE_BVH
+<span class="lineNum">     236 </span>            :         //brute force traverse all triangles
+<span class="lineNum">     237 </span>            :         btTriangleMeshShape::processAllTriangles(callback,aabbMin,aabbMax);
+<span class="lineNum">     238 </span>            : #else
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span>            :         //first get all the nodes
+<a name="241"><span class="lineNum">     241 </span>            : </a>
+<span class="lineNum">     242 </span>            :         
+<span class="lineNum">     243 </span><span class="lineNoCov">          0 :         struct  MyNodeOverlapCallback : public btNodeOverlapCallback</span>
+<span class="lineNum">     244 </span>            :         {
+<span class="lineNum">     245 </span>            :                 btStridingMeshInterface*        m_meshInterface;
+<span class="lineNum">     246 </span>            :                 btTriangleCallback*             m_callback;
+<span class="lineNum">     247 </span>            :                 btVector3                               m_triangle[3];
+<span class="lineNum">     248 </span>            : 
+<span class="lineNum">     249 </span>            : 
+<span class="lineNum">     250 </span>            :                 MyNodeOverlapCallback(btTriangleCallback* callback,btStridingMeshInterface* meshInterface)
+<span class="lineNum">     251 </span><span class="lineNoCov">          0 :                         :m_meshInterface(meshInterface),</span>
+<span class="lineNum">     252 </span><span class="lineNoCov">          0 :                         m_callback(callback)</span>
+<span class="lineNum">     253 </span>            :                 {
+<a name="254"><span class="lineNum">     254 </span>            :                 }</a>
+<span class="lineNum">     255 </span>            :                                 
+<span class="lineNum">     256 </span><span class="lineNoCov">          0 :                 virtual void processNode(int nodeSubPart, int nodeTriangleIndex)</span>
+<span class="lineNum">     257 </span>            :                 {
+<span class="lineNum">     258 </span>            :                         const unsigned char *vertexbase;
+<span class="lineNum">     259 </span>            :                         int numverts;
+<span class="lineNum">     260 </span>            :                         PHY_ScalarType type;
+<span class="lineNum">     261 </span>            :                         int stride;
+<span class="lineNum">     262 </span>            :                         const unsigned char *indexbase;
+<span class="lineNum">     263 </span>            :                         int indexstride;
+<span class="lineNum">     264 </span>            :                         int numfaces;
+<span class="lineNum">     265 </span>            :                         PHY_ScalarType indicestype;
+<span class="lineNum">     266 </span>            :                         
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span><span class="lineNoCov">          0 :                         m_meshInterface-&gt;getLockedReadOnlyVertexIndexBase(</span>
+<span class="lineNum">     269 </span>            :                                 &amp;vertexbase,
+<span class="lineNum">     270 </span>            :                                 numverts,
+<span class="lineNum">     271 </span>            :                                 type,
+<span class="lineNum">     272 </span>            :                                 stride,
+<span class="lineNum">     273 </span>            :                                 &amp;indexbase,
+<span class="lineNum">     274 </span>            :                                 indexstride,
+<span class="lineNum">     275 </span>            :                                 numfaces,
+<span class="lineNum">     276 </span>            :                                 indicestype,
+<span class="lineNum">     277 </span><span class="lineNoCov">          0 :                                 nodeSubPart);</span>
+<span class="lineNum">     278 </span>            : 
+<span class="lineNum">     279 </span><span class="lineNoCov">          0 :                         unsigned int* gfxbase = (unsigned int*)(indexbase+nodeTriangleIndex*indexstride);</span>
+<span class="lineNum">     280 </span>            :                         btAssert(indicestype==PHY_INTEGER||indicestype==PHY_SHORT||indicestype==PHY_UCHAR);
+<span class="lineNum">     281 </span>            :         
+<span class="lineNum">     282 </span><span class="lineNoCov">          0 :                         const btVector3&amp; meshScaling = m_meshInterface-&gt;getScaling();</span>
+<span class="lineNum">     283 </span><span class="lineNoCov">          0 :                         for (int j=2;j&gt;=0;j--)</span>
+<span class="lineNum">     284 </span>            :                         {
+<span class="lineNum">     285 </span>            :                                 
+<span class="lineNum">     286 </span><span class="lineNoCov">          0 :                                 int graphicsindex = indicestype==PHY_SHORT?((unsigned short*)gfxbase)[j]:indicestype==PHY_INTEGER?gfxbase[j]:((unsigned char*)gfxbase)[j];</span>
+<span class="lineNum">     287 </span>            : 
+<span class="lineNum">     288 </span>            : 
+<span class="lineNum">     289 </span>            : #ifdef DEBUG_TRIANGLE_MESH
+<span class="lineNum">     290 </span>            :                                 printf(&quot;%d ,&quot;,graphicsindex);
+<span class="lineNum">     291 </span>            : #endif //DEBUG_TRIANGLE_MESH
+<span class="lineNum">     292 </span><span class="lineNoCov">          0 :                                 if (type == PHY_FLOAT)</span>
+<span class="lineNum">     293 </span>            :                                 {
+<span class="lineNum">     294 </span><span class="lineNoCov">          0 :                                         float* graphicsbase = (float*)(vertexbase+graphicsindex*stride);</span>
+<span class="lineNum">     295 </span>            :                                         
+<span class="lineNum">     296 </span><span class="lineNoCov">          0 :                                         m_triangle[j] = btVector3(</span>
+<span class="lineNum">     297 </span><span class="lineNoCov">          0 :                                                                                                                                                 graphicsbase[0]*meshScaling.getX(),</span>
+<span class="lineNum">     298 </span><span class="lineNoCov">          0 :                                                                                                                                                 graphicsbase[1]*meshScaling.getY(),</span>
+<span class="lineNum">     299 </span><span class="lineNoCov">          0 :                                                                                                                                                 graphicsbase[2]*meshScaling.getZ());</span>
+<span class="lineNum">     300 </span>            :                                 }
+<span class="lineNum">     301 </span>            :                                 else
+<span class="lineNum">     302 </span>            :                                 {
+<span class="lineNum">     303 </span><span class="lineNoCov">          0 :                                         double* graphicsbase = (double*)(vertexbase+graphicsindex*stride);</span>
+<span class="lineNum">     304 </span>            : 
+<span class="lineNum">     305 </span><span class="lineNoCov">          0 :                                         m_triangle[j] = btVector3(</span>
+<span class="lineNum">     306 </span><span class="lineNoCov">          0 :                                                 btScalar(graphicsbase[0])*meshScaling.getX(),</span>
+<span class="lineNum">     307 </span><span class="lineNoCov">          0 :                                                 btScalar(graphicsbase[1])*meshScaling.getY(),</span>
+<span class="lineNum">     308 </span><span class="lineNoCov">          0 :                                                 btScalar(graphicsbase[2])*meshScaling.getZ());</span>
+<span class="lineNum">     309 </span>            :                                 }
+<span class="lineNum">     310 </span>            : #ifdef DEBUG_TRIANGLE_MESH
+<span class="lineNum">     311 </span>            :                                 printf(&quot;triangle vertices:%f,%f,%f\n&quot;,triangle[j].x(),triangle[j].y(),triangle[j].z());
+<span class="lineNum">     312 </span>            : #endif //DEBUG_TRIANGLE_MESH
+<span class="lineNum">     313 </span>            :                         }
+<span class="lineNum">     314 </span>            : 
+<span class="lineNum">     315 </span><span class="lineNoCov">          0 :                         m_callback-&gt;processTriangle(m_triangle,nodeSubPart,nodeTriangleIndex);</span>
+<span class="lineNum">     316 </span><span class="lineNoCov">          0 :                         m_meshInterface-&gt;unLockReadOnlyVertexBase(nodeSubPart);</span>
+<span class="lineNum">     317 </span><span class="lineNoCov">          0 :                 }</span>
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span>            :         };
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span><span class="lineNoCov">          0 :         MyNodeOverlapCallback   myNodeCallback(callback,m_meshInterface);</span>
+<span class="lineNum">     322 </span>            : 
+<span class="lineNum">     323 </span><span class="lineNoCov">          0 :         m_bvh-&gt;reportAabbOverlappingNodex(&amp;myNodeCallback,aabbMin,aabbMax);</span>
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span>            : 
+<span class="lineNum">     326 </span>            : #endif//DISABLE_BVH
+<span class="lineNum">     327 </span>            : 
+<span class="lineNum">     328 </span>            : 
+<a name="329"><span class="lineNum">     329 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     330 </span>            : 
+<span class="lineNum">     331 </span><span class="lineNoCov">          0 : void   btBvhTriangleMeshShape::setLocalScaling(const btVector3&amp; scaling)</span>
+<span class="lineNum">     332 </span>            : {
+<span class="lineNum">     333 </span><span class="lineNoCov">          0 :    if ((getLocalScaling() -scaling).length2() &gt; SIMD_EPSILON)</span>
+<span class="lineNum">     334 </span>            :    {
+<span class="lineNum">     335 </span><span class="lineNoCov">          0 :       btTriangleMeshShape::setLocalScaling(scaling);</span>
+<span class="lineNum">     336 </span><span class="lineNoCov">          0 :           buildOptimizedBvh();</span>
+<span class="lineNum">     337 </span>            :    }
+<a name="338"><span class="lineNum">     338 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     339 </span>            : 
+<span class="lineNum">     340 </span><span class="lineNoCov">          0 : void   btBvhTriangleMeshShape::buildOptimizedBvh()</span>
+<span class="lineNum">     341 </span>            : {
+<span class="lineNum">     342 </span><span class="lineNoCov">          0 :         if (m_ownsBvh)</span>
+<span class="lineNum">     343 </span>            :         {
+<span class="lineNum">     344 </span><span class="lineNoCov">          0 :                 m_bvh-&gt;~btOptimizedBvh();</span>
+<span class="lineNum">     345 </span><span class="lineNoCov">          0 :                 btAlignedFree(m_bvh);</span>
+<span class="lineNum">     346 </span>            :         }
+<span class="lineNum">     347 </span>            :         ///m_localAabbMin/m_localAabbMax is already re-calculated in btTriangleMeshShape. We could just scale aabb, but this needs some more work
+<span class="lineNum">     348 </span><span class="lineNoCov">          0 :         void* mem = btAlignedAlloc(sizeof(btOptimizedBvh),16);</span>
+<span class="lineNum">     349 </span><span class="lineNoCov">          0 :         m_bvh = new(mem) btOptimizedBvh();</span>
+<span class="lineNum">     350 </span>            :         //rebuild the bvh...
+<span class="lineNum">     351 </span><span class="lineNoCov">          0 :         m_bvh-&gt;build(m_meshInterface,m_useQuantizedAabbCompression,m_localAabbMin,m_localAabbMax);</span>
+<span class="lineNum">     352 </span><span class="lineNoCov">          0 :         m_ownsBvh = true;</span>
+<a name="353"><span class="lineNum">     353 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     354 </span>            : 
+<span class="lineNum">     355 </span><span class="lineNoCov">          0 : void   btBvhTriangleMeshShape::setOptimizedBvh(btOptimizedBvh* bvh, const btVector3&amp; scaling)</span>
+<span class="lineNum">     356 </span>            : {
+<span class="lineNum">     357 </span>            :    btAssert(!m_bvh);
+<span class="lineNum">     358 </span>            :    btAssert(!m_ownsBvh);
+<span class="lineNum">     359 </span>            : 
+<span class="lineNum">     360 </span><span class="lineNoCov">          0 :    m_bvh = bvh;</span>
+<span class="lineNum">     361 </span><span class="lineNoCov">          0 :    m_ownsBvh = false;</span>
+<span class="lineNum">     362 </span>            :    // update the scaling without rebuilding the bvh
+<span class="lineNum">     363 </span><span class="lineNoCov">          0 :    if ((getLocalScaling() -scaling).length2() &gt; SIMD_EPSILON)</span>
+<span class="lineNum">     364 </span>            :    {
+<span class="lineNum">     365 </span><span class="lineNoCov">          0 :       btTriangleMeshShape::setLocalScaling(scaling);</span>
+<span class="lineNum">     366 </span>            :    }
+<span class="lineNum">     367 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     368 </span>            : 
+<span class="lineNum">     369 </span>            : 
+<a name="370"><span class="lineNum">     370 </span>            : </a>
+<span class="lineNum">     371 </span>            : ///fills the dataBuffer and returns the struct name (and 0 on failure)
+<span class="lineNum">     372 </span><span class="lineNoCov">          0 : const char*     btBvhTriangleMeshShape::serialize(void* dataBuffer, btSerializer* serializer) const</span>
+<span class="lineNum">     373 </span>            : {
+<span class="lineNum">     374 </span><span class="lineNoCov">          0 :         btTriangleMeshShapeData* trimeshData = (btTriangleMeshShapeData*) dataBuffer;</span>
+<span class="lineNum">     375 </span>            : 
+<span class="lineNum">     376 </span><span class="lineNoCov">          0 :         btCollisionShape::serialize(&amp;trimeshData-&gt;m_collisionShapeData,serializer);</span>
+<span class="lineNum">     377 </span>            : 
+<span class="lineNum">     378 </span><span class="lineNoCov">          0 :         m_meshInterface-&gt;serialize(&amp;trimeshData-&gt;m_meshInterface, serializer);</span>
+<span class="lineNum">     379 </span>            : 
+<span class="lineNum">     380 </span><span class="lineNoCov">          0 :         trimeshData-&gt;m_collisionMargin = float(m_collisionMargin);</span>
+<span class="lineNum">     381 </span>            : 
+<span class="lineNum">     382 </span>            :         
+<span class="lineNum">     383 </span>            : 
+<span class="lineNum">     384 </span><span class="lineNoCov">          0 :         if (m_bvh &amp;&amp; !(serializer-&gt;getSerializationFlags()&amp;BT_SERIALIZE_NO_BVH))</span>
+<span class="lineNum">     385 </span>            :         {
+<span class="lineNum">     386 </span><span class="lineNoCov">          0 :                 void* chunk = serializer-&gt;findPointer(m_bvh);</span>
+<span class="lineNum">     387 </span><span class="lineNoCov">          0 :                 if (chunk)</span>
+<span class="lineNum">     388 </span>            :                 {
+<span class="lineNum">     389 </span>            : #ifdef BT_USE_DOUBLE_PRECISION
+<span class="lineNum">     390 </span>            :                         trimeshData-&gt;m_quantizedDoubleBvh = (btQuantizedBvhData*)chunk;
+<span class="lineNum">     391 </span>            :                         trimeshData-&gt;m_quantizedFloatBvh = 0;
+<span class="lineNum">     392 </span>            : #else
+<span class="lineNum">     393 </span><span class="lineNoCov">          0 :                         trimeshData-&gt;m_quantizedFloatBvh  = (btQuantizedBvhData*)chunk;</span>
+<span class="lineNum">     394 </span><span class="lineNoCov">          0 :                         trimeshData-&gt;m_quantizedDoubleBvh= 0;</span>
+<span class="lineNum">     395 </span>            : #endif //BT_USE_DOUBLE_PRECISION
+<span class="lineNum">     396 </span>            :                 } else
+<span class="lineNum">     397 </span>            :                 {
+<span class="lineNum">     398 </span>            : 
+<span class="lineNum">     399 </span>            : #ifdef BT_USE_DOUBLE_PRECISION
+<span class="lineNum">     400 </span>            :                         trimeshData-&gt;m_quantizedDoubleBvh = (btQuantizedBvhData*)serializer-&gt;getUniquePointer(m_bvh);
+<span class="lineNum">     401 </span>            :                         trimeshData-&gt;m_quantizedFloatBvh = 0;
+<span class="lineNum">     402 </span>            : #else
+<span class="lineNum">     403 </span><span class="lineNoCov">          0 :                         trimeshData-&gt;m_quantizedFloatBvh  = (btQuantizedBvhData*)serializer-&gt;getUniquePointer(m_bvh);</span>
+<span class="lineNum">     404 </span><span class="lineNoCov">          0 :                         trimeshData-&gt;m_quantizedDoubleBvh= 0;</span>
+<span class="lineNum">     405 </span>            : #endif //BT_USE_DOUBLE_PRECISION
+<span class="lineNum">     406 </span>            :         
+<span class="lineNum">     407 </span><span class="lineNoCov">          0 :                         int sz = m_bvh-&gt;calculateSerializeBufferSizeNew();</span>
+<span class="lineNum">     408 </span><span class="lineNoCov">          0 :                         btChunk* chunk = serializer-&gt;allocate(sz,1);</span>
+<span class="lineNum">     409 </span><span class="lineNoCov">          0 :                         const char* structType = m_bvh-&gt;serialize(chunk-&gt;m_oldPtr, serializer);</span>
+<span class="lineNum">     410 </span><span class="lineNoCov">          0 :                         serializer-&gt;finalizeChunk(chunk,structType,BT_QUANTIZED_BVH_CODE,m_bvh);</span>
+<span class="lineNum">     411 </span>            :                 }
+<span class="lineNum">     412 </span>            :         } else
+<span class="lineNum">     413 </span>            :         {
+<span class="lineNum">     414 </span><span class="lineNoCov">          0 :                 trimeshData-&gt;m_quantizedFloatBvh = 0;</span>
+<span class="lineNum">     415 </span><span class="lineNoCov">          0 :                 trimeshData-&gt;m_quantizedDoubleBvh = 0;</span>
+<span class="lineNum">     416 </span>            :         }
+<span class="lineNum">     417 </span>            : 
+<span class="lineNum">     418 </span>            :         
+<span class="lineNum">     419 </span>            : 
+<span class="lineNum">     420 </span><span class="lineNoCov">          0 :         if (m_triangleInfoMap &amp;&amp; !(serializer-&gt;getSerializationFlags()&amp;BT_SERIALIZE_NO_TRIANGLEINFOMAP))</span>
+<span class="lineNum">     421 </span>            :         {
+<span class="lineNum">     422 </span><span class="lineNoCov">          0 :                 void* chunk = serializer-&gt;findPointer(m_triangleInfoMap);</span>
+<span class="lineNum">     423 </span><span class="lineNoCov">          0 :                 if (chunk)</span>
+<span class="lineNum">     424 </span>            :                 {
+<span class="lineNum">     425 </span><span class="lineNoCov">          0 :                         trimeshData-&gt;m_triangleInfoMap = (btTriangleInfoMapData*)chunk;</span>
+<span class="lineNum">     426 </span>            :                 } else
+<span class="lineNum">     427 </span>            :                 {
+<span class="lineNum">     428 </span><span class="lineNoCov">          0 :                         trimeshData-&gt;m_triangleInfoMap = (btTriangleInfoMapData*)serializer-&gt;getUniquePointer(m_triangleInfoMap);</span>
+<span class="lineNum">     429 </span><span class="lineNoCov">          0 :                         int sz = m_triangleInfoMap-&gt;calculateSerializeBufferSize();</span>
+<span class="lineNum">     430 </span><span class="lineNoCov">          0 :                         btChunk* chunk = serializer-&gt;allocate(sz,1);</span>
+<span class="lineNum">     431 </span><span class="lineNoCov">          0 :                         const char* structType = m_triangleInfoMap-&gt;serialize(chunk-&gt;m_oldPtr, serializer);</span>
+<span class="lineNum">     432 </span><span class="lineNoCov">          0 :                         serializer-&gt;finalizeChunk(chunk,structType,BT_TRIANLGE_INFO_MAP,m_triangleInfoMap);</span>
+<span class="lineNum">     433 </span>            :                 }
+<span class="lineNum">     434 </span>            :         } else
+<span class="lineNum">     435 </span>            :         {
+<span class="lineNum">     436 </span><span class="lineNoCov">          0 :                 trimeshData-&gt;m_triangleInfoMap = 0;</span>
+<span class="lineNum">     437 </span>            :         }
+<span class="lineNum">     438 </span>            : 
+<span class="lineNum">     439 </span><span class="lineNoCov">          0 :         return &quot;btTriangleMeshShapeData&quot;;</span>
+<a name="440"><span class="lineNum">     440 </span>            : }</a>
+<span class="lineNum">     441 </span>            : 
+<span class="lineNum">     442 </span><span class="lineNoCov">          0 : void    btBvhTriangleMeshShape::serializeSingleBvh(btSerializer* serializer) const</span>
+<span class="lineNum">     443 </span>            : {
+<span class="lineNum">     444 </span><span class="lineNoCov">          0 :         if (m_bvh)</span>
+<span class="lineNum">     445 </span>            :         {
+<span class="lineNum">     446 </span><span class="lineNoCov">          0 :                 int len = m_bvh-&gt;calculateSerializeBufferSizeNew(); //make sure not to use calculateSerializeBufferSize because it is used for in-place</span>
+<span class="lineNum">     447 </span><span class="lineNoCov">          0 :                 btChunk* chunk = serializer-&gt;allocate(len,1);</span>
+<span class="lineNum">     448 </span><span class="lineNoCov">          0 :                 const char* structType = m_bvh-&gt;serialize(chunk-&gt;m_oldPtr, serializer);</span>
+<span class="lineNum">     449 </span><span class="lineNoCov">          0 :                 serializer-&gt;finalizeChunk(chunk,structType,BT_QUANTIZED_BVH_CODE,(void*)m_bvh);</span>
+<span class="lineNum">     450 </span>            :         }
+<a name="451"><span class="lineNum">     451 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     452 </span>            : 
+<span class="lineNum">     453 </span><span class="lineNoCov">          0 : void    btBvhTriangleMeshShape::serializeSingleTriangleInfoMap(btSerializer* serializer) const</span>
+<span class="lineNum">     454 </span>            : {
+<span class="lineNum">     455 </span><span class="lineNoCov">          0 :         if (m_triangleInfoMap)</span>
+<span class="lineNum">     456 </span>            :         {
+<span class="lineNum">     457 </span><span class="lineNoCov">          0 :                 int len = m_triangleInfoMap-&gt;calculateSerializeBufferSize();</span>
+<span class="lineNum">     458 </span><span class="lineNoCov">          0 :                 btChunk* chunk = serializer-&gt;allocate(len,1);</span>
+<span class="lineNum">     459 </span><span class="lineNoCov">          0 :                 const char* structType = m_triangleInfoMap-&gt;serialize(chunk-&gt;m_oldPtr, serializer);</span>
+<span class="lineNum">     460 </span><span class="lineNoCov">          0 :                 serializer-&gt;finalizeChunk(chunk,structType,BT_TRIANLGE_INFO_MAP,(void*)m_triangleInfoMap);</span>
+<span class="lineNum">     461 </span>            :         }
+<span class="lineNum">     462 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     463 </span>            : 
+<span class="lineNum">     464 </span>            : 
+<span class="lineNum">     465 </span>            : 
+<span class="lineNum">     466 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

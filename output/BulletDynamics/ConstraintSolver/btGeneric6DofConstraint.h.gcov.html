@@ -1,0 +1,700 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletDynamics/ConstraintSolver</a> - btGeneric6DofConstraint.h<span style="font-size: 80%;"> (source / <a href="btGeneric6DofConstraint.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">47</td>
+            <td class="headerCovTableEntry">62</td>
+            <td class="headerCovTableEntryMed">75.8 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntryLo">60.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose,
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely,
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : */
+<span class="lineNum">      15 </span>            : 
+<span class="lineNum">      16 </span>            : /// 2009 March: btGeneric6DofConstraint refactored by Roman Ponomarev
+<span class="lineNum">      17 </span>            : /// Added support for generic constraint solver through getInfo1/getInfo2 methods
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : /*
+<span class="lineNum">      20 </span>            : 2007-09-09
+<span class="lineNum">      21 </span>            : btGeneric6DofConstraint Refactored by Francisco Le?n
+<span class="lineNum">      22 </span>            : email: projectileman@yahoo.com
+<span class="lineNum">      23 </span>            : http://gimpact.sf.net
+<span class="lineNum">      24 </span>            : */
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span>            : 
+<span class="lineNum">      27 </span>            : #ifndef BT_GENERIC_6DOF_CONSTRAINT_H
+<span class="lineNum">      28 </span>            : #define BT_GENERIC_6DOF_CONSTRAINT_H
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span>            : #include &quot;LinearMath/btVector3.h&quot;
+<span class="lineNum">      31 </span>            : #include &quot;btJacobianEntry.h&quot;
+<span class="lineNum">      32 </span>            : #include &quot;btTypedConstraint.h&quot;
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            : class btRigidBody;
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : //! Rotation Limit structure for generic joints
+<span class="lineNum">      40 </span>            : class btRotationalLimitMotor
+<span class="lineNum">      41 </span>            : {
+<span class="lineNum">      42 </span>            : public:
+<span class="lineNum">      43 </span>            :     //! limit_parameters
+<span class="lineNum">      44 </span>            :     //!@{
+<span class="lineNum">      45 </span>            :     btScalar m_loLimit;//!&lt; joint limit
+<span class="lineNum">      46 </span>            :     btScalar m_hiLimit;//!&lt; joint limit
+<span class="lineNum">      47 </span>            :     btScalar m_targetVelocity;//!&lt; target motor velocity
+<span class="lineNum">      48 </span>            :     btScalar m_maxMotorForce;//!&lt; max force on motor
+<span class="lineNum">      49 </span>            :     btScalar m_maxLimitForce;//!&lt; max force on limit
+<span class="lineNum">      50 </span>            :     btScalar m_damping;//!&lt; Damping.
+<span class="lineNum">      51 </span>            :     btScalar m_limitSoftness;//! Relaxation factor
+<span class="lineNum">      52 </span>            :     btScalar m_normalCFM;//!&lt; Constraint force mixing factor
+<span class="lineNum">      53 </span>            :     btScalar m_stopERP;//!&lt; Error tolerance factor when joint is at limit
+<span class="lineNum">      54 </span>            :     btScalar m_stopCFM;//!&lt; Constraint force mixing factor when joint is at limit
+<span class="lineNum">      55 </span>            :     btScalar m_bounce;//!&lt; restitution factor
+<span class="lineNum">      56 </span>            :     bool m_enableMotor;
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span>            :     //!@}
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span>            :     //! temp_variables
+<span class="lineNum">      61 </span>            :     //!@{
+<span class="lineNum">      62 </span>            :     btScalar m_currentLimitError;//!  How much is violated this limit
+<span class="lineNum">      63 </span>            :     btScalar m_currentPosition;     //!  current value of angle 
+<span class="lineNum">      64 </span>            :     int m_currentLimit;//!&lt; 0=free, 1=at lo limit, 2=at hi limit
+<span class="lineNum">      65 </span>            :     btScalar m_accumulatedImpulse;
+<span class="lineNum">      66 </span>            :     //!@}
+<span class="lineNum">      67 </span>            : 
+<span class="lineNum">      68 </span>            :     btRotationalLimitMotor()
+<span class="lineNum">      69 </span><span class="lineCov">         17 :     {</span>
+<span class="lineNum">      70 </span><span class="lineCov">         17 :         m_accumulatedImpulse = 0.f;</span>
+<span class="lineNum">      71 </span><span class="lineCov">         17 :         m_targetVelocity = 0;</span>
+<span class="lineNum">      72 </span><span class="lineCov">         17 :         m_maxMotorForce = 0.1f;</span>
+<span class="lineNum">      73 </span><span class="lineCov">         17 :         m_maxLimitForce = 300.0f;</span>
+<span class="lineNum">      74 </span><span class="lineCov">         17 :         m_loLimit = 1.0f;</span>
+<span class="lineNum">      75 </span><span class="lineCov">         17 :         m_hiLimit = -1.0f;</span>
+<span class="lineNum">      76 </span><span class="lineCov">         17 :                 m_normalCFM = 0.f;</span>
+<span class="lineNum">      77 </span><span class="lineCov">         17 :                 m_stopERP = 0.2f;</span>
+<span class="lineNum">      78 </span><span class="lineCov">         17 :                 m_stopCFM = 0.f;</span>
+<span class="lineNum">      79 </span><span class="lineCov">         17 :         m_bounce = 0.0f;</span>
+<span class="lineNum">      80 </span><span class="lineCov">         17 :         m_damping = 1.0f;</span>
+<span class="lineNum">      81 </span><span class="lineCov">         17 :         m_limitSoftness = 0.5f;</span>
+<span class="lineNum">      82 </span><span class="lineCov">         17 :         m_currentLimit = 0;</span>
+<span class="lineNum">      83 </span><span class="lineCov">         17 :         m_currentLimitError = 0;</span>
+<span class="lineNum">      84 </span><span class="lineCov">         17 :         m_enableMotor = false;</span>
+<span class="lineNum">      85 </span>            :     }
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span>            :     btRotationalLimitMotor(const btRotationalLimitMotor &amp; limot)
+<span class="lineNum">      88 </span>            :     {
+<span class="lineNum">      89 </span>            :         m_targetVelocity = limot.m_targetVelocity;
+<span class="lineNum">      90 </span>            :         m_maxMotorForce = limot.m_maxMotorForce;
+<span class="lineNum">      91 </span>            :         m_limitSoftness = limot.m_limitSoftness;
+<span class="lineNum">      92 </span>            :         m_loLimit = limot.m_loLimit;
+<span class="lineNum">      93 </span>            :         m_hiLimit = limot.m_hiLimit;
+<span class="lineNum">      94 </span>            :                 m_normalCFM = limot.m_normalCFM;
+<span class="lineNum">      95 </span>            :                 m_stopERP = limot.m_stopERP;
+<span class="lineNum">      96 </span>            :                 m_stopCFM =     limot.m_stopCFM;
+<span class="lineNum">      97 </span>            :         m_bounce = limot.m_bounce;
+<span class="lineNum">      98 </span>            :         m_currentLimit = limot.m_currentLimit;
+<span class="lineNum">      99 </span>            :         m_currentLimitError = limot.m_currentLimitError;
+<span class="lineNum">     100 </span>            :         m_enableMotor = limot.m_enableMotor;
+<span class="lineNum">     101 </span>            :     }
+<span class="lineNum">     102 </span>            : 
+<span class="lineNum">     103 </span>            : 
+<span class="lineNum">     104 </span>            : 
+<span class="lineNum">     105 </span>            :         //! Is limited
+<span class="lineNum">     106 </span>            :     bool isLimited()
+<span class="lineNum">     107 </span>            :     {
+<span class="lineNum">     108 </span>            :         if(m_loLimit &gt; m_hiLimit) return false;
+<span class="lineNum">     109 </span>            :         return true;
+<span class="lineNum">     110 </span>            :     }
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span>            :         //! Need apply correction
+<span class="lineNum">     113 </span>            :     bool needApplyTorques()
+<span class="lineNum">     114 </span>            :     {
+<span class="lineNum">     115 </span><span class="lineCov">         66 :         if(m_currentLimit == 0 &amp;&amp; m_enableMotor == false) return false;</span>
+<span class="lineNum">     116 </span>            :         return true;
+<span class="lineNum">     117 </span>            :     }
+<span class="lineNum">     118 </span>            : 
+<span class="lineNum">     119 </span>            :         //! calculates  error
+<span class="lineNum">     120 </span>            :         /*!
+<span class="lineNum">     121 </span>            :         calculates m_currentLimit and m_currentLimitError.
+<span class="lineNum">     122 </span>            :         */
+<span class="lineNum">     123 </span>            :         int testLimitValue(btScalar test_value);
+<span class="lineNum">     124 </span>            : 
+<span class="lineNum">     125 </span>            :         //! apply the correction impulses for two bodies
+<span class="lineNum">     126 </span>            :     btScalar solveAngularLimits(btScalar timeStep,btVector3&amp; axis, btScalar jacDiagABInv,btRigidBody * body0, btRigidBody * body1);
+<span class="lineNum">     127 </span>            : 
+<span class="lineNum">     128 </span>            : };
+<span class="lineNum">     129 </span>            : 
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            : class btTranslationalLimitMotor
+<span class="lineNum">     133 </span>            : {
+<span class="lineNum">     134 </span>            : public:
+<span class="lineNum">     135 </span>            :         btVector3 m_lowerLimit;//!&lt; the constraint lower limits
+<span class="lineNum">     136 </span>            :     btVector3 m_upperLimit;//!&lt; the constraint upper limits
+<span class="lineNum">     137 </span>            :     btVector3 m_accumulatedImpulse;
+<span class="lineNum">     138 </span>            :     //! Linear_Limit_parameters
+<span class="lineNum">     139 </span>            :     //!@{
+<span class="lineNum">     140 </span>            :     btScalar    m_limitSoftness;//!&lt; Softness for linear limit
+<span class="lineNum">     141 </span>            :     btScalar    m_damping;//!&lt; Damping for linear limit
+<span class="lineNum">     142 </span>            :     btScalar    m_restitution;//! Bounce parameter for linear limit
+<span class="lineNum">     143 </span>            :         btVector3       m_normalCFM;//!&lt; Constraint force mixing factor
+<span class="lineNum">     144 </span>            :     btVector3   m_stopERP;//!&lt; Error tolerance factor when joint is at limit
+<span class="lineNum">     145 </span>            :         btVector3       m_stopCFM;//!&lt; Constraint force mixing factor when joint is at limit
+<span class="lineNum">     146 </span>            :     //!@}
+<span class="lineNum">     147 </span>            :         bool            m_enableMotor[3];
+<span class="lineNum">     148 </span>            :     btVector3   m_targetVelocity;//!&lt; target motor velocity
+<span class="lineNum">     149 </span>            :     btVector3   m_maxMotorForce;//!&lt; max force on motor
+<span class="lineNum">     150 </span>            :     btVector3   m_currentLimitError;//!  How much is violated this limit
+<span class="lineNum">     151 </span>            :     btVector3   m_currentLinearDiff;//!  Current relative offset of constraint frames
+<span class="lineNum">     152 </span>            :     int                 m_currentLimit[3];//!&lt; 0=free, 1=at lower limit, 2=at upper limit
+<span class="lineNum">     153 </span>            : 
+<span class="lineNum">     154 </span><span class="lineCov">          2 :     btTranslationalLimitMotor()</span>
+<span class="lineNum">     155 </span><span class="lineCov">         22 :     {</span>
+<span class="lineNum">     156 </span><span class="lineCov">          4 :         m_lowerLimit.setValue(0.f,0.f,0.f);</span>
+<span class="lineNum">     157 </span><span class="lineCov">          4 :         m_upperLimit.setValue(0.f,0.f,0.f);</span>
+<span class="lineNum">     158 </span><span class="lineCov">          4 :         m_accumulatedImpulse.setValue(0.f,0.f,0.f);</span>
+<span class="lineNum">     159 </span><span class="lineCov">          4 :                 m_normalCFM.setValue(0.f, 0.f, 0.f);</span>
+<span class="lineNum">     160 </span><span class="lineCov">          4 :                 m_stopERP.setValue(0.2f, 0.2f, 0.2f);</span>
+<span class="lineNum">     161 </span><span class="lineCov">          4 :                 m_stopCFM.setValue(0.f, 0.f, 0.f);</span>
+<span class="lineNum">     162 </span>            : 
+<span class="lineNum">     163 </span><span class="lineCov">          2 :         m_limitSoftness = 0.7f;</span>
+<span class="lineNum">     164 </span><span class="lineCov">          2 :         m_damping = btScalar(1.0f);</span>
+<span class="lineNum">     165 </span><span class="lineCov">          2 :         m_restitution = btScalar(0.5f);</span>
+<span class="lineNum">     166 </span><span class="lineCov">          8 :                 for(int i=0; i &lt; 3; i++) </span>
+<span class="lineNum">     167 </span>            :                 {
+<span class="lineNum">     168 </span><span class="lineCov">          6 :                         m_enableMotor[i] = false;</span>
+<span class="lineNum">     169 </span><span class="lineCov">         12 :                         m_targetVelocity[i] = btScalar(0.f);</span>
+<span class="lineNum">     170 </span><span class="lineCov">         12 :                         m_maxMotorForce[i] = btScalar(0.f);</span>
+<span class="lineNum">     171 </span>            :                 }
+<span class="lineNum">     172 </span><span class="lineCov">          2 :     }</span>
+<span class="lineNum">     173 </span>            : 
+<span class="lineNum">     174 </span>            :     btTranslationalLimitMotor(const btTranslationalLimitMotor &amp; other )
+<span class="lineNum">     175 </span>            :     {
+<span class="lineNum">     176 </span>            :         m_lowerLimit = other.m_lowerLimit;
+<span class="lineNum">     177 </span>            :         m_upperLimit = other.m_upperLimit;
+<span class="lineNum">     178 </span>            :         m_accumulatedImpulse = other.m_accumulatedImpulse;
+<span class="lineNum">     179 </span>            : 
+<span class="lineNum">     180 </span>            :         m_limitSoftness = other.m_limitSoftness ;
+<span class="lineNum">     181 </span>            :         m_damping = other.m_damping;
+<span class="lineNum">     182 </span>            :         m_restitution = other.m_restitution;
+<span class="lineNum">     183 </span>            :                 m_normalCFM = other.m_normalCFM;
+<span class="lineNum">     184 </span>            :                 m_stopERP = other.m_stopERP;
+<span class="lineNum">     185 </span>            :                 m_stopCFM = other.m_stopCFM;
+<span class="lineNum">     186 </span>            : 
+<span class="lineNum">     187 </span>            :                 for(int i=0; i &lt; 3; i++) 
+<span class="lineNum">     188 </span>            :                 {
+<span class="lineNum">     189 </span>            :                         m_enableMotor[i] = other.m_enableMotor[i];
+<span class="lineNum">     190 </span>            :                         m_targetVelocity[i] = other.m_targetVelocity[i];
+<span class="lineNum">     191 </span>            :                         m_maxMotorForce[i] = other.m_maxMotorForce[i];
+<span class="lineNum">     192 </span>            :                 }
+<span class="lineNum">     193 </span>            :     }
+<span class="lineNum">     194 </span>            : 
+<span class="lineNum">     195 </span>            :     //! Test limit
+<span class="lineNum">     196 </span>            :         /*!
+<span class="lineNum">     197 </span>            :     - free means upper &lt; lower,
+<span class="lineNum">     198 </span>            :     - locked means upper == lower
+<span class="lineNum">     199 </span>            :     - limited means upper &gt; lower
+<span class="lineNum">     200 </span>            :     - limitIndex: first 3 are linear, next 3 are angular
+<span class="lineNum">     201 </span>            :     */
+<span class="lineNum">     202 </span>            :     inline bool isLimited(int limitIndex)
+<span class="lineNum">     203 </span>            :     {
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :        return (m_upperLimit[limitIndex] &gt;= m_lowerLimit[limitIndex]);</span>
+<span class="lineNum">     205 </span>            :     }
+<span class="lineNum">     206 </span>            :     inline bool needApplyForce(int limitIndex)
+<span class="lineNum">     207 </span>            :     {
+<span class="lineNum">     208 </span><span class="lineCov">         66 :         if(m_currentLimit[limitIndex] == 0 &amp;&amp; m_enableMotor[limitIndex] == false) return false;</span>
+<span class="lineNum">     209 </span>            :         return true;
+<span class="lineNum">     210 </span>            :     }
+<span class="lineNum">     211 </span>            :         int testLimitValue(int limitIndex, btScalar test_value);
+<span class="lineNum">     212 </span>            : 
+<span class="lineNum">     213 </span>            : 
+<span class="lineNum">     214 </span>            :     btScalar solveLinearAxis(
+<span class="lineNum">     215 </span>            :         btScalar timeStep,
+<span class="lineNum">     216 </span>            :         btScalar jacDiagABInv,
+<span class="lineNum">     217 </span>            :         btRigidBody&amp; body1,const btVector3 &amp;pointInA,
+<span class="lineNum">     218 </span>            :         btRigidBody&amp; body2,const btVector3 &amp;pointInB,
+<span class="lineNum">     219 </span>            :         int limit_index,
+<span class="lineNum">     220 </span>            :         const btVector3 &amp; axis_normal_on_a,
+<span class="lineNum">     221 </span>            :                 const btVector3 &amp; anchorPos);
+<span class="lineNum">     222 </span>            : 
+<span class="lineNum">     223 </span>            : 
+<span class="lineNum">     224 </span>            : };
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span>            : enum bt6DofFlags
+<span class="lineNum">     227 </span>            : {
+<span class="lineNum">     228 </span>            :         BT_6DOF_FLAGS_CFM_NORM = 1,
+<span class="lineNum">     229 </span>            :         BT_6DOF_FLAGS_CFM_STOP = 2,
+<span class="lineNum">     230 </span>            :         BT_6DOF_FLAGS_ERP_STOP = 4
+<span class="lineNum">     231 </span>            : };
+<span class="lineNum">     232 </span>            : #define BT_6DOF_FLAGS_AXIS_SHIFT 3 // bits per axis
+<span class="lineNum">     233 </span>            : 
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span>            : /// btGeneric6DofConstraint between two rigidbodies each with a pivotpoint that descibes the axis location in local space
+<span class="lineNum">     236 </span>            : /*!
+<span class="lineNum">     237 </span>            : btGeneric6DofConstraint can leave any of the 6 degree of freedom 'free' or 'locked'.
+<span class="lineNum">     238 </span>            : currently this limit supports rotational motors&lt;br&gt;
+<span class="lineNum">     239 </span>            : &lt;ul&gt;
+<span class="lineNum">     240 </span>            : &lt;li&gt; For Linear limits, use btGeneric6DofConstraint.setLinearUpperLimit, btGeneric6DofConstraint.setLinearLowerLimit. You can set the parameters with the btTranslationalLimitMotor structure accsesible through the btGeneric6DofConstraint.getTranslationalLimitMotor method.
+<span class="lineNum">     241 </span>            : At this moment translational motors are not supported. May be in the future. &lt;/li&gt;
+<span class="lineNum">     242 </span>            : 
+<span class="lineNum">     243 </span>            : &lt;li&gt; For Angular limits, use the btRotationalLimitMotor structure for configuring the limit.
+<span class="lineNum">     244 </span>            : This is accessible through btGeneric6DofConstraint.getLimitMotor method,
+<span class="lineNum">     245 </span>            : This brings support for limit parameters and motors. &lt;/li&gt;
+<span class="lineNum">     246 </span>            : 
+<span class="lineNum">     247 </span>            : &lt;li&gt; Angulars limits have these possible ranges:
+<span class="lineNum">     248 </span>            : &lt;table border=1 &gt;
+<span class="lineNum">     249 </span>            : &lt;tr&gt;
+<span class="lineNum">     250 </span>            :         &lt;td&gt;&lt;b&gt;AXIS&lt;/b&gt;&lt;/td&gt;
+<span class="lineNum">     251 </span>            :         &lt;td&gt;&lt;b&gt;MIN ANGLE&lt;/b&gt;&lt;/td&gt;
+<span class="lineNum">     252 </span>            :         &lt;td&gt;&lt;b&gt;MAX ANGLE&lt;/b&gt;&lt;/td&gt;
+<span class="lineNum">     253 </span>            : &lt;/tr&gt;&lt;tr&gt;
+<span class="lineNum">     254 </span>            :         &lt;td&gt;X&lt;/td&gt;
+<span class="lineNum">     255 </span>            :         &lt;td&gt;-PI&lt;/td&gt;
+<span class="lineNum">     256 </span>            :         &lt;td&gt;PI&lt;/td&gt;
+<span class="lineNum">     257 </span>            : &lt;/tr&gt;&lt;tr&gt;
+<span class="lineNum">     258 </span>            :         &lt;td&gt;Y&lt;/td&gt;
+<span class="lineNum">     259 </span>            :         &lt;td&gt;-PI/2&lt;/td&gt;
+<span class="lineNum">     260 </span>            :         &lt;td&gt;PI/2&lt;/td&gt;
+<span class="lineNum">     261 </span>            : &lt;/tr&gt;&lt;tr&gt;
+<span class="lineNum">     262 </span>            :         &lt;td&gt;Z&lt;/td&gt;
+<span class="lineNum">     263 </span>            :         &lt;td&gt;-PI&lt;/td&gt;
+<span class="lineNum">     264 </span>            :         &lt;td&gt;PI&lt;/td&gt;
+<span class="lineNum">     265 </span>            : &lt;/tr&gt;
+<span class="lineNum">     266 </span>            : &lt;/table&gt;
+<span class="lineNum">     267 </span>            : &lt;/li&gt;
+<span class="lineNum">     268 </span>            : &lt;/ul&gt;
+<a name="269"><span class="lineNum">     269 </span>            : </a>
+<span class="lineNum">     270 </span>            : */
+<span class="lineNum">     271 </span><span class="lineCov">          4 : ATTRIBUTE_ALIGNED16(class) btGeneric6DofConstraint : public btTypedConstraint</span>
+<span class="lineNum">     272 </span>            : {
+<span class="lineNum">     273 </span>            : protected:
+<span class="lineNum">     274 </span>            : 
+<span class="lineNum">     275 </span>            :         //! relative_frames
+<span class="lineNum">     276 </span>            :     //!@{
+<span class="lineNum">     277 </span>            :         btTransform     m_frameInA;//!&lt; the constraint space w.r.t body A
+<span class="lineNum">     278 </span>            :     btTransform m_frameInB;//!&lt; the constraint space w.r.t body B
+<span class="lineNum">     279 </span>            :     //!@}
+<span class="lineNum">     280 </span>            : 
+<span class="lineNum">     281 </span>            :     //! Jacobians
+<span class="lineNum">     282 </span>            :     //!@{
+<span class="lineNum">     283 </span>            :     btJacobianEntry     m_jacLinear[3];//!&lt; 3 orthogonal linear constraints
+<span class="lineNum">     284 </span>            :     btJacobianEntry     m_jacAng[3];//!&lt; 3 orthogonal angular constraints
+<span class="lineNum">     285 </span>            :     //!@}
+<span class="lineNum">     286 </span>            : 
+<span class="lineNum">     287 </span>            :         //! Linear_Limit_parameters
+<span class="lineNum">     288 </span>            :     //!@{
+<span class="lineNum">     289 </span>            :     btTranslationalLimitMotor m_linearLimits;
+<span class="lineNum">     290 </span>            :     //!@}
+<span class="lineNum">     291 </span>            : 
+<span class="lineNum">     292 </span>            : 
+<span class="lineNum">     293 </span>            :     //! hinge_parameters
+<span class="lineNum">     294 </span>            :     //!@{
+<span class="lineNum">     295 </span>            :     btRotationalLimitMotor m_angularLimits[3];
+<span class="lineNum">     296 </span>            :         //!@}
+<span class="lineNum">     297 </span>            : 
+<span class="lineNum">     298 </span>            : 
+<span class="lineNum">     299 </span>            : protected:
+<span class="lineNum">     300 </span>            :     //! temporal variables
+<span class="lineNum">     301 </span>            :     //!@{
+<span class="lineNum">     302 </span>            :     btScalar m_timeStep;
+<span class="lineNum">     303 </span>            :     btTransform m_calculatedTransformA;
+<span class="lineNum">     304 </span>            :     btTransform m_calculatedTransformB;
+<span class="lineNum">     305 </span>            :     btVector3 m_calculatedAxisAngleDiff;
+<span class="lineNum">     306 </span>            :     btVector3 m_calculatedAxis[3];
+<span class="lineNum">     307 </span>            :     btVector3 m_calculatedLinearDiff;
+<span class="lineNum">     308 </span>            :         btScalar        m_factA;
+<span class="lineNum">     309 </span>            :         btScalar        m_factB;
+<span class="lineNum">     310 </span>            :         bool            m_hasStaticBody;
+<span class="lineNum">     311 </span>            :     
+<span class="lineNum">     312 </span>            :         btVector3 m_AnchorPos; // point betwen pivots of bodies A and B to solve linear axes
+<span class="lineNum">     313 </span>            : 
+<span class="lineNum">     314 </span>            :     bool        m_useLinearReferenceFrameA;
+<span class="lineNum">     315 </span>            :         bool    m_useOffsetForConstraintFrame;
+<span class="lineNum">     316 </span>            :     
+<span class="lineNum">     317 </span>            :         int             m_flags;
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span>            :     //!@}
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span>            :     btGeneric6DofConstraint&amp;        operator=(btGeneric6DofConstraint&amp;  other)
+<span class="lineNum">     322 </span>            :     {
+<span class="lineNum">     323 </span>            :         btAssert(0);
+<span class="lineNum">     324 </span>            :         (void) other;
+<span class="lineNum">     325 </span>            :         return *this;
+<span class="lineNum">     326 </span>            :     }
+<span class="lineNum">     327 </span>            : 
+<span class="lineNum">     328 </span>            : 
+<span class="lineNum">     329 </span>            :         int setAngularLimits(btConstraintInfo2 *info, int row_offset,const btTransform&amp; transA,const btTransform&amp; transB,const btVector3&amp; linVelA,const btVector3&amp; linVelB,const btVector3&amp; angVelA,const btVector3&amp; angVelB);
+<span class="lineNum">     330 </span>            : 
+<span class="lineNum">     331 </span>            :         int setLinearLimits(btConstraintInfo2 *info, int row, const btTransform&amp; transA,const btTransform&amp; transB,const btVector3&amp; linVelA,const btVector3&amp; linVelB,const btVector3&amp; angVelA,const btVector3&amp; angVelB);
+<span class="lineNum">     332 </span>            : 
+<span class="lineNum">     333 </span>            :     void buildLinearJacobian(
+<span class="lineNum">     334 </span>            :         btJacobianEntry &amp; jacLinear,const btVector3 &amp; normalWorld,
+<span class="lineNum">     335 </span>            :         const btVector3 &amp; pivotAInW,const btVector3 &amp; pivotBInW);
+<span class="lineNum">     336 </span>            : 
+<span class="lineNum">     337 </span>            :     void buildAngularJacobian(btJacobianEntry &amp; jacAngular,const btVector3 &amp; jointAxisW);
+<span class="lineNum">     338 </span>            : 
+<span class="lineNum">     339 </span>            :         // tests linear limits
+<span class="lineNum">     340 </span>            :         void calculateLinearInfo();
+<span class="lineNum">     341 </span>            : 
+<span class="lineNum">     342 </span>            :         //! calcs the euler angles between the two bodies.
+<span class="lineNum">     343 </span>            :     void calculateAngleInfo();
+<span class="lineNum">     344 </span>            : 
+<span class="lineNum">     345 </span>            : 
+<span class="lineNum">     346 </span>            : 
+<a name="347"><span class="lineNum">     347 </span>            : public:</a>
+<span class="lineNum">     348 </span>            : 
+<span class="lineNum">     349 </span><span class="lineCov">          4 :         BT_DECLARE_ALIGNED_ALLOCATOR();</span>
+<span class="lineNum">     350 </span>            :         
+<span class="lineNum">     351 </span>            :         ///for backwards compatibility during the transition to 'getInfo/getInfo2'
+<span class="lineNum">     352 </span>            :         bool            m_useSolveConstraintObsolete;
+<span class="lineNum">     353 </span>            : 
+<span class="lineNum">     354 </span>            :     btGeneric6DofConstraint(btRigidBody&amp; rbA, btRigidBody&amp; rbB, const btTransform&amp; frameInA, const btTransform&amp; frameInB ,bool useLinearReferenceFrameA);
+<span class="lineNum">     355 </span>            :     btGeneric6DofConstraint(btRigidBody&amp; rbB, const btTransform&amp; frameInB, bool useLinearReferenceFrameB);
+<span class="lineNum">     356 </span>            :     
+<span class="lineNum">     357 </span>            :         //! Calcs global transform of the offsets
+<span class="lineNum">     358 </span>            :         /*!
+<span class="lineNum">     359 </span>            :         Calcs the global transform for the joint offset for body A an B, and also calcs the agle differences between the bodies.
+<span class="lineNum">     360 </span>            :         \sa btGeneric6DofConstraint.getCalculatedTransformA , btGeneric6DofConstraint.getCalculatedTransformB, btGeneric6DofConstraint.calculateAngleInfo
+<span class="lineNum">     361 </span>            :         */
+<span class="lineNum">     362 </span>            :     void calculateTransforms(const btTransform&amp; transA,const btTransform&amp; transB);
+<span class="lineNum">     363 </span>            : 
+<span class="lineNum">     364 </span>            :         void calculateTransforms();
+<span class="lineNum">     365 </span>            : 
+<span class="lineNum">     366 </span>            :         //! Gets the global transform of the offset for body A
+<span class="lineNum">     367 </span>            :     /*!
+<span class="lineNum">     368 </span>            :     \sa btGeneric6DofConstraint.getFrameOffsetA, btGeneric6DofConstraint.getFrameOffsetB, btGeneric6DofConstraint.calculateAngleInfo.
+<span class="lineNum">     369 </span>            :     */
+<span class="lineNum">     370 </span>            :     const btTransform &amp; getCalculatedTransformA() const
+<span class="lineNum">     371 </span>            :     {
+<span class="lineNum">     372 </span>            :         return m_calculatedTransformA;
+<span class="lineNum">     373 </span>            :     }
+<span class="lineNum">     374 </span>            : 
+<span class="lineNum">     375 </span>            :     //! Gets the global transform of the offset for body B
+<span class="lineNum">     376 </span>            :     /*!
+<span class="lineNum">     377 </span>            :     \sa btGeneric6DofConstraint.getFrameOffsetA, btGeneric6DofConstraint.getFrameOffsetB, btGeneric6DofConstraint.calculateAngleInfo.
+<span class="lineNum">     378 </span>            :     */
+<span class="lineNum">     379 </span>            :     const btTransform &amp; getCalculatedTransformB() const
+<span class="lineNum">     380 </span>            :     {
+<span class="lineNum">     381 </span>            :         return m_calculatedTransformB;
+<span class="lineNum">     382 </span>            :     }
+<span class="lineNum">     383 </span>            : 
+<span class="lineNum">     384 </span>            :     const btTransform &amp; getFrameOffsetA() const
+<span class="lineNum">     385 </span>            :     {
+<span class="lineNum">     386 </span>            :         return m_frameInA;
+<span class="lineNum">     387 </span>            :     }
+<span class="lineNum">     388 </span>            : 
+<span class="lineNum">     389 </span>            :     const btTransform &amp; getFrameOffsetB() const
+<span class="lineNum">     390 </span>            :     {
+<span class="lineNum">     391 </span>            :         return m_frameInB;
+<span class="lineNum">     392 </span>            :     }
+<a name="393"><span class="lineNum">     393 </span>            : </a>
+<span class="lineNum">     394 </span>            : 
+<span class="lineNum">     395 </span><span class="lineCov">         23 :     btTransform &amp; getFrameOffsetA()</span>
+<span class="lineNum">     396 </span>            :     {
+<span class="lineNum">     397 </span><span class="lineCov">         23 :         return m_frameInA;</span>
+<span class="lineNum">     398 </span>            :     }
+<span class="lineNum">     399 </span>            : 
+<span class="lineNum">     400 </span>            :     btTransform &amp; getFrameOffsetB()
+<span class="lineNum">     401 </span>            :     {
+<span class="lineNum">     402 </span>            :         return m_frameInB;
+<span class="lineNum">     403 </span>            :     }
+<span class="lineNum">     404 </span>            : 
+<span class="lineNum">     405 </span>            : 
+<span class="lineNum">     406 </span>            :         //! performs Jacobian calculation, and also calculates angle differences and axis
+<span class="lineNum">     407 </span>            :     virtual void        buildJacobian();
+<span class="lineNum">     408 </span>            : 
+<span class="lineNum">     409 </span>            :         virtual void getInfo1 (btConstraintInfo1* info);
+<span class="lineNum">     410 </span>            : 
+<span class="lineNum">     411 </span>            :         void getInfo1NonVirtual (btConstraintInfo1* info);
+<span class="lineNum">     412 </span>            : 
+<span class="lineNum">     413 </span>            :         virtual void getInfo2 (btConstraintInfo2* info);
+<span class="lineNum">     414 </span>            : 
+<span class="lineNum">     415 </span>            :         void getInfo2NonVirtual (btConstraintInfo2* info,const btTransform&amp; transA,const btTransform&amp; transB,const btVector3&amp; linVelA,const btVector3&amp; linVelB,const btVector3&amp; angVelA,const btVector3&amp; angVelB);
+<span class="lineNum">     416 </span>            : 
+<span class="lineNum">     417 </span>            : 
+<span class="lineNum">     418 </span>            :     void        updateRHS(btScalar      timeStep);
+<span class="lineNum">     419 </span>            : 
+<span class="lineNum">     420 </span>            :         //! Get the rotation axis in global coordinates
+<span class="lineNum">     421 </span>            :         /*!
+<span class="lineNum">     422 </span>            :         \pre btGeneric6DofConstraint.buildJacobian must be called previously.
+<span class="lineNum">     423 </span>            :         */
+<span class="lineNum">     424 </span>            :     btVector3 getAxis(int axis_index) const;
+<span class="lineNum">     425 </span>            : 
+<span class="lineNum">     426 </span>            :     //! Get the relative Euler angle
+<span class="lineNum">     427 </span>            :     /*!
+<span class="lineNum">     428 </span>            :         \pre btGeneric6DofConstraint::calculateTransforms() must be called previously.
+<span class="lineNum">     429 </span>            :         */
+<span class="lineNum">     430 </span>            :     btScalar getAngle(int axis_index) const;
+<span class="lineNum">     431 </span>            : 
+<span class="lineNum">     432 </span>            :         //! Get the relative position of the constraint pivot
+<span class="lineNum">     433 </span>            :     /*!
+<span class="lineNum">     434 </span>            :         \pre btGeneric6DofConstraint::calculateTransforms() must be called previously.
+<span class="lineNum">     435 </span>            :         */
+<span class="lineNum">     436 </span>            :         btScalar getRelativePivotPosition(int axis_index) const;
+<span class="lineNum">     437 </span>            : 
+<span class="lineNum">     438 </span>            :         void setFrames(const btTransform &amp; frameA, const btTransform &amp; frameB);
+<span class="lineNum">     439 </span>            : 
+<span class="lineNum">     440 </span>            :         //! Test angular limit.
+<span class="lineNum">     441 </span>            :         /*!
+<span class="lineNum">     442 </span>            :         Calculates angular correction and returns true if limit needs to be corrected.
+<span class="lineNum">     443 </span>            :         \pre btGeneric6DofConstraint::calculateTransforms() must be called previously.
+<span class="lineNum">     444 </span>            :         */
+<span class="lineNum">     445 </span>            :     bool testAngularLimitMotor(int axis_index);
+<span class="lineNum">     446 </span>            : 
+<span class="lineNum">     447 </span>            :     void        setLinearLowerLimit(const btVector3&amp; linearLower)
+<span class="lineNum">     448 </span>            :     {
+<span class="lineNum">     449 </span>            :         m_linearLimits.m_lowerLimit = linearLower;
+<span class="lineNum">     450 </span>            :     }
+<span class="lineNum">     451 </span>            : 
+<span class="lineNum">     452 </span>            :         void    getLinearLowerLimit(btVector3&amp; linearLower)
+<span class="lineNum">     453 </span>            :         {
+<span class="lineNum">     454 </span>            :                 linearLower = m_linearLimits.m_lowerLimit;
+<span class="lineNum">     455 </span>            :         }
+<span class="lineNum">     456 </span>            : 
+<span class="lineNum">     457 </span>            :         void    setLinearUpperLimit(const btVector3&amp; linearUpper)
+<span class="lineNum">     458 </span>            :         {
+<span class="lineNum">     459 </span>            :                 m_linearLimits.m_upperLimit = linearUpper;
+<span class="lineNum">     460 </span>            :         }
+<span class="lineNum">     461 </span>            : 
+<span class="lineNum">     462 </span>            :         void    getLinearUpperLimit(btVector3&amp; linearUpper)
+<span class="lineNum">     463 </span>            :         {
+<span class="lineNum">     464 </span>            :                 linearUpper = m_linearLimits.m_upperLimit;
+<a name="465"><span class="lineNum">     465 </span>            :         }</a>
+<span class="lineNum">     466 </span>            : 
+<span class="lineNum">     467 </span><span class="lineCov">          2 :     void        setAngularLowerLimit(const btVector3&amp; angularLower)</span>
+<span class="lineNum">     468 </span>            :     {
+<span class="lineNum">     469 </span><span class="lineCov">          8 :                 for(int i = 0; i &lt; 3; i++) </span>
+<span class="lineNum">     470 </span><span class="lineCov">          6 :                         m_angularLimits[i].m_loLimit = btNormalizeAngle(angularLower[i]);</span>
+<span class="lineNum">     471 </span><span class="lineCov">          2 :     }</span>
+<span class="lineNum">     472 </span>            : 
+<span class="lineNum">     473 </span>            :         void    getAngularLowerLimit(btVector3&amp; angularLower)
+<span class="lineNum">     474 </span>            :         {
+<span class="lineNum">     475 </span>            :                 for(int i = 0; i &lt; 3; i++) 
+<span class="lineNum">     476 </span>            :                         angularLower[i] = m_angularLimits[i].m_loLimit;
+<a name="477"><span class="lineNum">     477 </span>            :         }</a>
+<span class="lineNum">     478 </span>            : 
+<span class="lineNum">     479 </span><span class="lineCov">          2 :     void        setAngularUpperLimit(const btVector3&amp; angularUpper)</span>
+<span class="lineNum">     480 </span>            :     {
+<span class="lineNum">     481 </span><span class="lineCov">          8 :                 for(int i = 0; i &lt; 3; i++)</span>
+<span class="lineNum">     482 </span><span class="lineCov">          6 :                         m_angularLimits[i].m_hiLimit = btNormalizeAngle(angularUpper[i]);</span>
+<span class="lineNum">     483 </span><span class="lineCov">          2 :     }</span>
+<span class="lineNum">     484 </span>            : 
+<span class="lineNum">     485 </span>            :         void    getAngularUpperLimit(btVector3&amp; angularUpper)
+<span class="lineNum">     486 </span>            :         {
+<span class="lineNum">     487 </span>            :                 for(int i = 0; i &lt; 3; i++)
+<span class="lineNum">     488 </span>            :                         angularUpper[i] = m_angularLimits[i].m_hiLimit;
+<span class="lineNum">     489 </span>            :         }
+<span class="lineNum">     490 </span>            : 
+<span class="lineNum">     491 </span>            :         //! Retrieves the angular limit informacion
+<span class="lineNum">     492 </span>            :     btRotationalLimitMotor * getRotationalLimitMotor(int index)
+<span class="lineNum">     493 </span>            :     {
+<span class="lineNum">     494 </span><span class="lineCov">         33 :         return &amp;m_angularLimits[index];</span>
+<span class="lineNum">     495 </span>            :     }
+<span class="lineNum">     496 </span>            : 
+<span class="lineNum">     497 </span>            :     //! Retrieves the  limit informacion
+<span class="lineNum">     498 </span>            :     btTranslationalLimitMotor * getTranslationalLimitMotor()
+<span class="lineNum">     499 </span>            :     {
+<span class="lineNum">     500 </span>            :         return &amp;m_linearLimits;
+<span class="lineNum">     501 </span>            :     }
+<span class="lineNum">     502 </span>            : 
+<span class="lineNum">     503 </span>            :     //first 3 are linear, next 3 are angular
+<span class="lineNum">     504 </span>            :     void setLimit(int axis, btScalar lo, btScalar hi)
+<span class="lineNum">     505 </span>            :     {
+<span class="lineNum">     506 </span>            :         if(axis&lt;3)
+<span class="lineNum">     507 </span>            :         {
+<span class="lineNum">     508 </span>            :                 m_linearLimits.m_lowerLimit[axis] = lo;
+<span class="lineNum">     509 </span>            :                 m_linearLimits.m_upperLimit[axis] = hi;
+<span class="lineNum">     510 </span>            :         }
+<span class="lineNum">     511 </span>            :         else
+<span class="lineNum">     512 </span>            :         {
+<span class="lineNum">     513 </span>            :                         lo = btNormalizeAngle(lo);
+<span class="lineNum">     514 </span>            :                         hi = btNormalizeAngle(hi);
+<span class="lineNum">     515 </span>            :                 m_angularLimits[axis-3].m_loLimit = lo;
+<span class="lineNum">     516 </span>            :                 m_angularLimits[axis-3].m_hiLimit = hi;
+<span class="lineNum">     517 </span>            :         }
+<span class="lineNum">     518 </span>            :     }
+<span class="lineNum">     519 </span>            : 
+<span class="lineNum">     520 </span>            :         //! Test limit
+<span class="lineNum">     521 </span>            :         /*!
+<span class="lineNum">     522 </span>            :     - free means upper &lt; lower,
+<span class="lineNum">     523 </span>            :     - locked means upper == lower
+<span class="lineNum">     524 </span>            :     - limited means upper &gt; lower
+<span class="lineNum">     525 </span>            :     - limitIndex: first 3 are linear, next 3 are angular
+<span class="lineNum">     526 </span>            :     */
+<span class="lineNum">     527 </span>            :     bool        isLimited(int limitIndex)
+<span class="lineNum">     528 </span>            :     {
+<span class="lineNum">     529 </span>            :         if(limitIndex&lt;3)
+<span class="lineNum">     530 </span>            :         {
+<span class="lineNum">     531 </span>            :                         return m_linearLimits.isLimited(limitIndex);
+<span class="lineNum">     532 </span>            : 
+<span class="lineNum">     533 </span>            :         }
+<span class="lineNum">     534 </span>            :         return m_angularLimits[limitIndex-3].isLimited();
+<span class="lineNum">     535 </span>            :     }
+<span class="lineNum">     536 </span>            : 
+<span class="lineNum">     537 </span>            :         virtual void calcAnchorPos(void); // overridable
+<span class="lineNum">     538 </span>            : 
+<span class="lineNum">     539 </span>            :         int get_limit_motor_info2(      btRotationalLimitMotor * limot,
+<span class="lineNum">     540 </span>            :                                                                 const btTransform&amp; transA,const btTransform&amp; transB,const btVector3&amp; linVelA,const btVector3&amp; linVelB,const btVector3&amp; angVelA,const btVector3&amp; angVelB,
+<span class="lineNum">     541 </span>            :                                                                 btConstraintInfo2 *info, int row, btVector3&amp; ax1, int rotational, int rotAllowed = false);
+<span class="lineNum">     542 </span>            : 
+<span class="lineNum">     543 </span>            :         // access for UseFrameOffset
+<span class="lineNum">     544 </span>            :         bool getUseFrameOffset() { return m_useOffsetForConstraintFrame; }
+<span class="lineNum">     545 </span>            :         void setUseFrameOffset(bool frameOffsetOnOff) { m_useOffsetForConstraintFrame = frameOffsetOnOff; }
+<span class="lineNum">     546 </span>            : 
+<span class="lineNum">     547 </span>            :         ///override the default global value of a parameter (such as ERP or CFM), optionally provide the axis (0..5). 
+<span class="lineNum">     548 </span>            :         ///If no axis is provided, it uses the default axis for this constraint.
+<span class="lineNum">     549 </span>            :         virtual void setParam(int num, btScalar value, int axis = -1);
+<span class="lineNum">     550 </span>            :         ///return the local value of parameter
+<span class="lineNum">     551 </span>            :         virtual btScalar getParam(int num, int axis = -1) const;
+<span class="lineNum">     552 </span>            : 
+<span class="lineNum">     553 </span>            :         void setAxis( const btVector3&amp; axis1, const btVector3&amp; axis2);
+<span class="lineNum">     554 </span>            : 
+<span class="lineNum">     555 </span>            : 
+<span class="lineNum">     556 </span>            :         virtual int     calculateSerializeBufferSize() const;
+<span class="lineNum">     557 </span>            : 
+<span class="lineNum">     558 </span>            :         ///fills the dataBuffer and returns the struct name (and 0 on failure)
+<span class="lineNum">     559 </span>            :         virtual const char*     serialize(void* dataBuffer, btSerializer* serializer) const;
+<span class="lineNum">     560 </span>            : 
+<span class="lineNum">     561 </span>            :         
+<span class="lineNum">     562 </span>            : };
+<span class="lineNum">     563 </span>            : 
+<span class="lineNum">     564 </span>            : ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
+<span class="lineNum">     565 </span>            : struct btGeneric6DofConstraintData
+<span class="lineNum">     566 </span>            : {
+<span class="lineNum">     567 </span>            :         btTypedConstraintData   m_typeConstraintData;
+<span class="lineNum">     568 </span>            :         btTransformFloatData m_rbAFrame; // constraint axii. Assumes z is hinge axis.
+<span class="lineNum">     569 </span>            :         btTransformFloatData m_rbBFrame;
+<span class="lineNum">     570 </span>            :         
+<span class="lineNum">     571 </span>            :         btVector3FloatData      m_linearUpperLimit;
+<span class="lineNum">     572 </span>            :         btVector3FloatData      m_linearLowerLimit;
+<span class="lineNum">     573 </span>            : 
+<span class="lineNum">     574 </span>            :         btVector3FloatData      m_angularUpperLimit;
+<span class="lineNum">     575 </span>            :         btVector3FloatData      m_angularLowerLimit;
+<span class="lineNum">     576 </span>            :         
+<span class="lineNum">     577 </span>            :         int     m_useLinearReferenceFrameA;
+<span class="lineNum">     578 </span>            :         int m_useOffsetForConstraintFrame;
+<a name="579"><span class="lineNum">     579 </span>            : };</a>
+<span class="lineNum">     580 </span>            : 
+<span class="lineNum">     581 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE       int     btGeneric6DofConstraint::calculateSerializeBufferSize() const</span>
+<span class="lineNum">     582 </span>            : {
+<span class="lineNum">     583 </span><span class="lineNoCov">          0 :         return sizeof(btGeneric6DofConstraintData);</span>
+<span class="lineNum">     584 </span>            : }
+<a name="585"><span class="lineNum">     585 </span>            : </a>
+<span class="lineNum">     586 </span>            :         ///fills the dataBuffer and returns the struct name (and 0 on failure)
+<span class="lineNum">     587 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE       const char*     btGeneric6DofConstraint::serialize(void* dataBuffer, btSerializer* serializer) const</span>
+<span class="lineNum">     588 </span>            : {
+<span class="lineNum">     589 </span>            : 
+<span class="lineNum">     590 </span><span class="lineNoCov">          0 :         btGeneric6DofConstraintData* dof = (btGeneric6DofConstraintData*)dataBuffer;</span>
+<span class="lineNum">     591 </span><span class="lineNoCov">          0 :         btTypedConstraint::serialize(&amp;dof-&gt;m_typeConstraintData,serializer);</span>
+<span class="lineNum">     592 </span>            : 
+<span class="lineNum">     593 </span><span class="lineNoCov">          0 :         m_frameInA.serializeFloat(dof-&gt;m_rbAFrame);</span>
+<span class="lineNum">     594 </span>            :         m_frameInB.serializeFloat(dof-&gt;m_rbBFrame);
+<span class="lineNum">     595 </span>            : 
+<span class="lineNum">     596 </span>            :                 
+<span class="lineNum">     597 </span>            :         int i;
+<span class="lineNum">     598 </span><span class="lineNoCov">          0 :         for (i=0;i&lt;3;i++)</span>
+<span class="lineNum">     599 </span>            :         {
+<span class="lineNum">     600 </span><span class="lineNoCov">          0 :                 dof-&gt;m_angularLowerLimit.m_floats[i] =  float(m_angularLimits[i].m_loLimit);</span>
+<span class="lineNum">     601 </span><span class="lineNoCov">          0 :                 dof-&gt;m_angularUpperLimit.m_floats[i] =  float(m_angularLimits[i].m_hiLimit);</span>
+<span class="lineNum">     602 </span><span class="lineNoCov">          0 :                 dof-&gt;m_linearLowerLimit.m_floats[i] = float(m_linearLimits.m_lowerLimit[i]);</span>
+<span class="lineNum">     603 </span><span class="lineNoCov">          0 :                 dof-&gt;m_linearUpperLimit.m_floats[i] = float(m_linearLimits.m_upperLimit[i]);</span>
+<span class="lineNum">     604 </span>            :         }
+<span class="lineNum">     605 </span>            :         
+<span class="lineNum">     606 </span><span class="lineNoCov">          0 :         dof-&gt;m_useLinearReferenceFrameA = m_useLinearReferenceFrameA? 1 : 0;</span>
+<span class="lineNum">     607 </span><span class="lineNoCov">          0 :         dof-&gt;m_useOffsetForConstraintFrame = m_useOffsetForConstraintFrame ? 1 : 0;</span>
+<span class="lineNum">     608 </span>            : 
+<span class="lineNum">     609 </span><span class="lineNoCov">          0 :         return &quot;btGeneric6DofConstraintData&quot;;</span>
+<span class="lineNum">     610 </span>            : }
+<span class="lineNum">     611 </span>            : 
+<span class="lineNum">     612 </span>            : 
+<span class="lineNum">     613 </span>            : 
+<span class="lineNum">     614 </span>            : 
+<span class="lineNum">     615 </span>            : 
+<span class="lineNum">     616 </span>            : #endif //BT_GENERIC_6DOF_CONSTRAINT_H
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

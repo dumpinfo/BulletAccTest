@@ -1,0 +1,433 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - code analysis - BulletDynamics/ConstraintSolver/btConeTwistConstraint.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">BulletDynamics/ConstraintSolver</a> - btConeTwistConstraint.h<span style="font-size: 80%;"> (source / <a href="btConeTwistConstraint.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">code analysis</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">25</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2020-12-04 17:06:20</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            : Bullet Continuous Collision Detection and Physics Library
+<span class="lineNum">       3 </span>            : btConeTwistConstraint is Copyright (c) 2007 Starbreeze Studios
+<span class="lineNum">       4 </span>            : 
+<span class="lineNum">       5 </span>            : This software is provided 'as-is', without any express or implied warranty.
+<span class="lineNum">       6 </span>            : In no event will the authors be held liable for any damages arising from the use of this software.
+<span class="lineNum">       7 </span>            : Permission is granted to anyone to use this software for any purpose, 
+<span class="lineNum">       8 </span>            : including commercial applications, and to alter it and redistribute it freely, 
+<span class="lineNum">       9 </span>            : subject to the following restrictions:
+<span class="lineNum">      10 </span>            : 
+<span class="lineNum">      11 </span>            : 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+<span class="lineNum">      12 </span>            : 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+<span class="lineNum">      13 </span>            : 3. This notice may not be removed or altered from any source distribution.
+<span class="lineNum">      14 </span>            : 
+<span class="lineNum">      15 </span>            : Written by: Marcus Hennix
+<span class="lineNum">      16 </span>            : */
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : /*
+<span class="lineNum">      21 </span>            : Overview:
+<span class="lineNum">      22 </span>            : 
+<span class="lineNum">      23 </span>            : btConeTwistConstraint can be used to simulate ragdoll joints (upper arm, leg etc).
+<span class="lineNum">      24 </span>            : It is a fixed translation, 3 degree-of-freedom (DOF) rotational &quot;joint&quot;.
+<span class="lineNum">      25 </span>            : It divides the 3 rotational DOFs into swing (movement within a cone) and twist.
+<span class="lineNum">      26 </span>            : Swing is divided into swing1 and swing2 which can have different limits, giving an elliptical shape.
+<span class="lineNum">      27 </span>            : (Note: the cone's base isn't flat, so this ellipse is &quot;embedded&quot; on the surface of a sphere.)
+<span class="lineNum">      28 </span>            : 
+<span class="lineNum">      29 </span>            : In the contraint's frame of reference:
+<span class="lineNum">      30 </span>            : twist is along the x-axis,
+<span class="lineNum">      31 </span>            : and swing 1 and 2 are along the z and y axes respectively.
+<span class="lineNum">      32 </span>            : */
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span>            : #ifndef BT_CONETWISTCONSTRAINT_H
+<span class="lineNum">      37 </span>            : #define BT_CONETWISTCONSTRAINT_H
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : #include &quot;LinearMath/btVector3.h&quot;
+<span class="lineNum">      40 </span>            : #include &quot;btJacobianEntry.h&quot;
+<span class="lineNum">      41 </span>            : #include &quot;btTypedConstraint.h&quot;
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            : class btRigidBody;
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            : enum btConeTwistFlags
+<span class="lineNum">      46 </span>            : {
+<span class="lineNum">      47 </span>            :         BT_CONETWIST_FLAGS_LIN_CFM = 1,
+<span class="lineNum">      48 </span>            :         BT_CONETWIST_FLAGS_LIN_ERP = 2,
+<span class="lineNum">      49 </span>            :         BT_CONETWIST_FLAGS_ANG_CFM = 4
+<span class="lineNum">      50 </span>            : };
+<a name="51"><span class="lineNum">      51 </span>            : </a>
+<span class="lineNum">      52 </span>            : ///btConeTwistConstraint can be used to simulate ragdoll joints (upper arm, leg etc)
+<span class="lineNum">      53 </span><span class="lineNoCov">          0 : ATTRIBUTE_ALIGNED16(class) btConeTwistConstraint : public btTypedConstraint</span>
+<span class="lineNum">      54 </span>            : {
+<span class="lineNum">      55 </span>            : #ifdef IN_PARALLELL_SOLVER
+<span class="lineNum">      56 </span>            : public:
+<span class="lineNum">      57 </span>            : #endif
+<span class="lineNum">      58 </span>            :         btJacobianEntry m_jac[3]; //3 orthogonal linear constraints
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span>            :         btTransform m_rbAFrame; 
+<span class="lineNum">      61 </span>            :         btTransform m_rbBFrame;
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span>            :         btScalar        m_limitSoftness;
+<span class="lineNum">      64 </span>            :         btScalar        m_biasFactor;
+<span class="lineNum">      65 </span>            :         btScalar        m_relaxationFactor;
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span>            :         btScalar        m_damping;
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span>            :         btScalar        m_swingSpan1;
+<span class="lineNum">      70 </span>            :         btScalar        m_swingSpan2;
+<span class="lineNum">      71 </span>            :         btScalar        m_twistSpan;
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span>            :         btScalar        m_fixThresh;
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span>            :         btVector3   m_swingAxis;
+<span class="lineNum">      76 </span>            :         btVector3       m_twistAxis;
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            :         btScalar        m_kSwing;
+<span class="lineNum">      79 </span>            :         btScalar        m_kTwist;
+<span class="lineNum">      80 </span>            : 
+<span class="lineNum">      81 </span>            :         btScalar        m_twistLimitSign;
+<span class="lineNum">      82 </span>            :         btScalar        m_swingCorrection;
+<span class="lineNum">      83 </span>            :         btScalar        m_twistCorrection;
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span>            :         btScalar        m_twistAngle;
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span>            :         btScalar        m_accSwingLimitImpulse;
+<span class="lineNum">      88 </span>            :         btScalar        m_accTwistLimitImpulse;
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span>            :         bool            m_angularOnly;
+<span class="lineNum">      91 </span>            :         bool            m_solveTwistLimit;
+<span class="lineNum">      92 </span>            :         bool            m_solveSwingLimit;
+<span class="lineNum">      93 </span>            : 
+<span class="lineNum">      94 </span>            :         bool    m_useSolveConstraintObsolete;
+<span class="lineNum">      95 </span>            : 
+<span class="lineNum">      96 </span>            :         // not yet used...
+<span class="lineNum">      97 </span>            :         btScalar        m_swingLimitRatio;
+<span class="lineNum">      98 </span>            :         btScalar        m_twistLimitRatio;
+<span class="lineNum">      99 </span>            :         btVector3   m_twistAxisA;
+<span class="lineNum">     100 </span>            : 
+<span class="lineNum">     101 </span>            :         // motor
+<span class="lineNum">     102 </span>            :         bool             m_bMotorEnabled;
+<span class="lineNum">     103 </span>            :         bool             m_bNormalizedMotorStrength;
+<span class="lineNum">     104 </span>            :         btQuaternion m_qTarget;
+<span class="lineNum">     105 </span>            :         btScalar         m_maxMotorImpulse;
+<span class="lineNum">     106 </span>            :         btVector3        m_accMotorImpulse;
+<span class="lineNum">     107 </span>            :         
+<span class="lineNum">     108 </span>            :         // parameters
+<span class="lineNum">     109 </span>            :         int                     m_flags;
+<span class="lineNum">     110 </span>            :         btScalar        m_linCFM;
+<span class="lineNum">     111 </span>            :         btScalar        m_linERP;
+<span class="lineNum">     112 </span>            :         btScalar        m_angCFM;
+<span class="lineNum">     113 </span>            :         
+<span class="lineNum">     114 </span>            : protected:
+<span class="lineNum">     115 </span>            : 
+<span class="lineNum">     116 </span>            :         void init();
+<span class="lineNum">     117 </span>            : 
+<span class="lineNum">     118 </span>            :         void computeConeLimitInfo(const btQuaternion&amp; qCone, // in
+<span class="lineNum">     119 </span>            :                 btScalar&amp; swingAngle, btVector3&amp; vSwingAxis, btScalar&amp; swingLimit); // all outs
+<span class="lineNum">     120 </span>            : 
+<span class="lineNum">     121 </span>            :         void computeTwistLimitInfo(const btQuaternion&amp; qTwist, // in
+<span class="lineNum">     122 </span>            :                 btScalar&amp; twistAngle, btVector3&amp; vTwistAxis); // all outs
+<span class="lineNum">     123 </span>            : 
+<span class="lineNum">     124 </span>            :         void adjustSwingAxisToUseEllipseNormal(btVector3&amp; vSwingAxis) const;
+<span class="lineNum">     125 </span>            : 
+<span class="lineNum">     126 </span>            : 
+<span class="lineNum">     127 </span>            : public:
+<span class="lineNum">     128 </span>            : 
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :         BT_DECLARE_ALIGNED_ALLOCATOR();</span>
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span>            :         btConeTwistConstraint(btRigidBody&amp; rbA,btRigidBody&amp; rbB,const btTransform&amp; rbAFrame, const btTransform&amp; rbBFrame);
+<span class="lineNum">     132 </span>            :         
+<span class="lineNum">     133 </span>            :         btConeTwistConstraint(btRigidBody&amp; rbA,const btTransform&amp; rbAFrame);
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span>            :         virtual void    buildJacobian();
+<span class="lineNum">     136 </span>            : 
+<span class="lineNum">     137 </span>            :         virtual void getInfo1 (btConstraintInfo1* info);
+<span class="lineNum">     138 </span>            : 
+<span class="lineNum">     139 </span>            :         void    getInfo1NonVirtual(btConstraintInfo1* info);
+<span class="lineNum">     140 </span>            :         
+<span class="lineNum">     141 </span>            :         virtual void getInfo2 (btConstraintInfo2* info);
+<span class="lineNum">     142 </span>            :         
+<span class="lineNum">     143 </span>            :         void    getInfo2NonVirtual(btConstraintInfo2* info,const btTransform&amp; transA,const btTransform&amp; transB,const btMatrix3x3&amp; invInertiaWorldA,const btMatrix3x3&amp; invInertiaWorldB);
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span>            :         virtual void    solveConstraintObsolete(btSolverBody&amp; bodyA,btSolverBody&amp; bodyB,btScalar        timeStep);
+<span class="lineNum">     146 </span>            : 
+<span class="lineNum">     147 </span>            :     
+<span class="lineNum">     148 </span>            :         void    updateRHS(btScalar      timeStep);
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span>            : 
+<span class="lineNum">     151 </span>            :         const btRigidBody&amp; getRigidBodyA() const
+<span class="lineNum">     152 </span>            :         {
+<span class="lineNum">     153 </span>            :                 return m_rbA;
+<span class="lineNum">     154 </span>            :         }
+<span class="lineNum">     155 </span>            :         const btRigidBody&amp; getRigidBodyB() const
+<span class="lineNum">     156 </span>            :         {
+<span class="lineNum">     157 </span>            :                 return m_rbB;
+<span class="lineNum">     158 </span>            :         }
+<span class="lineNum">     159 </span>            : 
+<span class="lineNum">     160 </span>            :         void    setAngularOnly(bool angularOnly)
+<span class="lineNum">     161 </span>            :         {
+<span class="lineNum">     162 </span>            :                 m_angularOnly = angularOnly;
+<span class="lineNum">     163 </span>            :         }
+<span class="lineNum">     164 </span>            : 
+<span class="lineNum">     165 </span>            :         void    setLimit(int limitIndex,btScalar limitValue)
+<span class="lineNum">     166 </span>            :         {
+<span class="lineNum">     167 </span>            :                 switch (limitIndex)
+<span class="lineNum">     168 </span>            :                 {
+<span class="lineNum">     169 </span>            :                 case 3:
+<span class="lineNum">     170 </span>            :                         {
+<span class="lineNum">     171 </span>            :                                 m_twistSpan = limitValue;
+<span class="lineNum">     172 </span>            :                                 break;
+<span class="lineNum">     173 </span>            :                         }
+<span class="lineNum">     174 </span>            :                 case 4:
+<span class="lineNum">     175 </span>            :                         {
+<span class="lineNum">     176 </span>            :                                 m_swingSpan2 = limitValue;
+<span class="lineNum">     177 </span>            :                                 break;
+<span class="lineNum">     178 </span>            :                         }
+<span class="lineNum">     179 </span>            :                 case 5:
+<span class="lineNum">     180 </span>            :                         {
+<span class="lineNum">     181 </span>            :                                 m_swingSpan1 = limitValue;
+<span class="lineNum">     182 </span>            :                                 break;
+<span class="lineNum">     183 </span>            :                         }
+<span class="lineNum">     184 </span>            :                 default:
+<span class="lineNum">     185 </span>            :                         {
+<span class="lineNum">     186 </span>            :                         }
+<span class="lineNum">     187 </span>            :                 };
+<span class="lineNum">     188 </span>            :         }
+<span class="lineNum">     189 </span>            : 
+<span class="lineNum">     190 </span>            :         // setLimit(), a few notes:
+<span class="lineNum">     191 </span>            :         // _softness:
+<span class="lineNum">     192 </span>            :         //              0-&gt;1, recommend ~0.8-&gt;1.
+<span class="lineNum">     193 </span>            :         //              describes % of limits where movement is free.
+<span class="lineNum">     194 </span>            :         //              beyond this softness %, the limit is gradually enforced until the &quot;hard&quot; (1.0) limit is reached.
+<span class="lineNum">     195 </span>            :         // _biasFactor:
+<span class="lineNum">     196 </span>            :         //              0-&gt;1?, recommend 0.3 +/-0.3 or so.
+<span class="lineNum">     197 </span>            :         //              strength with which constraint resists zeroth order (angular, not angular velocity) limit violation.
+<span class="lineNum">     198 </span>            :         // __relaxationFactor:
+<span class="lineNum">     199 </span>            :         //              0-&gt;1, recommend to stay near 1.
+<span class="lineNum">     200 </span>            :         //              the lower the value, the less the constraint will fight velocities which violate the angular limits.
+<span class="lineNum">     201 </span>            :         void    setLimit(btScalar _swingSpan1,btScalar _swingSpan2,btScalar _twistSpan, btScalar _softness = 1.f, btScalar _biasFactor = 0.3f, btScalar _relaxationFactor = 1.0f)
+<span class="lineNum">     202 </span>            :         {
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :                 m_swingSpan1 = _swingSpan1;</span>
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :                 m_swingSpan2 = _swingSpan2;</span>
+<span class="lineNum">     205 </span><span class="lineNoCov">          0 :                 m_twistSpan  = _twistSpan;</span>
+<span class="lineNum">     206 </span>            : 
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 :                 m_limitSoftness =  _softness;</span>
+<span class="lineNum">     208 </span><span class="lineNoCov">          0 :                 m_biasFactor = _biasFactor;</span>
+<span class="lineNum">     209 </span><span class="lineNoCov">          0 :                 m_relaxationFactor = _relaxationFactor;</span>
+<span class="lineNum">     210 </span>            :         }
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :         const btTransform&amp; getAFrame() { return m_rbAFrame; };      </span>
+<span class="lineNum">     213 </span><span class="lineNoCov">          0 :         const btTransform&amp; getBFrame() { return m_rbBFrame; };</span>
+<span class="lineNum">     214 </span>            : 
+<span class="lineNum">     215 </span>            :         inline int getSolveTwistLimit()
+<span class="lineNum">     216 </span>            :         {
+<span class="lineNum">     217 </span>            :                 return m_solveTwistLimit;
+<span class="lineNum">     218 </span>            :         }
+<span class="lineNum">     219 </span>            : 
+<span class="lineNum">     220 </span>            :         inline int getSolveSwingLimit()
+<span class="lineNum">     221 </span>            :         {
+<span class="lineNum">     222 </span>            :                 return m_solveTwistLimit;
+<span class="lineNum">     223 </span>            :         }
+<span class="lineNum">     224 </span>            : 
+<span class="lineNum">     225 </span>            :         inline btScalar getTwistLimitSign()
+<span class="lineNum">     226 </span>            :         {
+<span class="lineNum">     227 </span>            :                 return m_twistLimitSign;
+<span class="lineNum">     228 </span>            :         }
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span>            :         void calcAngleInfo();
+<span class="lineNum">     231 </span>            :         void calcAngleInfo2(const btTransform&amp; transA, const btTransform&amp; transB,const btMatrix3x3&amp; invInertiaWorldA,const btMatrix3x3&amp; invInertiaWorldB);
+<span class="lineNum">     232 </span>            : 
+<span class="lineNum">     233 </span>            :         inline btScalar getSwingSpan1()
+<span class="lineNum">     234 </span>            :         {
+<span class="lineNum">     235 </span>            :                 return m_swingSpan1;
+<span class="lineNum">     236 </span>            :         }
+<span class="lineNum">     237 </span>            :         inline btScalar getSwingSpan2()
+<span class="lineNum">     238 </span>            :         {
+<span class="lineNum">     239 </span>            :                 return m_swingSpan2;
+<span class="lineNum">     240 </span>            :         }
+<span class="lineNum">     241 </span>            :         inline btScalar getTwistSpan()
+<span class="lineNum">     242 </span>            :         {
+<span class="lineNum">     243 </span>            :                 return m_twistSpan;
+<span class="lineNum">     244 </span>            :         }
+<span class="lineNum">     245 </span>            :         inline btScalar getTwistAngle()
+<span class="lineNum">     246 </span>            :         {
+<span class="lineNum">     247 </span>            :                 return m_twistAngle;
+<span class="lineNum">     248 </span>            :         }
+<span class="lineNum">     249 </span>            :         bool isPastSwingLimit() { return m_solveSwingLimit; }
+<span class="lineNum">     250 </span>            : 
+<span class="lineNum">     251 </span>            :         void setDamping(btScalar damping) { m_damping = damping; }
+<span class="lineNum">     252 </span>            : 
+<span class="lineNum">     253 </span>            :         void enableMotor(bool b) { m_bMotorEnabled = b; }
+<span class="lineNum">     254 </span>            :         void setMaxMotorImpulse(btScalar maxMotorImpulse) { m_maxMotorImpulse = maxMotorImpulse; m_bNormalizedMotorStrength = false; }
+<span class="lineNum">     255 </span>            :         void setMaxMotorImpulseNormalized(btScalar maxMotorImpulse) { m_maxMotorImpulse = maxMotorImpulse; m_bNormalizedMotorStrength = true; }
+<span class="lineNum">     256 </span>            : 
+<span class="lineNum">     257 </span>            :         btScalar getFixThresh() { return m_fixThresh; }
+<span class="lineNum">     258 </span>            :         void setFixThresh(btScalar fixThresh) { m_fixThresh = fixThresh; }
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span>            :         // setMotorTarget:
+<span class="lineNum">     261 </span>            :         // q: the desired rotation of bodyA wrt bodyB.
+<span class="lineNum">     262 </span>            :         // note: if q violates the joint limits, the internal target is clamped to avoid conflicting impulses (very bad for stability)
+<span class="lineNum">     263 </span>            :         // note: don't forget to enableMotor()
+<span class="lineNum">     264 </span>            :         void setMotorTarget(const btQuaternion &amp;q);
+<span class="lineNum">     265 </span>            : 
+<span class="lineNum">     266 </span>            :         // same as above, but q is the desired rotation of frameA wrt frameB in constraint space
+<span class="lineNum">     267 </span>            :         void setMotorTargetInConstraintSpace(const btQuaternion &amp;q);
+<span class="lineNum">     268 </span>            : 
+<span class="lineNum">     269 </span>            :         btVector3 GetPointForAngle(btScalar fAngleInRadians, btScalar fLength) const;
+<span class="lineNum">     270 </span>            : 
+<span class="lineNum">     271 </span>            :         ///override the default global value of a parameter (such as ERP or CFM), optionally provide the axis (0..5). 
+<span class="lineNum">     272 </span>            :         ///If no axis is provided, it uses the default axis for this constraint.
+<span class="lineNum">     273 </span>            :         virtual void setParam(int num, btScalar value, int axis = -1);
+<span class="lineNum">     274 </span>            : 
+<span class="lineNum">     275 </span>            :         virtual void setFrames(const btTransform&amp; frameA, const btTransform&amp; frameB);
+<span class="lineNum">     276 </span>            : 
+<span class="lineNum">     277 </span>            :         const btTransform&amp; getFrameOffsetA() const
+<span class="lineNum">     278 </span>            :         {
+<span class="lineNum">     279 </span>            :                 return m_rbAFrame;
+<span class="lineNum">     280 </span>            :         }
+<span class="lineNum">     281 </span>            : 
+<span class="lineNum">     282 </span>            :         const btTransform&amp; getFrameOffsetB() const
+<span class="lineNum">     283 </span>            :         {
+<span class="lineNum">     284 </span>            :                 return m_rbBFrame;
+<span class="lineNum">     285 </span>            :         }
+<span class="lineNum">     286 </span>            : 
+<span class="lineNum">     287 </span>            : 
+<span class="lineNum">     288 </span>            :         ///return the local value of parameter
+<span class="lineNum">     289 </span>            :         virtual btScalar getParam(int num, int axis = -1) const;
+<span class="lineNum">     290 </span>            : 
+<span class="lineNum">     291 </span>            :         virtual int     calculateSerializeBufferSize() const;
+<span class="lineNum">     292 </span>            : 
+<span class="lineNum">     293 </span>            :         ///fills the dataBuffer and returns the struct name (and 0 on failure)
+<span class="lineNum">     294 </span>            :         virtual const char*     serialize(void* dataBuffer, btSerializer* serializer) const;
+<span class="lineNum">     295 </span>            : 
+<span class="lineNum">     296 </span>            : };
+<span class="lineNum">     297 </span>            : 
+<span class="lineNum">     298 </span>            : ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
+<span class="lineNum">     299 </span>            : struct  btConeTwistConstraintData
+<span class="lineNum">     300 </span>            : {
+<span class="lineNum">     301 </span>            :         btTypedConstraintData   m_typeConstraintData;
+<span class="lineNum">     302 </span>            :         btTransformFloatData m_rbAFrame;
+<span class="lineNum">     303 </span>            :         btTransformFloatData m_rbBFrame;
+<span class="lineNum">     304 </span>            : 
+<span class="lineNum">     305 </span>            :         //limits
+<span class="lineNum">     306 </span>            :         float   m_swingSpan1;
+<span class="lineNum">     307 </span>            :         float   m_swingSpan2;
+<span class="lineNum">     308 </span>            :         float   m_twistSpan;
+<span class="lineNum">     309 </span>            :         float   m_limitSoftness;
+<span class="lineNum">     310 </span>            :         float   m_biasFactor;
+<span class="lineNum">     311 </span>            :         float   m_relaxationFactor;
+<span class="lineNum">     312 </span>            : 
+<span class="lineNum">     313 </span>            :         float   m_damping;
+<span class="lineNum">     314 </span>            :                 
+<span class="lineNum">     315 </span>            :         char m_pad[4];
+<span class="lineNum">     316 </span>            : 
+<span class="lineNum">     317 </span>            : };
+<span class="lineNum">     318 </span>            :         
+<a name="319"><span class="lineNum">     319 </span>            : </a>
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE int   btConeTwistConstraint::calculateSerializeBufferSize() const</span>
+<span class="lineNum">     322 </span>            : {
+<span class="lineNum">     323 </span><span class="lineNoCov">          0 :         return sizeof(btConeTwistConstraintData);</span>
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span>            : }
+<span class="lineNum">     326 </span>            : 
+<a name="327"><span class="lineNum">     327 </span>            : </a>
+<span class="lineNum">     328 </span>            :         ///fills the dataBuffer and returns the struct name (and 0 on failure)
+<span class="lineNum">     329 </span><span class="lineNoCov">          0 : SIMD_FORCE_INLINE const char*   btConeTwistConstraint::serialize(void* dataBuffer, btSerializer* serializer) const</span>
+<span class="lineNum">     330 </span>            : {
+<span class="lineNum">     331 </span><span class="lineNoCov">          0 :         btConeTwistConstraintData* cone = (btConeTwistConstraintData*) dataBuffer;</span>
+<span class="lineNum">     332 </span><span class="lineNoCov">          0 :         btTypedConstraint::serialize(&amp;cone-&gt;m_typeConstraintData,serializer);</span>
+<span class="lineNum">     333 </span>            : 
+<span class="lineNum">     334 </span><span class="lineNoCov">          0 :         m_rbAFrame.serializeFloat(cone-&gt;m_rbAFrame);</span>
+<span class="lineNum">     335 </span><span class="lineNoCov">          0 :         m_rbBFrame.serializeFloat(cone-&gt;m_rbBFrame);</span>
+<span class="lineNum">     336 </span>            :         
+<span class="lineNum">     337 </span><span class="lineNoCov">          0 :         cone-&gt;m_swingSpan1 = float(m_swingSpan1);</span>
+<span class="lineNum">     338 </span><span class="lineNoCov">          0 :         cone-&gt;m_swingSpan2 = float(m_swingSpan2);</span>
+<span class="lineNum">     339 </span><span class="lineNoCov">          0 :         cone-&gt;m_twistSpan = float(m_twistSpan);</span>
+<span class="lineNum">     340 </span><span class="lineNoCov">          0 :         cone-&gt;m_limitSoftness = float(m_limitSoftness);</span>
+<span class="lineNum">     341 </span><span class="lineNoCov">          0 :         cone-&gt;m_biasFactor = float(m_biasFactor);</span>
+<span class="lineNum">     342 </span><span class="lineNoCov">          0 :         cone-&gt;m_relaxationFactor = float(m_relaxationFactor);</span>
+<span class="lineNum">     343 </span><span class="lineNoCov">          0 :         cone-&gt;m_damping = float(m_damping);</span>
+<span class="lineNum">     344 </span>            : 
+<span class="lineNum">     345 </span><span class="lineNoCov">          0 :         return &quot;btConeTwistConstraintData&quot;;</span>
+<span class="lineNum">     346 </span>            : }
+<span class="lineNum">     347 </span>            : 
+<span class="lineNum">     348 </span>            : 
+<span class="lineNum">     349 </span>            : #endif //BT_CONETWISTCONSTRAINT_H
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.13</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
